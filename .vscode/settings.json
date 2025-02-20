@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Lion Game POC.sln"
+    "dotnet.defaultSolution": "Context-II-POC.sln"
 }

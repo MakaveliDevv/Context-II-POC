@@ -1,9 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class NPCPatrol : MonoBehaviour
+public class NPCPatrol : MonoBehaviour, ITriggerMovement
 {
-    public NPCSpawner thingySpawner;
+    public NPCSpawner npcSpawner;
     public Transform patrolArea;
     public float patrolSpeed = 3f;
     public float obstacleAvoidanceDistance = 2.5f;
@@ -14,15 +14,22 @@ public class NPCPatrol : MonoBehaviour
 
     private bool isMovingToRandomLocation = false;
     private bool isPatrolling = true;
-    private static readonly List<NPCPatrol> allThingys = new();
+    private static readonly List<NPCPatrol> allNPCs = new();
 
     private void Start()
     {
-        thingySpawner = FindAnyObjectByType<NPCSpawner>();
+        npcSpawner = FindAnyObjectByType<NPCSpawner>();
         obstacleLayerMask = LayerMask.GetMask("Obstacle");
-        patrolArea = thingySpawner.patrolArea;
+        patrolArea = npcSpawner.patrolArea;
         SetNewTarget();
-        allThingys.Add(this);
+        allNPCs.Add(this);
+
+        Manager.instance?.RegisterTriggerMovement(this);
+    }
+
+    private void OnDestroy()
+    {
+        Manager.instance?.UnregisterTriggerMovement(this);
     }
 
     private void Update()
@@ -36,10 +43,10 @@ public class NPCPatrol : MonoBehaviour
             Patrol();
         }
 
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            TriggerMovement();
-        }
+        // if (Input.GetKeyDown(KeyCode.T))
+        // {
+        //     TriggerMovement();
+        // }
 
         if (Input.GetKeyDown(KeyCode.P))
         {
@@ -75,17 +82,22 @@ public class NPCPatrol : MonoBehaviour
         return false;
     }
 
-    private void TriggerMovement()
+    private void TriggerMovement(Transform location)
     {
-        if (thingySpawner.randomLocations.Count == 0) return;
+        if (npcSpawner.locations.Count == 0) return;
 
-        Transform chosenLocation = thingySpawner.randomLocations[Random.Range(0, thingySpawner.randomLocations.Count)];
-        if (chosenLocation.TryGetComponent<Collider>(out var locationCollider))
+        // Transform chosenLocation = npcSpawner.locations[Random.Range(0, npcSpawner.locations.Count)];
+        if (location.TryGetComponent<Collider>(out var locationCollider))
         {
             targetPosition = GetAvailablePosition(locationCollider.bounds);
             isMovingToRandomLocation = true;
             isPatrolling = false;
         }
+    }
+
+    void ITriggerMovement.TriggerMovement(Transform transform)
+    {
+        TriggerMovement(transform);
     }
 
     private Vector3 GetAvailablePosition(Bounds bounds)
@@ -116,7 +128,7 @@ public class NPCPatrol : MonoBehaviour
 
     private bool IsPositionOccupied(Vector3 position)
     {
-        foreach (var thingy in allThingys)
+        foreach (var thingy in allNPCs)
         {
             if (Vector3.Distance(thingy.targetPosition, position) < spacing)
             {

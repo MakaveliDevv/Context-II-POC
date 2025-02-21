@@ -7,7 +7,7 @@ public class NPCSpawner : MonoBehaviour
     public GameObject objectToSpawn; 
     public Transform spawnArea; 
     public Transform patrolArea;
-    public List<Transform> randomLocations;
+    public List<Transform> locations;
 
     public int spawnCount = 5; 
     public float spawnInterval = 2f; 
@@ -25,6 +25,17 @@ public class NPCSpawner : MonoBehaviour
         StartCoroutine(SpawnObjects());
     }
 
+    private void Update()
+    {
+        if(locations.Count < 3) 
+        {
+            foreach (var item in Manager.instance.objectsToTrack)
+            {
+                locations.Add(item.transform);    
+            }
+        }
+    }
+    
     private IEnumerator SpawnObjects()
     {
         for (int i = 0; i < spawnCount; i++)

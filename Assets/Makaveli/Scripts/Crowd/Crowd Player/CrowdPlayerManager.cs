@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class CrowdPlayerManager : MonoBehaviour 
 {
@@ -19,6 +20,7 @@ public class CrowdPlayerManager : MonoBehaviour
     // UI Stuff
     [Header("UI Stuff")]
     [SerializeField] private List<UILocationCard> UI_Locations;
+    public bool inUIMode = false;
 
     private void Awake()
     {
@@ -43,29 +45,42 @@ public class CrowdPlayerManager : MonoBehaviour
     {
         playerController.OverallMovement();
 
-        if(Input.GetKey(KeyCode.M)) 
+        if (Input.GetKeyDown(KeyCode.M)) 
         {
-            DisplayLocationCards();
+            inUIMode = !inUIMode; 
+
+            if (inUIMode)
+            {
+                DisplayLocationCards();
+            }
+            else
+            {
+                HideLocationCards();
+            }
         }
+
+        Cursor.lockState = inUIMode ? CursorLockMode.None : CursorLockMode.Locked;
     }
 
-    private void DisplayLocationCards() 
+   private void DisplayLocationCards() 
     {
-        Debug.Log("Method 'DisplayLocationCards' Invoked");
-        // for (int i = 0; i < UI_Locations.Count; i++)
-        // {
-        //     UI_Locations[i].gameObject.SetActive(true);
-            
-        //     for (int j = 0; j < Manager.instance.objectsToTrack.Count; j++)
-        //     {
-        //         UI_Locations[i].objectPosition = Manager.instance.objectsToTrack[j].position;
-        //     }
-        // }
-
         for (int i = 0; i < UI_Locations.Count && i < Manager.instance.objectsToTrack.Count; i++)
         {
             UI_Locations[i].gameObject.SetActive(true);
-            UI_Locations[i].objectPosition = Manager.instance.objectsToTrack[i].transform.position; // Correct 1:1 mapping
+            UI_Locations[i].objectPosition = Manager.instance.objectsToTrack[i].transform.position;
+
+            // Transform
+            UI_Locations[i].objectTransform = Manager.instance.objectsToTrack[i].transform;
+            Transform newTransform = UI_Locations[i].objectTransform;
+            UI_Locations[i].objectPosition = newTransform.position;
+        }
+    }
+
+    private void HideLocationCards()
+    {
+        for (int i = 0; i < UI_Locations.Count && i < Manager.instance.objectsToTrack.Count; i++)
+        {
+            UI_Locations[i].gameObject.SetActive(false);
         }
     }
 }

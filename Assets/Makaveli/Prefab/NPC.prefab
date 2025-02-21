@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8774823661323659732}
   - component: {fileID: 7644724870662984205}
   m_Layer: 6
-  m_Name: Thingy
+  m_Name: NPC
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

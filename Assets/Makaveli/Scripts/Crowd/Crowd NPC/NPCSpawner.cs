@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class ThingySpawner : MonoBehaviour
+public class NPCSpawner : MonoBehaviour
 {
     public GameObject objectToSpawn; 
     public Transform spawnArea; 

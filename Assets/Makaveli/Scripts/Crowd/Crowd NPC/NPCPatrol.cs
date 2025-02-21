@@ -1,24 +1,24 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class ThingyPatrol : MonoBehaviour
+public class NPCPatrol : MonoBehaviour
 {
-    public ThingySpawner thingySpawner;
+    public NPCSpawner thingySpawner;
     public Transform patrolArea;
     public float patrolSpeed = 3f;
     public float obstacleAvoidanceDistance = 2.5f;
     public float raycastLength = 2f;
-    public float spacing = 1f; // Ensure no overlaps
+    public float spacing = 1f;
     private Vector3 targetPosition;
     public LayerMask obstacleLayerMask;
 
     private bool isMovingToRandomLocation = false;
     private bool isPatrolling = true;
-    private static readonly List<ThingyPatrol> allThingys = new List<ThingyPatrol>();
+    private static readonly List<NPCPatrol> allThingys = new();
 
     private void Start()
     {
-        thingySpawner = FindAnyObjectByType<ThingySpawner>();
+        thingySpawner = FindAnyObjectByType<NPCSpawner>();
         obstacleLayerMask = LayerMask.GetMask("Obstacle");
         patrolArea = thingySpawner.patrolArea;
         SetNewTarget();
@@ -27,11 +27,6 @@ public class ThingyPatrol : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            TriggerMovement();
-        }
-
         if (isMovingToRandomLocation)
         {
             MoveToTarget();
@@ -41,10 +36,15 @@ public class ThingyPatrol : MonoBehaviour
             Patrol();
         }
 
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            TriggerMovement();
+        }
+
         if (Input.GetKeyDown(KeyCode.P))
         {
             ResumePatrol();
-        }
+        } 
     }
 
     private void Patrol()

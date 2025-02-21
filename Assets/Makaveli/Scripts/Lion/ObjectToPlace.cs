@@ -1,17 +1,16 @@
 using UnityEngine;
 
-public class ObjectToPlacce : MonoBehaviour
+public class ObjectToPlace : MonoBehaviour
 {
-    private bool isInRange = false;
+    // private bool isInRange = false;
 
     private void OnTriggerEnter(Collider collider) 
-    {
-        Debug.Log("Trigger entered with: " + collider.gameObject.name);  // Logs when the trigger event is fired.
-        
+    {       
         if(collider.CompareTag("Player")) 
         {
-            Debug.Log("Collision detected!");
-            isInRange = true;
+            Debug.Log($"Collision detected with {collider.gameObject.tag}");
+
+            // isInRange = true;
 
             if(Input.GetKeyDown(KeyCode.Space)) 
             {
@@ -21,5 +20,4 @@ public class ObjectToPlacce : MonoBehaviour
             }
         }
     }
-
 }

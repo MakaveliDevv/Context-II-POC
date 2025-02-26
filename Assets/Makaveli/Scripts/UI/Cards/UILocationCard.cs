@@ -3,9 +3,10 @@ using UnityEngine.UI;
 
 public class UILocationCard : MonoBehaviour
 {
-    public Transform objectTransform;
+    public Transform location;
     public Vector3 objectPosition;
     public Button btn;    
+    public RenderTexture renderTexture; 
 
     void Update()
     {
@@ -14,16 +15,9 @@ public class UILocationCard : MonoBehaviour
             btn = gameObject.GetComponent<Button>();
         }
 
-        if(!Manager.instance.UIPanel.Contains(this)) 
+        if(!MGameManager.instance.cards.Contains(this)) 
         {
-            Manager.instance.UIPanel.Add(this);
-
-            Debug.Log("List doesnt contain this card");
-
-        }
-        else 
-        {
-            Debug.Log("List already contains this card");
+            MGameManager.instance.cards.Add(this);
         }
     }
 }

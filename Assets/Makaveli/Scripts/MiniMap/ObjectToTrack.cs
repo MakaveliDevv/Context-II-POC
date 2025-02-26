@@ -1,19 +1,25 @@
 using UnityEngine;
 
-public class ObjectToTrack : MonoBehaviour /*, ITrackable */
+public class ObjectToTrack : MonoBehaviour 
 {
-    // public bool isVisible;
+    public RenderTexture renderTexture;
 
-    // public void SetVisibility(bool visibilityStatus)
-    // {
-    //     isVisible = visibilityStatus;
-    //     Debug.Log($"Object visibility set to: {isVisible}");
-    // }
+    private void Start()
+    {
+        Camera camera = transform.GetChild(0).gameObject.GetComponent<Camera>();
+        renderTexture = new RenderTexture(256, 256, 16); 
+        renderTexture.Create();
 
-    public Vector3 position;
+        camera.targetTexture = renderTexture;
+    }
+
+    private void OnDestroy()
+    {
+        if (renderTexture != null)
+        {
+            renderTexture.Release();
+            Destroy(renderTexture);
+        }
+    }
 }
 
-// public interface ITrackable 
-// {
-//     void SetVisibility(bool isVisible); 
-// }

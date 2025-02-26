@@ -116,12 +116,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2109699717161008390}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6d0e2b05c57bf6c4db8fe8f970a46557, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  thingySpawner: {fileID: 0}
+  npcSpawner: {fileID: 0}
   patrolArea: {fileID: 0}
   patrolSpeed: 2.5
   obstacleAvoidanceDistance: 5

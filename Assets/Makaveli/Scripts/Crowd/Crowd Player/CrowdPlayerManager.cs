@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class CrowdPlayerManager : MonoBehaviour 
 {
-    private CrowdPlayerMovement playerController;
+    public CrowdPlayerController playerController;
 
     [SerializeField] private CharacterController controller;
-    [SerializeField] private Transform playerBody;
+    [SerializeField] private Transform playerTransform;
     [SerializeField] private Transform cameraTransform;
     [SerializeField] private float movementSpeed = 5f;
     [SerializeField] private float aplliedMovementSpeedPercentage = .5f;
@@ -19,68 +19,88 @@ public class CrowdPlayerManager : MonoBehaviour
 
     // UI Stuff
     [Header("UI Stuff")]
-    [SerializeField] private List<UILocationCard> UI_Locations;
-    public bool inUIMode = false;
+    [SerializeField] private GameObject cardsUI;
+    [SerializeField] private List<GameObject> cardPanels = new();
+    private bool inUIMode = false;
+    private bool ableToLook = true;
+
+    [Header("NPC Stuff")]
+    [SerializeField] private GameObject npcPrefab;
+    [SerializeField] private int npcCount;
 
     private void Awake()
     {
         controller = transform.GetChild(0).gameObject.GetComponent<CharacterController>();
-        playerBody = transform.GetChild(0).gameObject.GetComponent<Transform>();
+        playerTransform = transform.GetChild(0).gameObject.GetComponent<Transform>();
        
         playerController = new 
         (
-            controller,                         // CharacterController Component
-            playerBody,                         // Transform Player Model
-            cameraTransform,
-            movementSpeed,                      // Movement Speed
-            aplliedMovementSpeedPercentage,     // Applied Movement Speed
-            jumpForce,                          // Jump Force
-            sensivity,                          // Look Sensivity
-            invert,                             // Invert Look
-            angleLimit                         // Look Angle Limits
+            this,
+            controller,                         // Character controller component
+            playerTransform,                    // Player transform
+            cameraTransform,                    // Camera transform object
+            angleLimit,                         // Look angle limits
+            movementSpeed,                      // Movement speed
+            aplliedMovementSpeedPercentage,     // Applied movement speed
+            jumpForce,                          // Jump force
+            sensivity,                          // Look sensivity
+            invert,                             // Invert look
+            npcPrefab,                          // NPC prefab
+            npcCount,                           // NPC count
+            cardsUI,
+            cardPanels
         );
+    }
+
+    private void Start()
+    {
+        for (int i = 0; i < cardsUI.transform.childCount; i++)
+        {
+            GameObject cardPanel = cardsUI.transform.GetChild(0).transform.GetChild(i).gameObject;
+            cardPanels.Add(cardPanel);
+        }
+    }
+
+    private void OnEnable()
+    {
+        InputActionHandler.EnableInputActions();
+    }
+
+    private void OnDisable()
+    {
+        InputActionHandler.DisableInputActions();
     }
 
     private void Update()
     {
-        playerController.OverallMovement();
-
         if (Input.GetKeyDown(KeyCode.M)) 
         {
             inUIMode = !inUIMode; 
 
             if (inUIMode)
             {
-                DisplayLocationCards();
+                InputActionHandler.DisableInputActions();
+                playerController.DisplayCards();
+                ableToLook = false;
             }
             else
             {
-                HideLocationCards();
+                InputActionHandler.EnableInputActions();
+                playerController.HideCards();
+                ableToLook = true;
             }
         }
 
         Cursor.lockState = inUIMode ? CursorLockMode.None : CursorLockMode.Locked;
+        
+        playerController.MovementInput(ref ableToLook);
+
+        if(Input.GetKeyDown(KeyCode.G)) playerController.OpenCardsUI(this);
+        playerController.UIPanelNavigation();
     }
 
-   private void DisplayLocationCards() 
+    private void OnDestroy()
     {
-        for (int i = 0; i < UI_Locations.Count && i < Manager.instance.objectsToTrack.Count; i++)
-        {
-            UI_Locations[i].gameObject.SetActive(true);
-            UI_Locations[i].objectPosition = Manager.instance.objectsToTrack[i].transform.position;
-
-            // Transform
-            UI_Locations[i].objectTransform = Manager.instance.objectsToTrack[i].transform;
-            Transform newTransform = UI_Locations[i].objectTransform;
-            UI_Locations[i].objectPosition = newTransform.position;
-        }
-    }
-
-    private void HideLocationCards()
-    {
-        for (int i = 0; i < UI_Locations.Count && i < Manager.instance.objectsToTrack.Count; i++)
-        {
-            UI_Locations[i].gameObject.SetActive(false);
-        }
+        InputActionHandler.DisableInputActions();
     }
 }

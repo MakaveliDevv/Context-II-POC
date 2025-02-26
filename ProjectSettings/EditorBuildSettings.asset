@@ -12,5 +12,5 @@ EditorBuildSettings:
     path: Assets/Pepijn/Scenes/ServerTesting.unity
     guid: 70cc4093c5dabe048be4cb8a5b10f1a4
   m_configObjects:
-    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 52ced6d3a29228f4592df89900f1fbc0, type: 3}
   m_UseUCBPForAssetBundles: 0

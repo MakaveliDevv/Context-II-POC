@@ -22,12 +22,12 @@ public class CrowdPlayerMovement
         CharacterController controller,
         Transform playerBody,
         Transform cameraTransform,
+        Vector2 angleLimit,
         float movementSpeed,
         float aplliedMovementSpeedPercentage,
         float jumpForce,
         float sensivity,
-        bool invert,
-        Vector2 angleLimit
+        bool invert
     ) 
     {
         this.controller = controller;
@@ -43,55 +43,40 @@ public class CrowdPlayerMovement
         currentMovementSpeed = movementSpeed;
     }
 
-
-    public void OverallMovement() 
+    public void OverallMovement(Vector2 movementInput, bool isSprinting, bool isJumping, bool ableToLook) 
     {
-        CameraLookAround();
-
-        // Get input
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
+        CameraLookAround(ref ableToLook);
 
         // Calculate movement direction based on camera forward direction
-        Vector3 moveDirection = (cameraTransform.forward * verticalInput) + (cameraTransform.right * horizontalInput);
+        Vector3 moveDirection = (cameraTransform.forward * movementInput.y) + (cameraTransform.right * movementInput.x);
         moveDirection.y = 0;
         moveDirection.Normalize();
 
         // Apply Movement
         controller.Move(currentMovementSpeed * Time.deltaTime * moveDirection); 
-
-        ApplyGravity();
-
-        // If player is moving (this for independent movement)
+        ApplyGravity(isJumping);
+        
         if(moveDirection != Vector3.zero) 
         {
-            if(Input.GetKeyDown(KeyCode.LeftShift)) ApplyAdditionalMovementSpeed();
-            
-            if(Input.GetKeyUp(KeyCode.LeftShift)) currentMovementSpeed = movementSpeed;
+            if(isSprinting) ApplyAdditionalMovementSpeed();
+            else currentMovementSpeed = movementSpeed;
         } 
     }
 
-    private void ApplyGravity() 
+    private void ApplyGravity(bool isJumping) 
     {
         // If controller not grounded
-        if(!controller.isGrounded) 
-        {
-            velocity.y -= gravity * Time.deltaTime;
-        }
-        else
-        {
-            if(Input.GetKeyDown(KeyCode.Space)) 
-            {
-                velocity.y = jumpForce;
-            }
-        }
+        if(!controller.isGrounded) velocity.y -= gravity * Time.deltaTime;
+        else if(isJumping) velocity.y = jumpForce;
         	
         // Move controller
         controller.Move(velocity * Time.deltaTime);
     }
 
-    private void CameraLookAround() 
+    private void CameraLookAround(ref bool ableToLook) 
     {
+        if(!ableToLook) return;
+
         if(Cursor.lockState == CursorLockMode.None) Cursor.lockState = CursorLockMode.Locked;
         
         // Mouse Inputs

@@ -24,12 +24,12 @@ public class NPCPatrol : MonoBehaviour, ITriggerMovement
         SetNewTarget();
         allNPCs.Add(this);
 
-        Manager.instance?.RegisterTriggerMovement(this);
+        MGameManager.instance?.RegisterTriggerMovement(this);
     }
 
     private void OnDestroy()
     {
-        Manager.instance?.UnregisterTriggerMovement(this);
+        MGameManager.instance?.UnregisterTriggerMovement(this);
     }
 
     private void Update()
@@ -60,6 +60,7 @@ public class NPCPatrol : MonoBehaviour, ITriggerMovement
         {
             SetNewTarget();
         }
+        
         transform.position = Vector3.MoveTowards(transform.position, targetPosition, patrolSpeed * Time.deltaTime);
         if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
         {
@@ -95,9 +96,9 @@ public class NPCPatrol : MonoBehaviour, ITriggerMovement
         }
     }
 
-    void ITriggerMovement.TriggerMovement(Transform transform)
+    void ITriggerMovement.TriggerMovement(Transform location)
     {
-        TriggerMovement(transform);
+        TriggerMovement(location);
     }
 
     private Vector3 GetAvailablePosition(Bounds bounds)

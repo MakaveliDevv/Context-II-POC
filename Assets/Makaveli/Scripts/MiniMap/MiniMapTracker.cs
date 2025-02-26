@@ -1,74 +1,10 @@
-// using System.Collections;
-// using UnityEngine;
-
-// public class MiniMapTracker : MonoBehaviour
-// {
-//     public Transform objectToTrack;
-//     public Transform miniMapCamera; 
-//     public RectTransform miniMapPanel; 
-//     private RectTransform markerTransform;
-//     private Camera miniMapCam;
-//     // private ObjectToTrack objectToTrackComponent; 
-
-//     void Start()
-//     {
-//         markerTransform = transform.GetChild(0).gameObject.GetComponent<RectTransform>();
-//         miniMapCam = miniMapCamera.GetComponent<Camera>(); 
-//     }
-
-//     void Update()
-//     {
-//         if (objectToTrack == null || miniMapCam == null) return;
-
-//         float worldMapHalfSize = miniMapCam.orthographicSize;
-//         float worldMapSize = worldMapHalfSize * 2;
-
-//         Vector3 relativePos = objectToTrack.position - miniMapCamera.position;
-
-//         float x = relativePos.x / worldMapSize * miniMapPanel.sizeDelta.x;
-//         float y = relativePos.z / worldMapSize * miniMapPanel.sizeDelta.y;
-
-//         float clampedX = Mathf.Clamp(x, -miniMapPanel.sizeDelta.x / 2, miniMapPanel.sizeDelta.x / 2);
-//         float clampedY = Mathf.Clamp(y, -miniMapPanel.sizeDelta.y / 2, miniMapPanel.sizeDelta.y / 2);
-
-//         Vector3 objectScreenPos = miniMapCam.WorldToViewportPoint(objectToTrack.position);
-//         bool isObjectVisible = objectScreenPos.x >= 0 && objectScreenPos.x <= 1 && objectScreenPos.y >= 0 && objectScreenPos.y <= 1;
-
-//         if(objectToTrack != null) 
-//         {
-//             if (isObjectVisible)
-//             {
-//                 if (!markerTransform.gameObject.activeSelf)
-//                 {
-//                     markerTransform.gameObject.SetActive(true); 
-//                 }
-
-//                 markerTransform.anchoredPosition = new Vector2(clampedX, clampedY); 
-//             }
-//             else
-//             {
-//                 if (markerTransform.gameObject.activeSelf)
-//                 {
-//                     markerTransform.gameObject.SetActive(false); 
-//                 }
-//             }
-//         }
-//     }
-
-//     public void SetTrackedObject(Transform newObject)
-//     {
-//         objectToTrack = newObject;
-//     }
-// }
-
-
 using System.Collections.Generic;
 using UnityEngine;
 
 public class MiniMapTracker : MonoBehaviour
 {
     public Transform miniMapCamera; 
-    public RectTransform miniMapPanel; 
+    public RectTransform miniMapUI; 
     public GameObject markerPrefab;  
 
     private Camera miniMapCam;
@@ -99,11 +35,11 @@ public class MiniMapTracker : MonoBehaviour
 
             Vector3 relativePos = objectToTrack.position - miniMapCamera.position;
 
-            float x = relativePos.x / worldMapSize * miniMapPanel.sizeDelta.x;
-            float y = relativePos.z / worldMapSize * miniMapPanel.sizeDelta.y;
+            float x = relativePos.x / worldMapSize * miniMapUI.sizeDelta.x;
+            float y = relativePos.z / worldMapSize * miniMapUI.sizeDelta.y;
 
-            float clampedX = Mathf.Clamp(x, -miniMapPanel.sizeDelta.x / 2, miniMapPanel.sizeDelta.x / 2);
-            float clampedY = Mathf.Clamp(y, -miniMapPanel.sizeDelta.y / 2, miniMapPanel.sizeDelta.y / 2);
+            float clampedX = Mathf.Clamp(x, -miniMapUI.sizeDelta.x / 2, miniMapUI.sizeDelta.x / 2);
+            float clampedY = Mathf.Clamp(y, -miniMapUI.sizeDelta.y / 2, miniMapUI.sizeDelta.y / 2);
 
             Vector3 objectScreenPos = miniMapCam.WorldToViewportPoint(objectToTrack.position);
             bool isObjectVisible = objectScreenPos.x >= 0 && objectScreenPos.x <= 1 && objectScreenPos.y >= 0 && objectScreenPos.y <= 1;
@@ -131,8 +67,8 @@ public class MiniMapTracker : MonoBehaviour
     {
         if (!trackedObjects.ContainsKey(newObject))
         {
-            GameObject newMarker = Instantiate(markerPrefab, miniMapPanel);
-            Manager.instance.markers.Add(newMarker);
+            GameObject newMarker = Instantiate(markerPrefab, miniMapUI);
+            MGameManager.instance.markers.Add(newMarker);
             RectTransform markerTransform = newMarker.GetComponent<RectTransform>();
             trackedObjects.Add(newObject, markerTransform);
         }

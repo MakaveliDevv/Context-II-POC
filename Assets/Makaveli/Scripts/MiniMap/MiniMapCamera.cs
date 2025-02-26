@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class MiniMapCameraFollow : MonoBehaviour
+public class MiniMapCamera : MonoBehaviour
 {
     public Transform player; 
     public float height = 20f; 

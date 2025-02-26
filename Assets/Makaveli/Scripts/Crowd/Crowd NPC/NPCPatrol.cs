@@ -3,14 +3,13 @@ using System.Collections.Generic;
 
 public class NPCPatrol : MonoBehaviour, ITriggerMovement
 {
-    public NPCSpawner npcSpawner;
-    public Transform patrolArea;
+    public GameObject patrolArea;
     public float patrolSpeed = 3f;
     public float obstacleAvoidanceDistance = 2.5f;
     public float raycastLength = 2f;
     public float spacing = 1f;
     private Vector3 targetPosition;
-    public LayerMask obstacleLayerMask;
+    public LayerMask layerMask;
 
     private bool isMovingToRandomLocation = false;
     private bool isPatrolling = true;
@@ -18,18 +17,17 @@ public class NPCPatrol : MonoBehaviour, ITriggerMovement
 
     private void Start()
     {
-        npcSpawner = FindAnyObjectByType<NPCSpawner>();
-        obstacleLayerMask = LayerMask.GetMask("Obstacle");
-        patrolArea = npcSpawner.patrolArea;
-        SetNewTarget();
+        // obstacleLayerMask = LayerMask.GetMask("Obstacle");
         allNPCs.Add(this);
 
-        MGameManager.instance?.RegisterTriggerMovement(this);
+        patrolArea = MGameManager.instance.patrolArea;
+        MGameManager.instance.RegisterTriggerMovement(this);
+        SetNewTarget();
     }
 
     private void OnDestroy()
     {
-        MGameManager.instance?.UnregisterTriggerMovement(this);
+        MGameManager.instance.UnregisterTriggerMovement(this);
     }
 
     private void Update()
@@ -73,7 +71,7 @@ public class NPCPatrol : MonoBehaviour, ITriggerMovement
         Vector3 direction = (targetPosition - transform.position).normalized;
         RaycastHit hit;
 
-        if (Physics.Raycast(transform.position, direction, out hit, raycastLength, obstacleLayerMask))
+        if (Physics.Raycast(transform.position, direction, out hit, raycastLength, layerMask))
         {
             if (hit.distance < obstacleAvoidanceDistance)
             {
@@ -85,7 +83,7 @@ public class NPCPatrol : MonoBehaviour, ITriggerMovement
 
     private void TriggerMovement(Transform location)
     {
-        if (npcSpawner.locations.Count == 0) return;
+        // if (npcSpawner.locations.Count == 0) return;
 
         // Transform chosenLocation = npcSpawner.locations[Random.Range(0, npcSpawner.locations.Count)];
         if (location.TryGetComponent<Collider>(out var locationCollider))
@@ -162,6 +160,6 @@ public class NPCPatrol : MonoBehaviour, ITriggerMovement
         Vector3 areaSize = patrolArea.GetComponent<Collider>()?.bounds.size ?? Vector3.one;
         float randomX = Random.Range(-areaSize.x / 2, areaSize.x / 2);
         float randomZ = Random.Range(-areaSize.z / 2, areaSize.z / 2);
-        targetPosition = patrolArea.position + new Vector3(randomX, 0.5f, randomZ);
+        targetPosition = patrolArea.transform.position + new Vector3(randomX, 0.5f, randomZ);
     }
 }

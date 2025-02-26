@@ -63,14 +63,14 @@ public class MiniMapTracker : MonoBehaviour
         }
     }
 
-    public void AddTrackedObject(Transform newObject)
+    public void AddTrackedObject(Transform tracker)
     {
-        if (!trackedObjects.ContainsKey(newObject))
+        if (!trackedObjects.ContainsKey(tracker))
         {
             GameObject newMarker = Instantiate(markerPrefab, miniMapUI);
             MGameManager.instance.markers.Add(newMarker);
             RectTransform markerTransform = newMarker.GetComponent<RectTransform>();
-            trackedObjects.Add(newObject, markerTransform);
+            trackedObjects.Add(tracker, markerTransform);
         }
     }
 

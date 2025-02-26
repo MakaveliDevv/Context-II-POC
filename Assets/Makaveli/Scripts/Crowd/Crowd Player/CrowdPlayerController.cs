@@ -27,7 +27,8 @@ public class CrowdPlayerController
         GameObject npc,
         int npcCount,
         GameObject cardsUI,
-        List<GameObject> cardPanels
+        List<GameObject> cardPanels,
+        List<UILocationCard> cards
     ) 
     {
         movement = new
@@ -43,7 +44,7 @@ public class CrowdPlayerController
             invert
         );
 
-        UImanagement = new(cardsUI, cardPanels);
+        UImanagement = new(cardsUI, cardPanels, cards);
         
         npcContainer = player.parent.transform.GetChild(2);
         monoBehaviour.StartCoroutine(SpawnNPC(npc, npcCount));
@@ -68,19 +69,14 @@ public class CrowdPlayerController
         yield break;
     }
 
-    public void DisplayCards() 
-    {
-        UImanagement.DisplayCards();
-    }
-
     public void HideCards() 
     {
-        UImanagement.HideLocationCards();
+        UImanagement.HideCards();
     }
 
-    public void OpenCardsUI(MonoBehaviour monoBehaviour) 
+    public void OpenCardUI(MonoBehaviour monoBehaviour) 
     {
-        UImanagement.OpenUI(monoBehaviour);
+        monoBehaviour.StartCoroutine(UImanagement.DisplayCards(monoBehaviour));
     }
     
     public void UIPanelNavigation() 

@@ -1,138 +1,311 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class CrowdPlayerUIManager 
 {
     private readonly GameObject cardsUI;
-    private readonly List<UILocationCard> cards = new();
-    private readonly List<GameObject> cardPanels = new();
+    Dictionary<GameObject, List<UILocationCard>> panelCardMap = new();
+    private readonly List<UILocationCard> cards;
+    private readonly List<GameObject> cardPanels;
     private int currentIndex = 0;
+    private int totalTrackedObjects = 0;
+    private int totalActivePanels = 0;
     
     public CrowdPlayerUIManager
     (
         GameObject cardsUI,
-        List<GameObject> cardPanels
+        List<GameObject> cardPanels,
+        List<UILocationCard> cards
     ) 
     {
         this.cardsUI = cardsUI;
         this.cardPanels = cardPanels;
+        this.cards = cards;
+
+        InitializeCardElements();
     }
 
-    public void DisplayCards() 
+    private void InitializeCardElements()
     {
-        if(MGameManager.instance.cards.Count < 0) return;
-
-        foreach (var card in MGameManager.instance.cards)
+        cardPanels.Clear();
+        cards?.Clear();
+        
+        if (panelCardMap == null)
+            panelCardMap = new Dictionary<GameObject, List<UILocationCard>>();
+        else
+            panelCardMap.Clear();
+        
+        // Get the CardsPanel container (which is the first child of cardsUI)
+        Transform cardsPanel = cardsUI.transform.GetChild(0);
+        int panelCount = cardsPanel.childCount;
+        Debug.Log($"Panel count: {panelCount}");
+        
+        // Loop through children of CardsPanel
+        for (int i = 0; i < panelCount; i++)
         {
-            if(!cards.Contains(card)) cards.Add(card);
+            Transform childTransform = cardsPanel.GetChild(i);
+            
+            // Skip PanelNavigation or any non-Panel objects
+            if (childTransform.name == "PanelNavigation" || !childTransform.name.Contains("Panel"))
+            {
+                Debug.Log($"Skipping {childTransform.name} - not a card panel");
+                continue;
+            }
+            
+            GameObject panel = childTransform.gameObject;
+            cardPanels.Add(panel);
+            Debug.Log($"Added panel: {panel.name}");
+            
+            // Create a new list for this panel's cards
+            List<UILocationCard> panelCards = new();
+            
+            int cardCount = panel.transform.childCount;
+            Debug.Log($"Card count in {panel.name}: {cardCount}");
+            
+            // Loop through all cards in this panel
+            for (int j = 0; j < cardCount; j++)
+            {
+                GameObject cardObject = panel.transform.GetChild(j).gameObject;
+                
+                if (cardObject.TryGetComponent<UILocationCard>(out var _card))
+                {
+                    // Add to the panel-specific list
+                    panelCards.Add(_card);
+                    cards?.Add(_card);
+                    
+                    Debug.Log($"Added card: {cardObject.name} from panel: {panel.name}");
+                }
+                else
+                {
+                    Debug.LogWarning($"Object {cardObject.name} in {panel.name} does not have UILocationCard component");
+                }
+            }
+            
+            // Add the panel and its cards to the dictionary
+            panelCardMap.Add(panel, panelCards);
         }
         
-        if(cards.Count <= 0) return;
+        Debug.Log($"Initialization complete. Found {cardPanels.Count} panels and {panelCardMap.Sum(pair => pair.Value.Count)} cards total.");
         
-        for (int i = 0; i < cards.Count && i < MGameManager.instance.objectsToTrack.Count; i++)
+        // Extra debugging to verify the dictionary contents
+        foreach (var pair in panelCardMap)
         {
-            var card = cards[i];
-            var @object = MGameManager.instance.objectsToTrack[i];
-
-            card.gameObject.SetActive(true);
-            card.objectPosition = @object.transform.position;
-
-            // Assign the rendertexture from the object to track to the render texture of the card
-            ObjectToTrack objectToTrack = @object.GetComponent<ObjectToTrack>();
-            card.renderTexture = objectToTrack.renderTexture; 
-
-            // Assign the renderTexture from the card to the image slot
-            RawImage image = card.gameObject.GetComponent<RawImage>();
-            image.texture = card.renderTexture;
-
-            // Transform
-            // card.location = @object.transform;
-            // Transform newTransform = card.location;
-            // card.objectPosition = newTransform.position;
+            Debug.Log($"Panel {pair.Key.name} has {pair.Value.Count} cards");
         }
     }
 
-    public void HideLocationCards()
+    public IEnumerator DisplayCards(MonoBehaviour monoBehaviour)
     {
-        for (int i = 0; i < cards.Count && i < MGameManager.instance.objectsToTrack.Count; i++)
+        // Ensure UI is initialized
+        if (cardPanels == null || cardPanels.Count == 0 || panelCardMap == null || panelCardMap.Count == 0)
         {
-            cards[i].gameObject.SetActive(false);
+            InitializeCardElements();
+            yield return null; // Wait a frame after initialization
         }
-    }
 
-    public void OpenUI(MonoBehaviour monoBehaviour) 
-    {
+        // Activate the main UI
         cardsUI.SetActive(true);
-        // cardsPanel.SetActive(true);
+        
+        // Check if we have any panels
+        if (cardPanels.Count <= 0)
+        { 
+            Debug.LogError("No card panels were found during initialization"); 
+            yield break; 
+        }
+        
+        // Get total objects to track
+        if (MGameManager.instance.objectsToTrack == null || MGameManager.instance.objectsToTrack.Count == 0)
+        {
+            Debug.LogError("No objects to track in GameManager");
+            yield break;
+        }
+        
+        totalTrackedObjects = MGameManager.instance.objectsToTrack.Count;
+        Debug.Log($"Total objects to track: {totalTrackedObjects}");
+        
+        // Calculate how many panels we need to activate based on tracked objects
+        CalculateActivePanels();
+        
+        // Deactivate all panels first
+        foreach (var panel in cardPanels)
+        {
+            panel.SetActive(false);
+        }
+        
+        // Activate only the first panel initially
+        currentIndex = 0;
+        ActivateCurrentPanel(cardPanels, currentIndex);
+        
+        // Initialize all cards for all panels that will be used
+        InitializeAllPanelsData(monoBehaviour);
+        
+        // Set up navigation buttons
+        ButtonHandler();
+        
+        yield break;
+    }
 
-        int cardCount = cardsUI.transform.GetChild(0).transform.GetChild(0).transform.childCount;
-        // int cardCount = cardsPanel.transform.childCount;
-        if (cardCount == 0) return;
+    private void CalculateActivePanels()
+    {
+        int totalCards = 0;
+        totalActivePanels = 0;
+        
+        // Count how many panels we need to show all tracked objects
+        for (int i = 0; i < cardPanels.Count; i++)
+        {
+            int cardsInPanel = panelCardMap[cardPanels[i]].Count;
+            totalCards += cardsInPanel;
+            
+            if (totalCards >= totalTrackedObjects)
+            {
+                totalActivePanels = i + 1;
+                break;
+            }
+        }
+        
+        // If we can't fit all objects, use all panels
+        if (totalCards < totalTrackedObjects)
+        {
+            totalActivePanels = cardPanels.Count;
+        }
+        
+        Debug.Log($"Will activate {totalActivePanels} panels for {totalTrackedObjects} objects");
+    }
 
-        RectTransform cardsPanelContainer = cardsUI.transform.GetChild(0).transform.gameObject.GetComponent<RectTransform>();
-        // float panelWidth = cardsPanelContainer.rect.width; 
-
-        // RectTransform firstCardTransform = cardsPanelContainer.transform.GetChild(0).transform.GetChild(0).gameObject.GetComponent<RectTransform>();
-        // float cardWidth = firstCardTransform.rect.width; 
-
-        // float spacing = (panelWidth - cardWidth) / (cardCount - 1); 
-
-        for (int i = 0; i < cardCount; i++)
-        {     
-            GameObject card = cardsPanelContainer.transform.GetChild(0).transform.GetChild(i).gameObject;
-            card.SetActive(true);
-
-            RectTransform cardTransform = card.GetComponent<RectTransform>();
-            cardTransform.anchoredPosition = new Vector3(-Screen.width, cardTransform.anchoredPosition.y, 0); 
-
-            RectTransform card_1 = cardsPanelContainer.transform.GetChild(0).transform.GetChild(0).gameObject.GetComponent<RectTransform>();
-            RectTransform card_2 = cardsPanelContainer.transform.GetChild(0).transform.GetChild(1).gameObject.GetComponent<RectTransform>();
-            RectTransform card_3 = cardsPanelContainer.transform.GetChild(0).transform.GetChild(2).gameObject.GetComponent<RectTransform>();
-
-            Vector3 targetPosition_1 = new(1225f, card_1.anchoredPosition.y, 0);
-            Vector3 targetPosition_2 = new(15f, card_2.anchoredPosition.y, 0);
-            Vector3 targetPosition_3 = new(-1225f, card_3.anchoredPosition.y, 0);
-
-            monoBehaviour.StartCoroutine(MoveCardToPosition(card_1, targetPosition_1, .75f + (i * .1f)));
-            monoBehaviour.StartCoroutine(MoveCardToPosition(card_2, targetPosition_2, 1f + (i * .1f)));
-            monoBehaviour.StartCoroutine(MoveCardToPosition(card_3, targetPosition_3, 1.25f + (i * .1f)));
-
-            // float targetX = panelWidth - cardWidth - (i * spacing); 
-            // Vector3 targetPosition = new(targetX, cardTransform.anchoredPosition.y, 0);
-
-            // StartCoroutine(MoveCardToPosition(cardTransform, targetPosition, 1f + (i * 0.1f))); 
+    private void InitializeAllPanelsData(MonoBehaviour monoBehaviour)
+    {
+        int objectIndex = 0;
+        
+        // Loop through all panels that should be active
+        for (int panelIndex = 0; panelIndex < totalActivePanels; panelIndex++)
+        {
+            GameObject panel = cardPanels[panelIndex];
+            List<UILocationCard> panelCards = panelCardMap[panel];
+            
+            // Loop through each card in the panel
+            for (int cardIndex = 0; cardIndex < panelCards.Count; cardIndex++)
+            {
+                // If we've run out of objects to track, disable remaining cards
+                if (objectIndex >= totalTrackedObjects)
+                {
+                    panelCards[cardIndex].gameObject.SetActive(false);
+                    continue;
+                }
+                
+                UILocationCard card = panelCards[cardIndex];
+                GameObject objectToTrack = MGameManager.instance.objectsToTrack[objectIndex];
+                
+                // Set up the card with the object data
+                SetupCard(card, objectToTrack);
+                
+                // Prepare for animation if this is the first panel
+                if (panelIndex == 0)
+                {
+                    RectTransform cardTransform = card.gameObject.GetComponent<RectTransform>();
+                    cardTransform.anchoredPosition = new Vector3(-Screen.width, cardTransform.anchoredPosition.y, 0);
+                    
+                    // Add animation only for up to first 3 cards
+                    if (cardIndex < 3)
+                    {
+                        Vector3 targetPosition;
+                        float animationDuration;
+                        
+                        switch(cardIndex)
+                        {
+                            case 0:
+                                targetPosition = new Vector3(1225f, cardTransform.anchoredPosition.y, 0);
+                                animationDuration = 0.75f;
+                                break;
+                            case 1:
+                                targetPosition = new Vector3(15f, cardTransform.anchoredPosition.y, 0);
+                                animationDuration = 1f;
+                                break;
+                            case 2:
+                                targetPosition = new Vector3(-1225f, cardTransform.anchoredPosition.y, 0);
+                                animationDuration = 1.25f;
+                                break;
+                            default:
+                                targetPosition = new Vector3(0f, cardTransform.anchoredPosition.y, 0);
+                                animationDuration = 1f;
+                                break;
+                        }
+                        
+                        card.gameObject.SetActive(true);
+                        monoBehaviour.StartCoroutine(MoveCardToPosition(cardTransform, targetPosition, animationDuration));
+                    }
+                    else
+                    {
+                        card.gameObject.SetActive(false);
+                    }
+                }
+                else
+                {
+                    // For other panels, just set them up but keep them inactive until panel is shown
+                    card.gameObject.SetActive(false);
+                }
+                
+                objectIndex++;
+            }
+        }
+        
+        // Disable any cards in panels that won't be used
+        for (int panelIndex = totalActivePanels; panelIndex < cardPanels.Count; panelIndex++)
+        {
+            GameObject panel = cardPanels[panelIndex];
+            List<UILocationCard> panelCards = panelCardMap[panel];
+            
+            foreach (var card in panelCards)
+            {
+                card.gameObject.SetActive(false);
+            }
         }
     }
 
-    public void ButtonHandler() 
+    private void SetupCard(UILocationCard card, GameObject objectToTrack)
     {
-        // Fetch the buttons
-        Button btnUp = cardsUI.transform.GetChild(1).transform.GetChild(0).gameObject.GetComponent<Button>();
-        Button btnDown = cardsUI.transform.GetChild(1).transform.GetChild(1).gameObject.GetComponent<Button>();
-
-        btnUp.onClick.AddListener(MoveUp); 
-        btnDown.onClick.AddListener(MoveDown);
+        // Initialize the card data
+        card.objectPosition = objectToTrack.transform.position;
+        card.location = objectToTrack.transform;
+        
+        // Get the render texture from the object to track
+        ObjectToTrack trackComponent = objectToTrack.GetComponent<ObjectToTrack>();
+        if (trackComponent != null && trackComponent.renderTexture != null)
+        {
+            card.renderTexture = trackComponent.renderTexture;
+            RawImage image = card.gameObject.GetComponent<RawImage>();
+            if (image != null)
+            {
+                image.texture = card.renderTexture;
+                Debug.Log($"Set render texture for card {card.gameObject.name}");
+            }
+            else
+            {
+                Debug.LogError($"RawImage component not found on card {card.gameObject.name}");
+            }
+        }
+        else
+        {
+            Debug.LogError($"ObjectToTrack component or renderTexture not found on object {objectToTrack.name}");
+        }
     }
 
-    private void MoveUp() 
+    public void HideCards()
     {
-        cardPanels[currentIndex].SetActive(false);
-        currentIndex = (currentIndex - 1 + cardPanels.Count) % cardPanels.Count;
-        ActivateCurrentPanel(cardPanels, currentIndex);
-    }
+        // Hide all cards in all panels
+        foreach (var panel in cardPanels)
+        {
+            List<UILocationCard> panelCards = panelCardMap[panel];
+            foreach (var card in panelCards)
+            {
+                card.gameObject.SetActive(false);
+            }
+            panel.SetActive(false);
+        }
 
-    private void MoveDown() 
-    {
-        cardPanels[currentIndex].SetActive(false);
-        currentIndex = (currentIndex + 1) % cardPanels.Count;
-        ActivateCurrentPanel(cardPanels, currentIndex);
-    }
-
-    private void ActivateCurrentPanel(List<GameObject> cardPanels, int index) 
-    {
-        cardPanels[index].SetActive(true);
+        cardsUI.SetActive(false); // Deactivate the main UI
     }
 
     private IEnumerator MoveCardToPosition(RectTransform card, Vector3 targetPosition, float duration) 
@@ -148,5 +321,91 @@ public class CrowdPlayerUIManager
         }
 
         card.anchoredPosition = targetPosition;
+    }
+
+    // Card panel navigation
+    public void ButtonHandler() 
+    {
+        // Fetch the buttons
+        Button btnUp = cardsUI.transform.GetChild(1).transform.GetChild(0).gameObject.GetComponent<Button>();
+        Button btnDown = cardsUI.transform.GetChild(1).transform.GetChild(1).gameObject.GetComponent<Button>();
+
+        btnUp.onClick.RemoveAllListeners();
+        btnDown.onClick.RemoveAllListeners();
+
+        btnUp.onClick.AddListener(MoveUp); 
+        btnDown.onClick.AddListener(MoveDown);
+        
+        // Update button states based on current panel
+        UpdateButtonStates();
+    }
+
+    private void MoveUp() 
+    {
+        if (currentIndex > 0)
+        {
+            cardPanels[currentIndex].SetActive(false);
+            currentIndex--;
+            ActivateCurrentPanel(cardPanels, currentIndex);
+            UpdateButtonStates();
+        }
+    }
+
+    private void MoveDown() 
+    {
+        if (currentIndex < totalActivePanels - 1)
+        {
+            cardPanels[currentIndex].SetActive(false);
+            currentIndex++;
+            ActivateCurrentPanel(cardPanels, currentIndex);
+            UpdateButtonStates();
+        }
+    }
+    
+    private void UpdateButtonStates()
+    {
+        // Get button references
+        Button btnUp = cardsUI.transform.GetChild(1).transform.GetChild(0).gameObject.GetComponent<Button>();
+        Button btnDown = cardsUI.transform.GetChild(1).transform.GetChild(1).gameObject.GetComponent<Button>();
+        
+        // Disable up button if we're on the first panel
+        btnUp.interactable = (currentIndex > 0);
+        
+        // Disable down button if we're on the last active panel
+        btnDown.interactable = (currentIndex < totalActivePanels - 1);
+    }
+    
+    private void ActivateCurrentPanel(List<GameObject> cardPanels, int index) 
+    {
+        GameObject panel = cardPanels[index];
+        panel.SetActive(true);
+        
+        // Activate all cards in this panel that have data
+        List<UILocationCard> panelCards = panelCardMap[panel];
+        int startIndex = 0;
+        
+        // Calculate the starting index for objects to track based on previous panels
+        for (int i = 0; i < index; i++)
+        {
+            startIndex += panelCardMap[cardPanels[i]].Count;
+        }
+        
+        // Activate each card in this panel if there's an object to track for it
+        for (int i = 0; i < panelCards.Count; i++)
+        {
+            int objectIndex = startIndex + i;
+            
+            // Only activate if we have an object to track
+            if (objectIndex < totalTrackedObjects)
+            {
+                panelCards[i].gameObject.SetActive(true);
+            }
+            else
+            {
+                panelCards[i].gameObject.SetActive(false);
+            }
+        }
+        
+        Debug.Log($"Activated panel {index}: {panel.name}");
     }
 }

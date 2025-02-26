@@ -451,19 +451,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 85717549}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 140574112}
-        m_TargetAssemblyTypeName: MGameManager, Assembly-CSharp
-        m_MethodName: MoveUp
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &85717549
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -724,7 +712,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   markers: []
   objectsToTrack: []
-  cards: []
+  walkableArea: {fileID: 447404963}
+  trackableObject: {fileID: 4926605948599544905, guid: e072003f2c140d04aa217f93d74ca147, type: 3}
+  trackableObjectParent: {fileID: 376066349}
+  trackableObjectAmount: 6
+  patrolArea: {fileID: 2054237593}
 --- !u!1 &142239263
 GameObject:
   m_ObjectHideFlags: 0
@@ -1128,12 +1120,12 @@ GameObject:
   - component: {fileID: 254783645}
   - component: {fileID: 254783648}
   m_Layer: 5
-  m_Name: Image (2)
+  m_Name: Card
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &254783644
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1909,6 +1901,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &376066348
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 376066349}
+  m_Layer: 0
+  m_Name: TrackableObjects
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &376066349
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 376066348}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &387050981
 GameObject:
   m_ObjectHideFlags: 0
@@ -2067,7 +2090,7 @@ GameObject:
   - component: {fileID: 402873243}
   - component: {fileID: 402873242}
   m_Layer: 5
-  m_Name: Image (2)
+  m_Name: Card
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2148,7 +2171,7 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 0}
+  m_TargetGraphic: {fileID: 402873246}
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
@@ -2599,7 +2622,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 447404962}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 85fa713703fa3f94cb05640c4d22c388, type: 3}
   m_Name: 
@@ -2757,7 +2780,7 @@ GameObject:
   - component: {fileID: 484005147}
   - component: {fileID: 484005146}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: Player Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2840,7 +2863,7 @@ RectTransform:
   m_Children:
   - {fileID: 298946634}
   - {fileID: 1254920162}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1997439049}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -3187,7 +3210,7 @@ GameObject:
   - component: {fileID: 594296174}
   - component: {fileID: 594296173}
   m_Layer: 5
-  m_Name: Image (1)
+  m_Name: Card
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3268,7 +3291,7 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 0}
+  m_TargetGraphic: {fileID: 594296177}
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
@@ -4869,12 +4892,12 @@ GameObject:
   - component: {fileID: 1179017694}
   - component: {fileID: 1179017697}
   m_Layer: 5
-  m_Name: Image (1)
+  m_Name: Card
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1179017693
 RectTransform:
   m_ObjectHideFlags: 0
@@ -7642,19 +7665,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1517022646}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 140574112}
-        m_TargetAssemblyTypeName: MGameManager, Assembly-CSharp
-        m_MethodName: MoveDown
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1517022646
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8362,12 +8373,12 @@ GameObject:
   - component: {fileID: 1689155421}
   - component: {fileID: 1689155424}
   m_Layer: 5
-  m_Name: Image
+  m_Name: Card
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1689155420
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8496,7 +8507,7 @@ GameObject:
   - component: {fileID: 1707809167}
   - component: {fileID: 1707809166}
   m_Layer: 5
-  m_Name: Image
+  m_Name: Card
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8577,7 +8588,7 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 0}
+  m_TargetGraphic: {fileID: 1707809170}
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
@@ -9966,6 +9977,7 @@ Transform:
   - {fileID: 1892644050}
   - {fileID: 387050982}
   - {fileID: 585565859}
+  - {fileID: 484005149}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1997439050
@@ -9991,6 +10003,7 @@ MonoBehaviour:
   angleLimit: {x: -70, y: 70}
   cardsUI: {fileID: 1254920161}
   cardPanels: []
+  cards: []
   npcPrefab: {fileID: 2109699717161008390, guid: 566b78e3579e1194a9f4fb418f81b0c1, type: 3}
   npcCount: 20
 --- !u!114 &1997439051
@@ -10223,7 +10236,7 @@ GameObject:
   - component: {fileID: 2054237595}
   m_Layer: 0
   m_Name: PatrolArea
-  m_TagString: Untagged
+  m_TagString: PatrolArea
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -10682,6 +10695,6 @@ SceneRoots:
   - {fileID: 1384280298}
   - {fileID: 1524184293}
   - {fileID: 1997439049}
-  - {fileID: 484005149}
   - {fileID: 2026881330}
   - {fileID: 35985668}
+  - {fileID: 376066349}

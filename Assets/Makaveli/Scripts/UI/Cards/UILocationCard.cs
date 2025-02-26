@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,16 +9,11 @@ public class UILocationCard : MonoBehaviour
     public Button btn;    
     public RenderTexture renderTexture; 
 
-    void Update()
+    void Start()
     {
         if(btn == null) 
         {
             btn = gameObject.GetComponent<Button>();
-        }
-
-        if(!MGameManager.instance.cards.Contains(this)) 
-        {
-            MGameManager.instance.cards.Add(this);
         }
     }
 }

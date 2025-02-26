@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class CrowdPlayerManager : MonoBehaviour 
 {
@@ -21,6 +20,8 @@ public class CrowdPlayerManager : MonoBehaviour
     [Header("UI Stuff")]
     [SerializeField] private GameObject cardsUI;
     [SerializeField] private List<GameObject> cardPanels = new();
+    [SerializeField] private List<UILocationCard> cards = new();
+
     private bool inUIMode = false;
     private bool ableToLook = true;
 
@@ -48,17 +49,9 @@ public class CrowdPlayerManager : MonoBehaviour
             npcPrefab,                          // NPC prefab
             npcCount,                           // NPC count
             cardsUI,
-            cardPanels
+            cardPanels,
+            cards
         );
-    }
-
-    private void Start()
-    {
-        for (int i = 0; i < cardsUI.transform.childCount; i++)
-        {
-            GameObject cardPanel = cardsUI.transform.GetChild(0).transform.GetChild(i).gameObject;
-            cardPanels.Add(cardPanel);
-        }
     }
 
     private void OnEnable()
@@ -80,7 +73,7 @@ public class CrowdPlayerManager : MonoBehaviour
             if (inUIMode)
             {
                 InputActionHandler.DisableInputActions();
-                playerController.DisplayCards();
+                playerController.OpenCardUI(this);
                 ableToLook = false;
             }
             else
@@ -94,8 +87,6 @@ public class CrowdPlayerManager : MonoBehaviour
         Cursor.lockState = inUIMode ? CursorLockMode.None : CursorLockMode.Locked;
         
         playerController.MovementInput(ref ableToLook);
-
-        if(Input.GetKeyDown(KeyCode.G)) playerController.OpenCardsUI(this);
         playerController.UIPanelNavigation();
     }
 

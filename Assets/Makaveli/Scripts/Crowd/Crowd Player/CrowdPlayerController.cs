@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class CrowdPlayerController 
 {
+    private readonly MonoBehaviour monoBehaviour;
     private readonly CrowdPlayerMovement movement;
     private readonly CrowdPlayerUIManager UImanagement;
     private Vector2 movementInput;
 
-    // NPC stuff
-    private readonly List<GameObject> crowd = new();
+    private bool isProcessingClick;
     private readonly Transform npcContainer;
 
     public CrowdPlayerController
@@ -28,9 +28,12 @@ public class CrowdPlayerController
         int npcCount,
         GameObject cardsUI,
         List<GameObject> cardPanels,
-        List<UILocationCard> cards
+        List<UICard> cards,
+        List<GameObject> NPCs
     ) 
     {
+        this.monoBehaviour = monoBehaviour;
+
         movement = new
         (
             controller,
@@ -45,9 +48,8 @@ public class CrowdPlayerController
         );
 
         UImanagement = new(cardsUI, cardPanels, cards);
-        
         npcContainer = player.parent.transform.GetChild(2);
-        monoBehaviour.StartCoroutine(SpawnNPC(npc, npcCount));
+        monoBehaviour.StartCoroutine(NPCsManagement.SpawnNPC(NPCs, npc, npcCount, npcContainer));    
     }
 
     public void MovementInput(ref bool ableToLook) 
@@ -56,31 +58,61 @@ public class CrowdPlayerController
         movement.OverallMovement(movementInput, InputActionHandler.IsSprinting(), InputActionHandler.IsJumping(), ableToLook);
     }
 
-    private IEnumerator SpawnNPC(GameObject npc, int npcCount) 
-    {
-        for (int i = 0; i < npcCount; i++)
-        {
-            GameObject newNPC = MGameManager.instance.InstantiatePrefab(npc, npcContainer);
-            crowd.Add(newNPC);
-
-            yield return null;
-        }
-
-        yield break;
-    }
-
     public void HideCards() 
     {
         UImanagement.HideCards();
     }
 
-    public void OpenCardUI(MonoBehaviour monoBehaviour) 
+    public void OpenCardUI() 
     {
-        monoBehaviour.StartCoroutine(UImanagement.DisplayCards(monoBehaviour));
+        UImanagement.DisplayCards(monoBehaviour);
     }
     
-    public void UIPanelNavigation() 
+    public void CardPanelNavigation() 
     {
-        UImanagement.ButtonHandler();
+        UImanagement.CardPanelNavigation();
+    }
+
+    public void TriggerNPCMovement(List<UICard> cards, bool _bool)
+    {
+        // If in UI mode and not already processing a click
+        if (_bool)
+        {
+            if (cards.Count > 0)
+            {
+                for (int i = 0; i < cards.Count; i++)
+                {
+                    var card = cards[i];
+                    
+                    // Remove any existing listeners to prevent duplicates
+                    if(card.btn != null) 
+                    {
+                        card.btn.onClick.RemoveAllListeners();
+                        card.btn.onClick.AddListener(() =>
+                        {
+                            if (!isProcessingClick)
+                            {
+                                isProcessingClick = true;
+                                Debug.Log("Button clicked");
+                                NPCsManagement.TriggerAllMovements(card.location);
+                                monoBehaviour.StartCoroutine(ResetClickState(1.0f)); // 1 second delay
+                            }
+                        });
+                    }
+                }
+            }
+        }
+        
+        // Only reset if we're not in UI mode
+        if (!_bool)
+        {
+            isProcessingClick = false;
+        }
+    }
+
+    private IEnumerator ResetClickState(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        isProcessingClick = false;
     }
 }

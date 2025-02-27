@@ -5,16 +5,16 @@ public class CrowdPlayerMovement
     private readonly CharacterController controller;
     private readonly Transform cameraTransform;
     private readonly Transform playerBody;
-    private Vector2 angleLimit = new(-70f, 70f);
+    private Vector2 angleLimit;
     private Vector3 velocity;
     private Vector2 lookAngles;
 
-    private readonly float movementSpeed = 5f;
-    private readonly float aplliedMovementSpeedPercentage = .5f;
+    private readonly float movementSpeed;
+    private readonly float aplliedMovementSpeedPercentage;
     private float currentMovementSpeed;
-    private readonly float jumpForce = 3f;
+    private readonly float jumpForce;
     private readonly float gravity = 9.81f;
-    private readonly float sensivity = 5f;
+    private readonly float sensivity;
     private readonly bool invert;
 
     public CrowdPlayerMovement

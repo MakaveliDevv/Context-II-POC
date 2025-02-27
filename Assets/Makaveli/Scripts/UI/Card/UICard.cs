@@ -1,8 +1,7 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UILocationCard : MonoBehaviour
+public class UICard : MonoBehaviour
 {
     public Transform location;
     public Vector3 objectPosition;

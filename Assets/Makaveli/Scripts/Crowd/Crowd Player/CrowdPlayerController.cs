@@ -4,26 +4,31 @@ using UnityEngine;
 
 public class CrowdPlayerController 
 {
+    public Transform chosenLocation;
+    public bool location = false;
+
     private readonly MonoBehaviour monoBehaviour;
-    private readonly CrowdPlayerMovement movement;
+    // private readonly CrowdPlayerMovement movement;
+    private readonly TopDownMovement topDownMovement;
     private readonly CrowdPlayerUIManager UImanagement;
     private Vector2 movementInput;
 
     private bool isProcessingClick;
     private readonly Transform npcContainer;
 
+
     public CrowdPlayerController
     (
         MonoBehaviour monoBehaviour,
         CharacterController controller,
         Transform player,
-        Transform camera,
-        Vector2 angleLimit,
+        // Transform camera,
+        // Vector2 angleLimit,
         float movementSpeed,
         float appliedMovementSpeedPercentage,
-        float jumpForce,
-        float sensivity,
-        bool invert,
+        // float jumpForce,
+        // float sensivity,
+        // bool invert,
         GameObject npc,
         int npcCount,
         GameObject cardsUI,
@@ -34,17 +39,25 @@ public class CrowdPlayerController
     {
         this.monoBehaviour = monoBehaviour;
 
-        movement = new
+        // movement = new
+        // (
+        //     controller,
+        //     player,
+        //     camera,
+        //     angleLimit,
+        //     movementSpeed,
+        //     appliedMovementSpeedPercentage,
+        //     jumpForce,
+        //     sensivity,
+        //     invert
+        // );
+
+        topDownMovement = new
         (
             controller,
             player,
-            camera,
-            angleLimit,
             movementSpeed,
-            appliedMovementSpeedPercentage,
-            jumpForce,
-            sensivity,
-            invert
+            appliedMovementSpeedPercentage
         );
 
         UImanagement = new(cardsUI, cardPanels, cards);
@@ -52,10 +65,11 @@ public class CrowdPlayerController
         monoBehaviour.StartCoroutine(NPCsManagement.SpawnNPC(NPCs, npc, npcCount, npcContainer));    
     }
 
-    public void MovementInput(ref bool ableToLook) 
+    public void MovementInput() 
     {
         movementInput = InputActionHandler.GetMovementInput();
-        movement.OverallMovement(movementInput, InputActionHandler.IsSprinting(), InputActionHandler.IsJumping(), ableToLook);
+        // movement.OverallMovement(movementInput, InputActionHandler.IsSprinting(), InputActionHandler.IsJumping(), ableToLook);
+        topDownMovement.OverallMovement(movementInput, InputActionHandler.IsSprinting());
     }
 
     public void HideCards() 
@@ -73,7 +87,7 @@ public class CrowdPlayerController
         UImanagement.CardPanelNavigation();
     }
 
-    public void TriggerNPCMovement(List<UICard> cards, bool _bool)
+    public void ChooseLocation(List<UICard> cards, bool _bool)
     {
         // If in UI mode and not already processing a click
         if (_bool)
@@ -93,8 +107,11 @@ public class CrowdPlayerController
                             if (!isProcessingClick)
                             {
                                 isProcessingClick = true;
-                                Debug.Log("Button clicked");
-                                NPCsManagement.TriggerAllMovements(card.location);
+                                chosenLocation = card.location;
+                                Debug.Log($"Location: {chosenLocation}");
+                                location = true;
+                                // NPCsManagement.TriggerAllMovements(card.location);
+                                
                                 monoBehaviour.StartCoroutine(ResetClickState(1.0f)); // 1 second delay
                             }
                         });
@@ -114,5 +131,12 @@ public class CrowdPlayerController
     {
         yield return new WaitForSeconds(delay);
         isProcessingClick = false;
+    }
+
+    private void ShowNavigationUI() 
+    {
+        // Fetch the position from the player to the location
+        Vector3 endPosition = chosenLocation.position;
+        
     }
 }

@@ -15,7 +15,6 @@ public class CrowdPlayerManager : MonoBehaviour
     [SerializeField] private bool invert;
     [SerializeField] private Vector2 angleLimit = new(-70f, 70f);
 
-
     // UI Stuff
     [Header("UI Stuff")]
     [SerializeField] private GameObject cardsUI;
@@ -26,6 +25,7 @@ public class CrowdPlayerManager : MonoBehaviour
 
     public bool inUIMode = false;
     private bool ableToLook = true;
+    private bool lastDisplayUIState = false; 
 
     [Header("NPC Stuff")]
     [SerializeField] private List<GameObject> NPCs = new();
@@ -37,25 +37,42 @@ public class CrowdPlayerManager : MonoBehaviour
         controller = transform.GetChild(0).gameObject.GetComponent<CharacterController>();
         playerTransform = transform.GetChild(0).gameObject.GetComponent<Transform>();
        
-        playerController = new 
+        // playerController = new 
+        // (
+        //     this,
+        //     controller,                         // Character controller component
+        //     playerTransform,                    // Player transform
+        //     cameraTransform,                    // Camera transform object
+        //     angleLimit,                         // Look angle limits
+        //     movementSpeed,                      // Movement speed
+        //     aplliedMovementSpeedPercentage,     // Applied movement speed
+        //     jumpForce,                          // Jump force
+        //     sensivity,                          // Look sensivity
+        //     invert,                             // Invert look
+        //     npcPrefab,                          // NPC prefab
+        //     npcCount,                           // NPC count
+        //     cardsUI,
+        //     cardPanels,
+        //     cards,
+        //     NPCs
+        // );
+
+        playerController = new
         (
             this,
-            controller,                         // Character controller component
-            playerTransform,                    // Player transform
-            cameraTransform,                    // Camera transform object
-            angleLimit,                         // Look angle limits
-            movementSpeed,                      // Movement speed
-            aplliedMovementSpeedPercentage,     // Applied movement speed
-            jumpForce,                          // Jump force
-            sensivity,                          // Look sensivity
-            invert,                             // Invert look
-            npcPrefab,                          // NPC prefab
-            npcCount,                           // NPC count
+            controller,
+            playerTransform,
+            movementSpeed,
+            aplliedMovementSpeedPercentage,
+            npcPrefab,
+            npcCount,                           
             cardsUI,
             cardPanels,
             cards,
             NPCs
         );
+
+        MGameManager.instance.allCrowdPlayers.Add(this);
     }
 
     private void OnEnable()
@@ -68,40 +85,15 @@ public class CrowdPlayerManager : MonoBehaviour
         InputActionHandler.DisableInputActions();
     }
 
-    private MGameManager.GamePlayManagement previousGameState;
-
     private void Update()
     {
-        // // Check for state transition INTO DISCUSS_LOCATION
-        // if (MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.DISCUSS_LOCATION && 
-        //     previousGameState != MGameManager.GamePlayManagement.DISCUSS_LOCATION)
-        // {
-        //     // Set UI mode ON when entering discussion state
-        //     inUIMode = true;
-        //     InputActionHandler.DisableInputActions();
-        //     playerController.OpenCardUI();
-        //     ableToLook = false;
-        // }
-        // // Check for state transition OUT OF DISCUSS_LOCATION
-        // else if (MGameManager.instance.gamePlayManagement != MGameManager.GamePlayManagement.DISCUSS_LOCATION && 
-        //         previousGameState == MGameManager.GamePlayManagement.DISCUSS_LOCATION)
-        // {
-        //     // Set UI mode OFF when exiting discussion state
-        //     inUIMode = false;
-        //     InputActionHandler.EnableInputActions();
-        //     playerController.HideCards();
-        //     ableToLook = true;
-        // }
-        
-        // // Store the current state for the next frame's comparison
-        // previousGameState = MGameManager.instance.gamePlayManagement;
-
-        if (Input.GetKeyDown(KeyCode.M)) 
+        if (MGameManager.instance.showLocationCards != lastDisplayUIState) 
         {
-            inUIMode = !inUIMode; 
+            lastDisplayUIState = MGameManager.instance.showLocationCards; 
 
-            if (inUIMode)
+            if (MGameManager.instance.showLocationCards)
             {
+                inUIMode = true;
                 InputActionHandler.DisableInputActions();
                 playerController.OpenCardUI();
                 ableToLook = false;
@@ -111,44 +103,18 @@ public class CrowdPlayerManager : MonoBehaviour
                 InputActionHandler.EnableInputActions();
                 playerController.HideCards();
                 ableToLook = true;
+                inUIMode = false;
             }
+
+            // Lock/unlock cursor based on UI state
+            Cursor.lockState = inUIMode ? CursorLockMode.None : CursorLockMode.Locked;
         }
-        
-        // Rest of your update method
-        Cursor.lockState = inUIMode ? CursorLockMode.None : CursorLockMode.Locked;
-        
-        playerController.MovementInput(ref ableToLook);
+
+        // These should still be in Update if they need to run continuously
+        playerController.MovementInput();
         playerController.CardPanelNavigation();
-        playerController.TriggerNPCMovement(cards, inUIMode);
+        playerController.ChooseLocation(cards, inUIMode);
     } 
-
-
-    // private void Update()
-    // {
-    //     if (/*Input.GetKeyDown(KeyCode.M)*/ MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.DISCUSS_LOCATION) 
-    //     {
-    //         inUIMode = !inUIMode; 
-
-    //         if (inUIMode)
-    //         {
-    //             InputActionHandler.DisableInputActions();
-    //             playerController.OpenCardUI();
-    //             ableToLook = false;
-    //         }
-    //         else
-    //         {
-    //             InputActionHandler.EnableInputActions();
-    //             playerController.HideCards();
-    //             ableToLook = true;
-    //         }
-    //     }
-
-    //     Cursor.lockState = inUIMode ? CursorLockMode.None : CursorLockMode.Locked;
-        
-    //     playerController.MovementInput(ref ableToLook);
-    //     playerController.CardPanelNavigation();
-    //     playerController.TriggerNPCMovement(cards, inUIMode);
-    // }
 
     private void OnDestroy()
     {

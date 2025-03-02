@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 7618025752129052529}
   - component: {fileID: 8774823661323659732}
   - component: {fileID: 8370170050902844542}
+  - component: {fileID: -909403532831634240}
   m_Layer: 6
   m_Name: NPC
   m_TagString: Untagged
@@ -128,3 +129,29 @@ MonoBehaviour:
   obstacleAvoidanceDistance: 5
   raycastLength: 25
   spacing: 0.5
+  showDebugVisuals: 1
+--- !u!114 &-909403532831634240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2109699717161008390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 540f1555228986245859002fd97edb7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTransform: {fileID: 0}
+  followDistance: 3
+  minDistanceBetweenNPCs: 1.5
+  moveSpeed: 3
+  rotationSpeed: 5
+  stopThreshold: 0.1
+  arcWidth: 60
+  maxPositionAttempts: 30
+  useFixedPositions: 1
+  myPositionIndex: 0
+  showDebugVisuals: 0
+  debugTargetColor: {r: 0, g: 1, b: 0, a: 1}
+  debugPathColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}

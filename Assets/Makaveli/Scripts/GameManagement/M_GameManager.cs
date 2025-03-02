@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class MGameManager : MonoBehaviour
 {
-    public enum GamePlayManagement { NOTHING, SPAWN_OBSTACLE, DISCUSS_LOCATION, DISCUSS_SHAPE, WAITING };
+    public enum GamePlayManagement { NOTHING, TRAVELING, CHOOSE_LOCATION, CHOOSE_SHAPE, SIGNAL };
     public static MGameManager instance;
     
     [Header("States")]
@@ -15,16 +16,25 @@ public class MGameManager : MonoBehaviour
     public GameObject trackableObject;
     public Transform trackableObjectParent;
     [HideInInspector] public List<GameObject> objectsToTrack = new();
-    private bool obstaclesSpawned = false;
+
+    [Header("Crowd Player Stuff")]
+    public List<CrowdPlayerManager> allCrowdPlayers = new(); 
+    private readonly Dictionary<CrowdPlayerManager, Transform> chosenLocations = new();
+    [SerializeField] private List<DictionaryEntry<CrowdPlayerManager, Transform>> ChosenLocations = new();
+    public bool navigationUI = false;
 
     // NPC related stuff
-    [Header("NPC Related Stuff")]
+    [Header("NPC Stuff")]
     // public GameObject patrolArea;
     public Transform walkableArea;
     public int trackableObjectAmount;
     [HideInInspector] public List<NPCManager> allNPCs = new();
 
-    [SerializeField] private float discussionTimer;
+    [Header("Round Management")]
+    [SerializeField] private float chooseLocationTimer;
+    public bool showLocationCards = false;
+    public bool roundEnd = false;
+    public bool allPlayersAtLocation = true;
 
     void Awake()
     {
@@ -43,23 +53,66 @@ public class MGameManager : MonoBehaviour
     {
         gamePlayManagement = GamePlayManagement.NOTHING;
 
-       
+        StartCoroutine(StartRound());
+        chosenLocations.Clear();
+        ChosenLocations.Clear();
     }
 
-    private bool discussionStarted = false;
-
-    private void Update()
+    void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Tab))
-        {
-            SpawnObstacleLocation();
-        }
-        
-        // if(obstaclesSpawned && !discussionStarted)
+        // if(gamePlayManagement == GamePlayManagement.CHOOSE_LOCATION) 
         // {
-        //     discussionStarted = true;
-        //     StartCoroutine(StartDiscussingLocation(discussionTimer));
+        //     // Initialize the locations
+        //     StartCoroutine(InitializeLocations());
         // }
+        // else 
+        // {
+        //     StopCoroutine(InitializeLocations());
+        // }
+
+        switch (gamePlayManagement)
+        {
+            case GamePlayManagement.CHOOSE_LOCATION:
+                StartCoroutine(InitializeLocations());
+
+            break; 
+
+            case GamePlayManagement.TRAVELING:
+                StopCoroutine(InitializeLocations());
+
+                // Check if each player has reached the destination
+                for (int i = 0; i < chosenLocations.Count; i++)
+                {
+                    var element = chosenLocations.ElementAt(i);
+                    Vector3 playerPosition = element.Key.transform.position;
+                    Vector3 locationPosition = element.Value.position;
+
+                    Debug.Log($"Player position: {playerPosition}");
+                    Debug.Log($"Location position: {locationPosition}");
+                    
+                    if((playerPosition - locationPosition).sqrMagnitude >= .5f)
+                    {
+                        allPlayersAtLocation = false;
+                        break;
+                    }
+
+                    if(allPlayersAtLocation && chosenLocations.Count > 0)
+                    {
+                        gamePlayManagement = GamePlayManagement.CHOOSE_SHAPE;
+                    }
+                }
+
+            break;
+
+            case GamePlayManagement.CHOOSE_SHAPE:
+                StartCoroutine(InitializeLocations());
+
+            break;
+
+            default:
+
+            break;
+        }
     }
 
     public GameObject InstantiatePrefab(GameObject prefab, Transform parent) 
@@ -72,51 +125,103 @@ public class MGameManager : MonoBehaviour
 
     private void SpawnObstacleLocation() 
     {
-        gamePlayManagement = GamePlayManagement.SPAWN_OBSTACLE;
         for (int i = 0; i < trackableObjectAmount; i++)
         {
             InstantiatePrefab(trackableObject, trackableObjectParent);
         }
-
-        obstaclesSpawned = true;
-
-        float timer = 2f;
-        timer -= Time.deltaTime;
-
-        if(timer <= -0) 
-        {
-            obstaclesSpawned = false;
-        }
     }
 
-    private IEnumerator StartDiscussingLocation(float discussionTime)
+    private IEnumerator StartRound() 
     {
-        // Your existing coroutine code
-        Debug.Log("Objects spawned. start choosing a location");
+        yield return new WaitForSeconds(3f);
+
+        // Spawn in the locations
+        SpawnObstacleLocation();
+
+        // Wait a few seconds
         yield return new WaitForSeconds(2f);
-        gamePlayManagement = GamePlayManagement.DISCUSS_LOCATION;
-        yield return new WaitForSeconds(discussionTime);
-        Debug.Log("Timer ran out");
-        
-        // Reset game state after discussion ends
-        gamePlayManagement = GamePlayManagement.NOTHING; // Or whatever state should come next
-        obstaclesSpawned = false;
-        discussionStarted = false;
+
+        gamePlayManagement = GamePlayManagement.CHOOSE_LOCATION;
+
+        // Spawn in the UI for the players
+        showLocationCards = true;
+
+        // Start timer to choose location
+        yield return new WaitForSeconds(chooseLocationTimer);
+
+        showLocationCards = false;
+
+        gamePlayManagement = GamePlayManagement.TRAVELING;
+
+        yield break;
+    }
+
+    private IEnumerator InitializeLocations()
+    {
+        if (allCrowdPlayers == null || allCrowdPlayers.Count == 0)
+        {
+            Debug.Log("No players found!");
+            yield break;
+        }
+
+        // Populate chosenLocations dictionary
+        foreach (var player in allCrowdPlayers)
+        {
+            if (player.playerController.chosenLocation != null && !chosenLocations.ContainsKey(player))
+            {
+                chosenLocations[player] = player.playerController.chosenLocation;
+            }
+        }
+
+        // Convert dictionary to list entries and avoid duplicates
+        foreach (var element in chosenLocations)
+        {
+            var entry = new DictionaryEntry<CrowdPlayerManager, Transform> 
+            {
+                Key = element.Key,
+                Value = element.Value
+            };
+
+            if (!ChosenLocations.Contains(entry)) 
+            {
+                ChosenLocations.Add(entry);
+            }
+        }
+
+        yield break;
+    }
+
+    private void ShowNavigationUI() 
+    {
+
     }
 }
-        // Start timer for discussion
-
-        // If timer ran out before choosing a location, a random location is chosen and store it as 'chosen location'
-
-        // If player did choose a location, then store it as 'chosen location'
-
-        // Fetch the 'chosen location' from each player and add it to the list of 'AllChosenLocations'
-
-        // Check which location appears the most
-
-        // Store that location
 
 public interface ITriggerMovement 
 {
     public void TriggerMovement(Transform transform);
+}
+
+[System.Serializable]
+public class DictionaryEntry<TKey, TValue> 
+{
+    public TKey Key;
+    public TValue Value;
+
+    public override bool Equals(object obj)
+    {
+        if (obj is DictionaryEntry<TKey, TValue> other)
+        {
+            return EqualityComparer<TKey>.Default.Equals(Key, other.Key) &&
+                   EqualityComparer<TValue>.Default.Equals(Value, other.Value);
+        }
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        int hashKey = Key?.GetHashCode() ?? 0;
+        int hashValue = Value?.GetHashCode() ?? 0;
+        return hashKey ^ hashValue;
+    }
 }

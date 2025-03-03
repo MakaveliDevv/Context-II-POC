@@ -57,5 +57,13 @@ public class ObjectToTrack : MonoBehaviour
 
         return new Vector3(randomX, spawnY, randomZ);
     }
+
+    void OnDrawGizmos()
+    {
+        Vector3 halfExtents = new(2f, 1f, 2f); 
+        Gizmos.color = Color.red;
+        Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
+        Gizmos.DrawWireCube(Vector3.zero, halfExtents * 2);
+    }
 }
 

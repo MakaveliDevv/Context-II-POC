@@ -34,7 +34,7 @@ public class MGameManager : MonoBehaviour
     [SerializeField] private float chooseLocationTimer;
     public bool showLocationCards = false;
     public bool roundEnd = false;
-    public bool allPlayersAtLocation = true;
+    public bool allPlayersAtLocation = false;
 
     void Awake()
     {
@@ -60,16 +60,6 @@ public class MGameManager : MonoBehaviour
 
     void Update()
     {
-        // if(gamePlayManagement == GamePlayManagement.CHOOSE_LOCATION) 
-        // {
-        //     // Initialize the locations
-        //     StartCoroutine(InitializeLocations());
-        // }
-        // else 
-        // {
-        //     StopCoroutine(InitializeLocations());
-        // }
-
         switch (gamePlayManagement)
         {
             case GamePlayManagement.CHOOSE_LOCATION:
@@ -80,32 +70,77 @@ public class MGameManager : MonoBehaviour
             case GamePlayManagement.TRAVELING:
                 StopCoroutine(InitializeLocations());
 
-                // Check if each player has reached the destination
-                for (int i = 0; i < chosenLocations.Count; i++)
+                int boolAmount = 0;
+                for (int i = 0; i < allCrowdPlayers.Count; i++)
                 {
-                    var element = chosenLocations.ElementAt(i);
-                    Vector3 playerPosition = element.Key.transform.position;
-                    Vector3 locationPosition = element.Value.position;
+                    CrowdPlayerManager player = allCrowdPlayers[i].GetComponent<CrowdPlayerManager>();
+                    Transform playerTransform = player.gameObject.transform.GetChild(0);
+                    Debug.Log(playerTransform);
+                    player.playerController.CheckPlayerPosition(playerTransform);
 
-                    Debug.Log($"Player position: {playerPosition}");
-                    Debug.Log($"Location position: {locationPosition}");
-                    
-                    if((playerPosition - locationPosition).sqrMagnitude >= .5f)
+                    if(player.playerController.isAtLocation) 
                     {
-                        allPlayersAtLocation = false;
-                        break;
-                    }
-
-                    if(allPlayersAtLocation && chosenLocations.Count > 0)
-                    {
-                        gamePlayManagement = GamePlayManagement.CHOOSE_SHAPE;
+                        boolAmount++;
                     }
                 }
 
+                if(boolAmount == allCrowdPlayers.Count) 
+                {
+                    gamePlayManagement = GamePlayManagement.CHOOSE_SHAPE;
+                    Debug.Log("All players have reached their location point");
+                }
+                
+                #region oldCode
+                // // Check if each player has reached the destination
+                // for (int i = 0; i < chosenLocations.Count; i++)
+                // {
+                //     var element = chosenLocations.ElementAt(i);
+                //     Vector3 playerPosition = element.Key.transform.position;
+                //     Vector3 locationPosition = element.Value.position;
+
+                //     Vector3 playerFlat = new(playerPosition.x, 0, playerPosition.z);
+                //     Vector3 locationFlat = new(locationPosition.x, 0, locationPosition.z);
+               
+                //     Debug.Log($"Distance: {Vector3.Distance(playerFlat, locationFlat)}");
+
+                //     if (Vector3.Distance(playerFlat, locationFlat) >= 1f)                    
+                //     {
+                //         allPlayersAtLocation = false;
+                //         break;
+                //     }
+                //     else { allPlayersAtLocation = true; }
+
+                // }
+
+                // if(allPlayersAtLocation && chosenLocations.Count > 0)
+                // {
+                //     gamePlayManagement = GamePlayManagement.CHOOSE_SHAPE;
+                // }
+
+                // for (int i = 0; i < objectsToTrack.Count; i++)
+                // {
+                //     var element = objectsToTrack[i];
+
+                //     Vector3 center = element.transform.position;
+                //     Vector3 halfExtents = new(2f, 1f, 2f); 
+                //     Quaternion rotation = element.transform.rotation;
+                //     int layerMask = LayerMask.GetMask("Player"); 
+                    
+                //     Collider[] colliders = Physics.OverlapBox(center, halfExtents, rotation, layerMask); 
+                //     Debug.Log($"Colliders count: {colliders.Length}");
+
+                //     if(colliders != null && colliders.Length == allCrowdPlayers.Count) 
+                //     {
+                //         gamePlayManagement = GamePlayManagement.CHOOSE_SHAPE;
+                //     }
+                //     else if(colliders.Length != allCrowdPlayers.Count) allPlayersAtLocation = false;
+                // }
+                #endregion
+            
             break;
 
             case GamePlayManagement.CHOOSE_SHAPE:
-                StartCoroutine(InitializeLocations());
+                // Show UI to choose a shape
 
             break;
 
@@ -188,6 +223,12 @@ public class MGameManager : MonoBehaviour
             }
         }
 
+        yield break;
+    }
+
+    private IEnumerator ShapeInitialization() 
+    {
+        
         yield break;
     }
 

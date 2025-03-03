@@ -15,6 +15,7 @@ public class CrowdPlayerController
 
     private bool isProcessingClick;
     private readonly Transform npcContainer;
+    public bool isAtLocation = false;
 
 
     public CrowdPlayerController
@@ -133,10 +134,19 @@ public class CrowdPlayerController
         isProcessingClick = false;
     }
 
-    private void ShowNavigationUI() 
+    public void CheckPlayerPosition(Transform player) 
     {
-        // Fetch the position from the player to the location
-        Vector3 endPosition = chosenLocation.position;
-        
+        if(Vector3.Distance(new Vector3(player.position.x, 0, player.position.z), new Vector3(chosenLocation.position.x, 0, chosenLocation.position.z)) <= 2f) 
+        {
+            isAtLocation = true;
+            Debug.Log("Player is at the chosen location");
+        }
     }
+
+    // private void ShowNavigationUI() 
+    // {
+    //     // Fetch the position from the player to the location
+    //     Vector3 endPosition = chosenLocation.position;
+        
+    // }
 }

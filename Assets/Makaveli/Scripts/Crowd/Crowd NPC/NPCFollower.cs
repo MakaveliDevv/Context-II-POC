@@ -28,7 +28,7 @@ public class NPCFollower : MonoBehaviour
     private bool isMoving = false;
     private int uniqueId;
     private static int nextId = 0;
-    private static List<NPCFollower> allFollowers = new List<NPCFollower>();
+    private static readonly List<NPCFollower> allFollowers = new();
 
     private void Awake()
     {
@@ -104,6 +104,11 @@ public class NPCFollower : MonoBehaviour
         // Position NPCs in an arc behind the player
         float angleStep = arcWidth / Mathf.Max(1, totalFollowers - 1);
         float startAngle = -arcWidth / 2;
+        
+        if (useFixedPositions)
+        {
+            myIndex = Mathf.Clamp(myPositionIndex, 0, totalFollowers - 1);
+        }
         
         // My angle in the formation
         float myAngle = startAngle + (myIndex * angleStep);

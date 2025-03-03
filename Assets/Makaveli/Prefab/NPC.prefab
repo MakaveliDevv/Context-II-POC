@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8774823661323659732}
   - component: {fileID: 8370170050902844542}
   - component: {fileID: -909403532831634240}
-  m_Layer: 6
+  m_Layer: 10
   m_Name: NPC
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -122,14 +122,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71d4e4a0eb23fe0489528c9a6ea7e2c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  layerMask:
-    serializedVersion: 2
-    m_Bits: 512
-  patrolSpeed: 1.5
-  obstacleAvoidanceDistance: 5
-  raycastLength: 25
-  spacing: 0.5
-  showDebugVisuals: 1
 --- !u!114 &-909403532831634240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -142,16 +134,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 540f1555228986245859002fd97edb7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTransform: {fileID: 0}
-  followDistance: 3
-  minDistanceBetweenNPCs: 1.5
-  moveSpeed: 3
-  rotationSpeed: 5
-  stopThreshold: 0.1
-  arcWidth: 60
-  maxPositionAttempts: 30
-  useFixedPositions: 1
-  myPositionIndex: 0
-  showDebugVisuals: 0
-  debugTargetColor: {r: 0, g: 1, b: 0, a: 1}
-  debugPathColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  player: {fileID: 0}
+  followRadius: 5
+  smoothSpeed: 5
+  avoidanceRadius: 1
+  npcLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  fixedYPosition: 1
+  spawnArea: {fileID: 0}

@@ -929,11 +929,12 @@ MonoBehaviour:
   ChosenLocations: []
   navigationUI: 0
   walkableArea: {fileID: 447404963}
-  trackableObjectAmount: 3
+  trackableObjectAmount: 1
   allNPCs: []
   chooseLocationTimer: 5
   showLocationCards: 0
   roundEnd: 0
+  allPlayersAtLocation: 0
 --- !u!1 &142239263
 GameObject:
   m_ObjectHideFlags: 0
@@ -10563,7 +10564,7 @@ GameObject:
   - component: {fileID: 1892644053}
   - component: {fileID: 1892644052}
   - component: {fileID: 1892644051}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Sphere
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -10896,7 +10897,7 @@ Transform:
   m_GameObject: {fileID: 1997439047}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.47, y: 0.5, z: -4.93}
+  m_LocalPosition: {x: 0.87, y: 0.5, z: -4.93}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

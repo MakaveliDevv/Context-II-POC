@@ -4,14 +4,14 @@ public class NPCManager : MonoBehaviour
     // public Vector3 TargetPosition => nPCPatrol != null ? nPCPatrol.TargetPosition : Vector3.zero;
    
     // private NPCPatrol nPCPatrol;
-    [SerializeField] private LayerMask layerMask;
-    [SerializeField] private float patrolSpeed = 2f;
-    [SerializeField] private float obstacleAvoidanceDistance = 1.5f;
-    [SerializeField] private float raycastLength = 2f;
-    [SerializeField] private float spacing = 1f;
+    // [SerializeField] private LayerMask layerMask;
+    // [SerializeField] private float patrolSpeed = 2f;
+    // [SerializeField] private float obstacleAvoidanceDistance = 1.5f;
+    // [SerializeField] private float raycastLength = 2f;
+    // [SerializeField] private float spacing = 1f;
     
     // Visual debugging
-    [SerializeField] private bool showDebugVisuals = true;
+    // [SerializeField] private bool showDebugVisuals = true;
     
     void Awake()
     {
@@ -29,8 +29,8 @@ public class NPCManager : MonoBehaviour
         // );
     }
     
-    void Update()
-    {
+    // void Update()
+    // {
         // nPCPatrol.MoveNPC();
         
         // // Visual debugging
@@ -41,7 +41,7 @@ public class NPCManager : MonoBehaviour
         //     // Show a sphere at current position
         //     Debug.DrawRay(transform.position, Vector3.up * 0.5f, Color.red);
         // }
-    }
+    // }
     
     private void OnDestroy()
     {

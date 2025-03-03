@@ -7,13 +7,13 @@ public class CrowdPlayerManager : MonoBehaviour
 
     [SerializeField] private CharacterController controller;
     [SerializeField] private Transform playerTransform;
-    [SerializeField] private Transform cameraTransform;
+    // [SerializeField] private Transform cameraTransform;
     [SerializeField] private float movementSpeed = 5f;
     [SerializeField] private float aplliedMovementSpeedPercentage = .5f;
-    [SerializeField] private float jumpForce = 5f;
-    [SerializeField] private float sensivity = 5f;
-    [SerializeField] private bool invert;
-    [SerializeField] private Vector2 angleLimit = new(-70f, 70f);
+    // [SerializeField] private float jumpForce = 5f;
+    // [SerializeField] private float sensivity = 5f;
+    // [SerializeField] private bool invert;
+    // [SerializeField] private Vector2 angleLimit = new(-70f, 70f);
 
     // UI Stuff
     [Header("UI Stuff")]
@@ -24,13 +24,14 @@ public class CrowdPlayerManager : MonoBehaviour
     public bool isProcessingClick = false;
 
     public bool inUIMode = false;
-    private bool ableToLook = true;
+    // private bool ableToLook = true;
     private bool lastDisplayUIState = false; 
 
     [Header("NPC Stuff")]
     [SerializeField] private List<GameObject> NPCs = new();
     [SerializeField] private GameObject npcPrefab;
     [SerializeField] private int npcCount;
+    
 
     private void Awake()
     {
@@ -96,13 +97,13 @@ public class CrowdPlayerManager : MonoBehaviour
                 inUIMode = true;
                 InputActionHandler.DisableInputActions();
                 playerController.OpenCardUI();
-                ableToLook = false;
+                // ableToLook = false;
             }
             else
             {
                 InputActionHandler.EnableInputActions();
                 playerController.HideCards();
-                ableToLook = true;
+                // ableToLook = true;
                 inUIMode = false;
             }
 

@@ -3,11 +3,17 @@ using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using System.Net;
 
-public class GameManager : NetworkBehaviour
+public class ServerManager : NetworkBehaviour
 {
+    /*
+    -Make sure the client and server can communicate with one another
+    */
     [SerializeField] private bool serverBuild;
+    [SerializeField] private bool runLocally;
     [SerializeField] private GameObject serverPrefab, clientPrefab;
     [SerializeField] private UnityTransport unityTransport;
+    Server server;
+    [SerializeField] private ClientServerRefs clientServerRefs;
     private string serverAddress = "context2server.atlas-technologies.co.uk";
 
     private void Start()
@@ -36,7 +42,14 @@ public class GameManager : NetworkBehaviour
             return;
         }
 
-        unityTransport.SetConnectionData(resolvedIP, 7777);
+        if(!runLocally)
+        {
+            unityTransport.SetConnectionData(resolvedIP, 7777);
+        }
+        else
+        {
+            unityTransport.SetConnectionData("0.0.0.0", 7777);
+        }
 
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
 
@@ -44,6 +57,8 @@ public class GameManager : NetworkBehaviour
 
         GameObject serverInstance = Instantiate(serverPrefab);
         serverInstance.GetComponent<NetworkObject>().Spawn();
+
+        clientServerRefs.server = serverInstance.GetComponent<Server>();
     }
 
     private void StartAsClient()
@@ -53,10 +68,13 @@ public class GameManager : NetworkBehaviour
             unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
         }
 
-        unityTransport.SetConnectionData("77.75.125.173", 7777);
+        if(!runLocally) unityTransport.SetConnectionData("77.75.125.173", 7777);
+        else unityTransport.SetConnectionData("127.0.0.1", 7777);
+
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
 
         NetworkManager.Singleton.StartClient();
+        //clientServerRefs.localClient = NetworkManager.Singleton.LocalClient.PlayerObject.gameObject.GetComponent<Client>();
     }
 
     private void OnClientConnected(ulong clientId)

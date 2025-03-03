@@ -22,6 +22,8 @@ MonoBehaviour:
   m_Scenes:
   - m_enabled: 1
     m_path: Assets/Pepijn/Scenes/ServerTesting.unity
+  - m_enabled: 1
+    m_path: Assets/Pepijn/Scenes/P_ReLion Us.unity
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:
     m_Settings:

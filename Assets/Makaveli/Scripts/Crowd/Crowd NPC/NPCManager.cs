@@ -1,8 +1,6 @@
 using UnityEngine;
 public class NPCManager : MonoBehaviour
-{
-    // public Vector3 TargetPosition => nPCPatrol != null ? nPCPatrol.TargetPosition : Vector3.zero;
-   
+{   
     // private NPCPatrol nPCPatrol;
     // [SerializeField] private LayerMask layerMask;
     // [SerializeField] private float patrolSpeed = 2f;
@@ -12,7 +10,23 @@ public class NPCManager : MonoBehaviour
     
     // Visual debugging
     // [SerializeField] private bool showDebugVisuals = true;
+
+    // NPC Follow
+    private NPCFollower nPCFollower;
+
+    [Header("Movement Parameters")]
+    public float smoothSpeed = 5f;
+    public float stoppingThreshold = 0.1f;
     
+    [Header("Positioning Parameters")]
+    public float minDistanceBehindTarget = 2f;
+    public float maxDistanceBehindTarget = 6f;
+    public float minNPCDistance = 1.2f;
+    public float maxNPCDistance = 3f;
+    public float spreadFactor = 1.5f;
+    public float fixedYPosition = 1f;
+
+
     void Awake()
     {
         MGameManager.instance.allNPCs.Add(this);
@@ -27,21 +41,35 @@ public class NPCManager : MonoBehaviour
         //     raycastLength,
         //     spacing
         // );
+
+        nPCFollower = new
+        (
+            transform,
+            smoothSpeed,
+            stoppingThreshold,
+            minDistanceBehindTarget,
+            maxDistanceBehindTarget,
+            minNPCDistance,
+            maxNPCDistance,
+            spreadFactor,
+            fixedYPosition
+        );
+
+
     }
-    
-    // void Update()
-    // {
+
+    void Start()
+    {
+        nPCFollower.CustomStart(this);
+    }
+
+    void Update()
+    {
         // nPCPatrol.MoveNPC();
+
+        nPCFollower.CustomUpdate(this);
         
-        // // Visual debugging
-        // if (showDebugVisuals)
-        // {
-        //     // Show the target position
-        //     Debug.DrawLine(transform.position, TargetPosition, Color.blue);
-        //     // Show a sphere at current position
-        //     Debug.DrawRay(transform.position, Vector3.up * 0.5f, Color.red);
-        // }
-    // }
+    }
     
     private void OnDestroy()
     {
@@ -52,4 +80,21 @@ public class NPCManager : MonoBehaviour
         
         // NPCsManagement.UnregisterTriggerMovement(nPCPatrol);
     }
+
+    // void OnDrawGizmos()
+    // {
+    //     if (!Application.isPlaying) return;
+
+    //     // Draw center of mass
+    //     Gizmos.color = Color.red;
+    //     Gizmos.DrawWireSphere(centerOfMass, 0.5f);
+
+    //     // Draw NPC position
+    //     Gizmos.color = isSpreading ? Color.yellow : Color.green;
+    //     Gizmos.DrawWireSphere(transform.position, 0.5f);
+
+    //     // Draw target position
+    //     Gizmos.color = Color.blue;
+    //     Gizmos.DrawSphere(targetPosition, 0.2f);
+    // }
 }

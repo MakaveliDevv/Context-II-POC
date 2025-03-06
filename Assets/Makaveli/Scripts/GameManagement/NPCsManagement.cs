@@ -18,8 +18,8 @@ public static class NPCsManagement
 
         yield return null;
 
-        Debug.Log($"Trigger movements list count: {triggerMovements.Count}");
-        Debug.Log($"Trigger movements list count: {NPCs.Count}");
+        // Debug.Log($"Trigger movements list count: {triggerMovements.Count}");
+        // Debug.Log($"NPC list count: {NPCs.Count}");
         yield break;
     }
 

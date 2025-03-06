@@ -1,608 +1,302 @@
-// using UnityEngine;
-// using System.Collections.Generic;
-// using System.Linq;
-
-// public class NPCFollower : MonoBehaviour
-// {
-//     [Header("Follow Settings")]
-//     [SerializeField] private Transform playerTransform;
-//     [SerializeField] private float followDistance = 3f;
-//     [SerializeField] private float minDistanceBetweenNPCs = 2f;
-//     [SerializeField] private float moveSpeed = 3f;
-//     [SerializeField] private float rotationSpeed = 5f;
-//     [SerializeField] private float stopThreshold = 0.1f;
-
-//     [Header("Formation Settings")]
-//     [SerializeField] private float arcWidth = 120f; // Arc angle in degrees behind player
-//     [SerializeField] private int maxPositionAttempts = 30;
-//     [SerializeField] private bool useFixedPositions = false; // If true, each NPC gets a fixed slot in the formation
-//     [SerializeField] private int myPositionIndex = 0; // Only used if useFixedPositions is true
-
-//     [Header("Debug")]
-//     [SerializeField] private bool showDebugVisuals = true;
-//     [SerializeField] private Color debugTargetColor = Color.green;
-//     [SerializeField] private Color debugPathColor = Color.yellow;
-
-//     private Vector3 targetPosition;
-//     private Vector3 previousPlayerPosition;
-//     private bool isMoving = false;
-//     private int uniqueId;
-//     private static int nextId = 0;
-//     private static readonly List<NPCFollower> allFollowers = new();
-
-//     private void Awake()
-//     {
-//         uniqueId = nextId++;
-//         allFollowers.Add(this);
-//     }
-
-//     private void OnDestroy()
-//     {
-//         allFollowers.Remove(this);
-//     }
-
-//     private void Start()
-//     {
-//         if (playerTransform == null)
-//         {
-//             playerTransform = GameObject.FindGameObjectWithTag("Player")?.transform;
-//             if (playerTransform == null)
-//             {
-//                 Debug.LogError("NPCFollower: No player found! Please assign playerTransform or add 'Player' tag to player.");
-//                 enabled = false;
-//                 return;
-//             }
-//         }
-
-//         previousPlayerPosition = playerTransform.position;
-//         CalculateTargetPosition();
-//     }
-
-//     private void Update()
-//     {
-//         // Check if player has moved
-//         isMoving = Vector3.Distance(previousPlayerPosition, playerTransform.position) > stopThreshold;
-
-//         if (isMoving || Vector3.Distance(transform.position, targetPosition) > stopThreshold)
-//         {
-//             // Recalculate position if player moves or if we're not at our target yet
-//             CalculateTargetPosition();
-//             MoveToTarget();
-//         }
-
-//         // Always update rotation to match player
-//         UpdateRotation();
-
-//         // Update previous player position
-//         if (isMoving)
-//         {
-//             previousPlayerPosition = playerTransform.position;
-//         }
-//     }
-
-//     private void CalculateTargetPosition()
-//     {
-//         if (useFixedPositions)
-//         {
-//             CalculateFixedFormationPosition();
-//         }
-//         else
-//         {
-//             CalculateDynamicPosition();
-//         }
-//     }
-
-//     private void CalculateFixedFormationPosition()
-//     {
-//         // Get all active followers and sort by their ID to ensure consistent ordering
-//         List<NPCFollower> sortedFollowers = allFollowers.OrderBy(f => f.uniqueId).ToList();
-//         int totalFollowers = sortedFollowers.Count;
-
-//         // Calculate this NPC's position in the formation
-//         int myIndex = sortedFollowers.IndexOf(this);
-
-//         // Position NPCs in an arc behind the player
-//         float angleStep = arcWidth / Mathf.Max(1, totalFollowers - 1);
-//         float startAngle = -arcWidth / 2;
-
-//         // if (useFixedPositions)
-//         // {
-//         //     myIndex = Mathf.Clamp(myPositionIndex, 0, totalFollowers - 1);
-//         // }
-
-//         // My angle in the formation
-//         float myAngle = startAngle + (myIndex * angleStep);
-
-//         // Convert to radians
-//         float angleRad = myAngle * Mathf.Deg2Rad;
-
-//         // Calculate position relative to player's orientation
-//         Vector3 offset = new Vector3(
-//             Mathf.Sin(angleRad) * followDistance,
-//             0,
-//             -Mathf.Cos(angleRad) * followDistance  // Negative Z to position behind
-//         );
-
-//         // Transform offset to world space based on player's rotation
-//         Vector3 worldOffset = playerTransform.TransformDirection(offset);
-
-//         // Set target behind player
-//         targetPosition = playerTransform.position + worldOffset;
-//     }
-
-//     private void CalculateDynamicPosition()
-//     {
-//         // Start with a position directly behind the player
-//         Vector3 bestPosition = playerTransform.position - playerTransform.forward * followDistance;
-//         float bestScore = float.MinValue;
-
-//         // Try multiple positions in an arc behind the player
-//         for (int i = 0; i < maxPositionAttempts; i++)
-//         {
-//             // Calculate a position in an arc behind the player
-//             float angle = Random.Range(-arcWidth/2, arcWidth/2) * Mathf.Deg2Rad;
-//             float distance = Random.Range(followDistance * 0.8f, followDistance * 1.2f);
-
-//             // Calculate position in player's local space
-//             Vector3 localOffset = new Vector3(
-//                 Mathf.Sin(angle) * distance,
-//                 0,
-//                 -Mathf.Cos(angle) * distance  // Negative to be behind
-//             );
-
-//             // Convert to world space
-//             Vector3 candidatePosition = playerTransform.position + playerTransform.TransformDirection(localOffset);
-
-//             // Score this position
-//             float score = ScorePosition(candidatePosition);
-
-//             // Keep the best position found
-//             if (score > bestScore)
-//             {
-//                 bestScore = score;
-//                 bestPosition = candidatePosition;
-//             }
-
-//             // If this position is good enough, stop searching
-//             if (score > 0.8f)
-//                 break;
-//         }
-
-//         targetPosition = bestPosition;
-//     }
-
-//     private float ScorePosition(Vector3 position)
-//     {
-//         float score = 1.0f;
-
-//         // Check if behind player (highest priority)
-//         Vector3 playerToPos = position - playerTransform.position;
-//         float behindFactor = Vector3.Dot(playerToPos.normalized, -playerTransform.forward);
-
-//         // Less than 0 means not behind at all, should be heavily penalized
-//         if (behindFactor < 0)
-//             return -1000; // Very bad position, not behind player
-
-//         // Strong weight for being directly behind
-//         score += behindFactor * 3.0f;
-
-//         // Penalize for being too far from desired distance
-//         float distanceToPlayer = Vector3.Distance(position, playerTransform.position);
-//         float distanceScore = 1.0f - Mathf.Abs(distanceToPlayer - followDistance) / followDistance;
-//         score += distanceScore;
-
-//         // Penalize for being too close to other NPCs
-//         foreach (NPCFollower other in allFollowers)
-//         {
-//             if (other != this)
-//             {
-//                 float distanceToOther = Vector3.Distance(position, other.transform.position);
-//                 if (distanceToOther < minDistanceBetweenNPCs)
-//                 {
-//                     // Severe penalty for being too close
-//                     score -= (minDistanceBetweenNPCs - distanceToOther) * 5.0f;
-//                 }
-//             }
-//         }
-
-//         return score;
-//     }
-
-//     private void MoveToTarget()
-//     {
-//         // Only move if the player is moving or if we're far from our target
-//         if (isMoving || Vector3.Distance(transform.position, targetPosition) > stopThreshold)
-//         {
-//             // Move towards target position
-//             Vector3 moveDirection = (targetPosition - transform.position).normalized;
-//             float distanceToTarget = Vector3.Distance(transform.position, targetPosition);
-
-//             // Speed scales with distance (move faster when further away)
-//             float currentSpeed = moveSpeed * Mathf.Min(1.0f, distanceToTarget / 2.0f);
-
-//             transform.position += moveDirection * currentSpeed * Time.deltaTime;
-//         }
-//     }
-
-//     private void UpdateRotation()
-//     {
-//         // Make NPC face the same direction as the player
-//         Quaternion targetRotation = playerTransform.rotation;
-//         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-//     }
-
-//     private void OnDrawGizmos()
-//     {
-//         if (!showDebugVisuals || !Application.isPlaying) return;
-
-//         // Draw the target position
-//         Gizmos.color = debugTargetColor;
-//         Gizmos.DrawSphere(targetPosition, 0.2f);
-
-//         // Draw line to target
-//         Gizmos.color = debugPathColor;
-//         Gizmos.DrawLine(transform.position, targetPosition);
-
-//         // Draw safe distance around NPC
-//         Gizmos.color = Color.red;
-//         Gizmos.DrawWireSphere(transform.position, minDistanceBetweenNPCs / 2);
-
-//         // Visualize the arc behind player
-//         if (playerTransform != null)
-//         {
-//             Gizmos.color = Color.blue;
-//             int segments = 20;
-//             float angleStep = arcWidth / segments;
-//             Vector3 previousPoint = Vector3.zero;
-
-//             for (int i = 0; i <= segments; i++)
-//             {
-//                 float angle = (-arcWidth/2 + i * angleStep) * Mathf.Deg2Rad;
-//                 Vector3 localOffset = new Vector3(
-//                     Mathf.Sin(angle) * followDistance,
-//                     0,
-//                     -Mathf.Cos(angle) * followDistance
-//                 );
-
-//                 Vector3 worldPoint = playerTransform.position + playerTransform.TransformDirection(localOffset);
-
-//                 if (i > 0)
-//                     Gizmos.DrawLine(previousPoint, worldPoint);
-
-//                 previousPoint = worldPoint;
-//             }
-//         }
-//     }
-// }
-
-// using UnityEngine;
-
-// public class NPCFollower : MonoBehaviour
-// {
-//     public Transform player;
-//     public float followRadius = 2f;
-//     public float smoothSpeed = 5f;
-//     public float avoidanceRadius = 1f;
-//     public LayerMask npcLayer;
-//     public float fixedYPosition = 1f; // Fixed Y position
-//     private Vector3 targetPosition;
-
-//     void Start()
-//     {
-//         if (player == null)
-//         {
-//             player = GameObject.FindGameObjectWithTag("Player")?.transform;
-//             if (player == null)
-//             {
-//                 Debug.LogError("NPCFollower: No player found! Please assign playerTransform or add 'Player' tag to player.");
-//                 enabled = false;
-//                 return;
-//             }
-//         }
-
-//         Vector3 playerDirection = -player.forward;
-//         Vector3 desiredPosition = player.position + playerDirection * followRadius;
-//         desiredPosition.y = fixedYPosition; // Keep Y position fixed
-
-//         // Ensure the NPC starts in a valid, non-overlapping position
-//         targetPosition = FindValidPosition(desiredPosition);
-//         transform.position = targetPosition;
-//     }
-
-
-//     void Update()
-//     {
-//         if (player == null) return;
-
-//         Vector3 playerDirection = -player.forward; 
-//         Vector3 desiredPosition = player.position + playerDirection * followRadius;
-//         desiredPosition.y = fixedYPosition; // Keep Y position fixed
-
-//         // Find a non-overlapping position
-//         targetPosition = FindValidPosition(desiredPosition);
-
-//         // Move NPC only if player is moving
-//         if (player.hasChanged) // Checks if the player moved
-//         {
-//             transform.position = Vector3.Lerp(transform.position, targetPosition, smoothSpeed * Time.deltaTime);
-//         }
-//     }
-
-//     Vector3 FindValidPosition(Vector3 desiredPosition)
-//     {
-//         Collider[] colliders = Physics.OverlapSphere(desiredPosition, avoidanceRadius, npcLayer);
-//         if (colliders.Length == 0) return desiredPosition;
-
-//         // Adjust position to avoid overlap
-//         Vector3 adjustedPosition = desiredPosition;
-//         foreach (Collider collider in colliders)
-//         {
-//             if (collider.transform != transform)
-//             {
-//                 Vector3 awayDirection = (desiredPosition - collider.transform.position).normalized;
-//                 adjustedPosition += awayDirection * avoidanceRadius; // Push away
-//                 adjustedPosition.y = fixedYPosition; // Keep Y position fixed
-//             }
-//         }
-//         return adjustedPosition;
-//     }
-// }
-
-
-// using UnityEngine;
-
-// public class NPCFollower : MonoBehaviour
-// {
-//     public Transform player;
-//     public float followRadius = 5f;  // Radius within which NPCs will be placed
-//     public float smoothSpeed = 5f;
-//     public float avoidanceRadius = 1f;
-//     public LayerMask npcLayer;
-//     public float fixedYPosition = 1f; // Fixed Y position
-//     public GameObject positionArea; // Sphere collider area where NPCs will be placed
-//     private Vector3 targetPosition;
-
-//     void Start()
-//     {
-//         if (player == null)
-//         {
-//             player = GameObject.FindGameObjectWithTag("Player")?.transform;
-//             if (player == null)
-//             {
-//                 Debug.LogError("NPCFollower: No player found! Please assign playerTransform or add 'Player' tag to player.");
-//                 enabled = false;
-//                 return;
-//             }
-//         }
-
-//         positionArea = GameObject.FindGameObjectWithTag("RadiusArea");
-
-//         // Spawn NPCs inside the spawn area
-//         Vector3 spawnPosition = GetRandomPositionWithinSphere();
-//         spawnPosition.y = fixedYPosition; // Keep Y position fixed
-//         transform.position = FindValidPosition(spawnPosition); // Find a valid position inside the spawn area
-//     }
-
-//     void Update()
-//     {
-//         if (player == null) return;
-
-//         Vector3 playerDirection = -player.forward; // Direction opposite to the player
-//         Vector3 desiredPosition = player.position + playerDirection * followRadius;
-//         desiredPosition.y = fixedYPosition; // Keep Y position fixed
-
-//         // Find a non-overlapping position
-//         targetPosition = FindValidPosition(desiredPosition);
-
-//         // Move NPC smoothly towards the target position
-//         transform.position = Vector3.Lerp(transform.position, targetPosition, smoothSpeed * Time.deltaTime);
-//     }
-
-//     // Get a random position within the spawn sphere collider
-//     Vector3 GetRandomPositionWithinSphere()
-//     {
-//         if (positionArea != null)
-//         {
-//             // Get the center and radius of the sphere collider
-//             SphereCollider sphereCollider = positionArea.GetComponent<SphereCollider>();
-//             if (sphereCollider != null)
-//             {
-//                 Vector3 randomPoint = Random.insideUnitSphere * sphereCollider.radius;
-//                 randomPoint += sphereCollider.transform.position; // Adjust by sphere collider's position
-//                 return randomPoint;
-//             }
-//         }
-
-//         // Default if no spawn area is set
-//         return player.position + new Vector3(Random.Range(-followRadius, followRadius), 0, Random.Range(-followRadius, followRadius));
-//     }
-
-//     // Find a valid position that avoids overlapping other NPCs
-//     Vector3 FindValidPosition(Vector3 desiredPosition)
-//     {
-//         Collider[] colliders = Physics.OverlapSphere(desiredPosition, avoidanceRadius, npcLayer);
-//         if (colliders.Length == 0) return desiredPosition;
-
-//         // Adjust position to avoid overlap
-//         Vector3 adjustedPosition = desiredPosition;
-//         foreach (Collider collider in colliders)
-//         {
-//             if (collider.transform != transform)
-//             {
-//                 Vector3 awayDirection = (desiredPosition - collider.transform.position).normalized;
-//                 adjustedPosition += awayDirection * avoidanceRadius; // Push away from the other NPC
-//                 adjustedPosition.y = fixedYPosition; // Keep Y position fixed
-//             }
-//         }
-//         return adjustedPosition;
-//     }
-// }
-
-
-
-using Unity.VisualScripting;
 using UnityEngine;
 
-public class NPCFollower : MonoBehaviour
+public class NPCFollower
 {
-    public Transform player;
-    public float followRadius = 5f;  // Radius within which NPCs will be placed
-    public float smoothSpeed = 5f;
-    public float avoidanceRadius = 1f;
-    public LayerMask npcLayer;
-    public float fixedYPosition = 1f; // Fixed Y position
-    public GameObject spawnArea; // Sphere collider area where NPCs will be placed
+    [Header("References")]
+    public Transform target;
+    public Transform transform;
+
+    [Header("Movement Parameters")]
+    public float smoothSpeed;
+    public float stoppingThreshold;
+    
+    [Header("Positioning Parameters")]
+    public float minDistanceBehindTarget;
+    public float maxDistanceBehindTarget;
+    public float minNPCDistance;
+    public float maxNPCDistance;
+    public float spreadFactor;
+    public float fixedYPosition;
+
     private Vector3 targetPosition;
 
-    void Start()
+    // Smoothing parameters
+    private Vector3 currentVelocity;
+    private const float smoothTime = 0.3f;
+
+    // Flocking parameters
+    private Vector3 centerOfMass;
+    private int npcIndex;
+
+    // Formation parameters
+    private NPCFormationManager formationManager;
+    private bool useFormation = false;
+
+    public NPCFollower
+    (
+        Transform transform,
+        float smoothSpeed,
+        float stoppingThreshold,
+        float minDistanceBehindTarget,
+        float maxDistanceBehindTarget,
+        float minNPCDistance,
+        float maxNPCDistance,
+        float spreadFactor,
+        float fixedYPosition
+    ) 
     {
-        if (player == null)
+        this.transform = transform;
+        this.smoothSpeed = smoothSpeed;
+        this.stoppingThreshold = stoppingThreshold;
+        this.minDistanceBehindTarget = minDistanceBehindTarget;
+        this.maxDistanceBehindTarget = maxDistanceBehindTarget;
+        this.minNPCDistance = minNPCDistance;
+        this.maxNPCDistance = maxNPCDistance;
+        this.spreadFactor = spreadFactor;
+        this.fixedYPosition = fixedYPosition;
+    }
+
+    public void CustomStart(NPCManager npc)
+    {
+        // Ensure target is set
+        if (target == null)
         {
-            player = GameObject.FindGameObjectWithTag("Player")?.transform;
-            if (player == null)
+            target = GameObject.FindGameObjectWithTag("Player")?.transform;
+        }
+
+        formationManager = target.parent.GetComponent<NPCFormationManager>();
+
+        // Get index in NPC list for unique positioning
+        if (MGameManager.instance.allNPCs != null)
+        {
+            npcIndex = MGameManager.instance.allNPCs.IndexOf(npc);
+        }
+    }
+
+    public void CustomUpdate(NPCManager npc)
+    {
+        if (target == null || MGameManager.instance.allNPCs == null) return;
+
+        // Calculate center of mass for all NPCs
+        CalculateCenterOfMass();
+        
+        // Check if we should use formation positioning
+        if (formationManager != null && formationManager.currentFormation != FormationType.Follow)
+        {
+            useFormation = true;
+            UpdateFormationTargetPosition();
+        }
+        else
+        {
+            useFormation = false;
+            
+            // Use original flocking behavior
+            if (target.position.magnitude > 0.2f)
             {
-                Debug.LogError("NPCFollower: No player found! Please assign playerTransform or add 'Player' tag to player.");
-                enabled = false;
-                return;
+                // Moving phase - tight formation
+                UpdateMovingTargetPosition(npc);
+            }
+            else
+            {
+                // Just stopped - initiate spreading
+                UpdateStoppedTargetPosition();
             }
         }
 
-        if(spawnArea == null)
-        {
-            spawnArea = GameObject.FindGameObjectWithTag("RadiusArea");
-        }
+        // Smooth movement
+        Vector3 smoothedPosition = Vector3.SmoothDamp(
+            transform.position, 
+            targetPosition, 
+            ref currentVelocity, 
+            smoothTime, 
+            smoothSpeed
+        );
 
-        // Spawn NPCs inside the spawn area
-        transform.position = FindValidPosition(); // Find a valid position inside the spawn area
+        // Maintain fixed Y position
+        smoothedPosition.y = fixedYPosition;
+        transform.position = smoothedPosition;
     }
 
-    void Update()
+    void UpdateFormationTargetPosition()
     {
-        if (player == null) return;
-
-        Vector3 playerDirection = -player.forward; // Direction opposite to the player
-        Vector3 desiredPosition = player.position + playerDirection * followRadius;
-        desiredPosition.y = fixedYPosition; // Keep Y position fixed
-
-        // Check if the player has moved. If the player has moved, update NPC position
-        bool hasPlayerMoved = player.hasChanged;
-
-        // Only find a new position if the player has moved or if there's an overlap with other NPCs
-        if (hasPlayerMoved || IsPositionChanged())
+        // Get the desired position in the formation
+        int totalNPCs = MGameManager.instance.allNPCs.Count;
+        Vector3 formationPos = formationManager.GetFormationPosition(npcIndex, totalNPCs);
+        
+        // If a valid formation position was returned
+        if (formationPos != Vector3.zero)
         {
-            targetPosition = FindValidPosition(); // Recalculate the valid position
-        }
-
-        // Move NPC smoothly towards the target position if necessary
-        if (targetPosition != transform.position)
-        {
-            transform.position = Vector3.Lerp(transform.position, targetPosition, smoothSpeed * Time.deltaTime);
-        }
-    }
-
-    bool IsPositionChanged()
-    {
-        // Check if the NPC's position has changed from its last known position
-        // This method assumes you store the previous position of the NPC
-        // You can use a simple way to track this (e.g., a variable to hold the last position)
-
-        Vector3 previousPosition = transform.position;
-        bool positionChanged = previousPosition != transform.position;
-        return positionChanged;
-    }
-
-    // Get a random position within the spawn sphere
-    Vector3 GetRandomPositionWithinSphere()
-    {
-        if (spawnArea != null)
-        {
-            // Get the center and radius of the sphere collider
-            SphereCollider sphereCollider = spawnArea.GetComponent<SphereCollider>();
-            if (sphereCollider != null)
+            targetPosition = formationPos;
+            targetPosition.y = fixedYPosition;
+            
+            if (useFormation)
             {
-                Vector3 randomPoint = Random.insideUnitSphere * sphereCollider.radius;
-                randomPoint += sphereCollider.transform.position; // Adjust by sphere collider's position
-                return randomPoint;
-            }
-        }
-
-        // Default if no spawn area is set
-        return player.position + new Vector3(Random.Range(-followRadius, followRadius), 0, Random.Range(-followRadius, followRadius));
-    }
-
-    Vector3 FindValidPosition()
-    {
-        int maxAttempts = 10;
-        Vector3 finalPosition = transform.position;
-
-        for (int i = 0; i < maxAttempts; i++)
-        {
-            // Get colliders within the avoidance radius around the current NPC
-            Collider[] colliders = Physics.OverlapSphere(finalPosition, avoidanceRadius, npcLayer);
-
-            // If we detect other colliders and the position is inside the sphere
-            if (colliders.Length > 0 && IsInsideSphere(finalPosition))
-            {
-                Vector3 newPosition = finalPosition;
-
-                // Loop through all the colliders and adjust position if there's overlap
-                foreach (Collider e in colliders)
+                // Add minimal avoidance to prevent exact overlap if NPCs are crowded
+                Vector3 avoidanceVector = Vector3.zero;
+                
+                foreach (NPCManager otherNPC in MGameManager.instance.allNPCs)
                 {
-                    if (e.transform != transform) // Don't check self
+                    if (otherNPC == null || otherNPC.transform == transform) continue;
+                    
+                    float distance = Vector3.Distance(transform.position, otherNPC.transform.position);
+                    
+                    // Only apply minimal avoidance in formation
+                    if (distance < minNPCDistance * 0.5f)
                     {
-                        // Calculate the direction away from the colliding NPC
-                        Vector3 directionAwayFromOther = (finalPosition - e.transform.position).normalized;
-                        // Calculate how far to move based on overlap distance
-                        float distanceToMove = Mathf.Max(avoidanceRadius, Vector3.Distance(finalPosition, e.transform.position));
-                        newPosition += directionAwayFromOther * distanceToMove;
-
-                        // Optionally, add a random spread to avoid clustering
-                        newPosition += new Vector3(Random.Range(-0.5f, 0.5f), 0, Random.Range(-0.5f, 0.5f));
+                        Vector3 separationVector = transform.position - otherNPC.transform.position;
+                        float repulsionStrength = Mathf.Pow(1f - (distance / (minNPCDistance * 0.5f)), 2) * 2f;
+                        avoidanceVector += separationVector.normalized * repulsionStrength;
                     }
                 }
-
-                newPosition.y = fixedYPosition; // Keep Y position fixed
-
-                // Return the new valid position
-                return newPosition;
+                
+                // Apply reduced avoidance
+                targetPosition += avoidanceVector * 0.2f;
+                Debug.Log($"Formation Mode: {(formationManager.staticFormations ? "Static" : "Following")}, Player Pos: {target.position}, Target Pos: {targetPosition}");
+                
+                // Optional: Add debug information
+                Debug.DrawLine(transform.position, targetPosition, Color.green);
+                
+                // If we've reached the formation position, stop movement completely (optional)
+                if (formationManager.staticFormations && 
+                    Vector3.Distance(transform.position, targetPosition) < 0.1f)
+                {
+                    currentVelocity = Vector3.zero; // Stop movement once in position
+                }
             }
         }
-
-        // If no valid position is found after several attempts, move it outside
-        return GetPositionOutsideSphere();
     }
 
-
-
-    // Check if the position is inside the sphere's radius
-    bool IsInsideSphere(Vector3 position)
+    void CalculateCenterOfMass()
     {
-        if (spawnArea != null)
+        // Calculate the center of mass of all NPCs
+        centerOfMass = Vector3.zero;
+        int activeNPCs = 0;
+
+        foreach (NPCManager npc in MGameManager.instance.allNPCs)
         {
-            SphereCollider sphereCollider = spawnArea.GetComponent<SphereCollider>();
-            if (sphereCollider != null)
+            if (npc != null)
             {
-                float distance = Vector3.Distance(sphereCollider.transform.position, position);
-                return distance < sphereCollider.radius * 0.99f;
+                centerOfMass += npc.transform.position;
+                activeNPCs++;
             }
         }
-        return false;
+
+        if (activeNPCs > 0)
+        {
+            centerOfMass /= activeNPCs;
+        }
     }
 
-    // Get a position outside the sphere if there is no space inside
-    Vector3 GetPositionOutsideSphere()
+    void UpdateMovingTargetPosition(NPCManager npc)
     {
-        if (spawnArea != null)
+        Vector3 targetForward = target.forward;
+        Vector3 targetRight = Vector3.Cross(Vector3.up, targetForward).normalized;
+
+        // Seed random with unique value for each NPC
+        Random.State oldState = Random.state;
+        Random.InitState(npcIndex * 1000 + Time.frameCount);
+
+        // Calculate base position behind target with some randomness
+        float distanceBehind = Mathf.Lerp(minDistanceBehindTarget, maxDistanceBehindTarget, 
+            Mathf.Clamp01((float)npcIndex / Mathf.Max(1, MGameManager.instance.allNPCs.Count - 1)));
+        
+        Vector3 basePosition = target.position - targetForward * distanceBehind;
+
+        // Add some randomness to the position
+        Vector2 randomOffset = Random.insideUnitCircle * (minNPCDistance * 0.5f);
+        
+        // Apply offset using target's right vector
+        targetPosition = basePosition 
+            + targetRight * randomOffset.x 
+            + Vector3.Cross(Vector3.up, targetRight) * randomOffset.y;
+
+        // Restore random state
+        Random.state = oldState;
+
+        // Gravitate towards center of mass while maintaining relative positions
+        Vector3 centerOffset = (centerOfMass - transform.position) * 0.1f;
+        targetPosition += centerOffset;
+        targetPosition.y = fixedYPosition;
+
+        // Apply avoidance
+        targetPosition += CalculateAvoidanceVector(npc);
+    }
+
+    void UpdateStoppedTargetPosition()
+    {
+        // Target's forward and right vectors
+        Vector3 targetForward = target.forward;
+        Vector3 targetRight = Vector3.Cross(Vector3.up, targetForward).normalized;
+
+        // Define the bounds of the random spread area
+        float minSpreadBehind = minDistanceBehindTarget;
+        float maxSpreadBehind = maxDistanceBehindTarget;
+        float maxSpreadSide = maxDistanceBehindTarget;
+
+        // Seed random with unique value for each NPC to ensure consistent but random positioning
+        Random.State oldState = Random.state;
+        Random.InitState(npcIndex * 1000 + Time.frameCount);
+
+        // Base position behind the target with random distance
+        float randomDistanceBehind = Random.Range(minSpreadBehind, maxSpreadBehind);
+        Vector3 basePosition = target.position - targetForward * randomDistanceBehind;
+
+        // Random 2D offset within a circular area
+        Vector2 randomOffset = Random.insideUnitCircle * maxSpreadSide;
+        
+        // Apply offset using target's right vector
+        targetPosition = basePosition 
+            + targetRight * randomOffset.x 
+            + Vector3.Cross(Vector3.up, targetRight) * randomOffset.y;
+
+        // Restore random state
+        Random.state = oldState;
+
+        targetPosition.y = fixedYPosition;
+    }
+
+    // float CalculateGroupSideOffset()
+    // {
+    //     // Distribute NPCs across a line perpendicular to target's movement
+    //     float spacing = minNPCDistance;
+    //     int npcCount = MGameManager.instance.allNPCss.Count;
+        
+    //     // Center the group around the target's path
+    //     float centerOffset = (npcCount - 1) * spacing * 0.5f;
+        
+    //     // Calculate individual NPC's offset
+    //     float individualOffset = npcIndex * spacing - centerOffset;
+        
+    //     return individualOffset;
+    // }
+
+    Vector3 CalculateAvoidanceVector(NPCManager npc)
+    {
+        Vector3 avoidanceSum = Vector3.zero;
+        
+        foreach (NPCManager otherNPC in MGameManager.instance.allNPCs)
         {
-            SphereCollider sphereCollider = spawnArea.GetComponent<SphereCollider>();
-            if (sphereCollider != null)
+            if (otherNPC == npc) continue;
+            
+            float distance = Vector3.Distance(transform.position, otherNPC.transform.position);
+            
+            // Repulsion when too close
+            if (distance < minNPCDistance)
             {
-                // Create a random direction outside the sphere and scale it by a factor greater than the sphere radius
-                Vector3 outsideDirection = Random.insideUnitSphere.normalized;
-                return sphereCollider.transform.position + outsideDirection * (sphereCollider.radius * 1.5f); // 1.5 to place it outside
+                Vector3 separationVector = transform.position - otherNPC.transform.position;
+                float repulsionStrength = Mathf.Pow(1f - (distance / minNPCDistance), 3) * 5f;
+                avoidanceSum += separationVector.normalized * repulsionStrength;
+            }
+            
+            // Attraction when too far
+            if (distance > maxNPCDistance)
+            {
+                Vector3 attractionVector = otherNPC.transform.position - transform.position;
+                float attractionStrength = (distance - maxNPCDistance) * 0.1f;
+                avoidanceSum += attractionVector.normalized * attractionStrength;
             }
         }
-        return player.position + new Vector3(Random.Range(-followRadius, followRadius), 0, Random.Range(-followRadius, followRadius));
+        
+        return avoidanceSum;
     }
 }
-

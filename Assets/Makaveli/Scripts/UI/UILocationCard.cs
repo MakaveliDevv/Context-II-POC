@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UICard : MonoBehaviour
+public class UILocationCard : MonoBehaviour
 {
     public Transform location;
     public Vector3 objectPosition;

@@ -1,24 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UICardManagement
+public class CardManagerUI
 {
     private readonly GameObject cardsUI;
-    private Dictionary<GameObject, List<UICard>> panelCardMap = new();
-    private readonly List<UICard> cards;
+    private Dictionary<GameObject, List<UILocationCard>> panelCardMap = new();
+    private readonly List<UILocationCard> cards;
     private readonly List<GameObject> cardPanels;
     private int currentIndex = 0;
     private int totalTrackedObjects = 0;
     private int totalActivePanels = 0;
     
-    public UICardManagement
+    public CardManagerUI
     (
         GameObject cardsUI,
         List<GameObject> cardPanels,
-        List<UICard> cards
+        List<UILocationCard> cards
     ) 
     {
         this.cardsUI = cardsUI;
@@ -34,14 +33,15 @@ public class UICardManagement
         cards?.Clear();
         
         if (panelCardMap == null)
-            panelCardMap = new Dictionary<GameObject, List<UICard>>();
+            panelCardMap = new Dictionary<GameObject, List<UILocationCard>>();
         else
             panelCardMap.Clear();
         
         // Get the CardsPanel container (which is the first child of cardsUI)
         Transform cardsPanel = cardsUI.transform.GetChild(0);
         int panelCount = cardsPanel.childCount;
-        Debug.Log($"Panel count: {panelCount}");
+
+        // Debug.Log($"Panel count: {panelCount}");
         
         // Loop through children of CardsPanel
         for (int i = 0; i < panelCount; i++)
@@ -51,32 +51,32 @@ public class UICardManagement
             // Skip PanelNavigation or any non-Panel objects
             if (childTransform.name == "PanelNavigation" || !childTransform.name.Contains("Panel"))
             {
-                Debug.Log($"Skipping {childTransform.name} - not a card panel");
+                // Debug.Log($"Skipping {childTransform.name} - not a card panel");
                 continue;
             }
             
             GameObject panel = childTransform.gameObject;
             cardPanels.Add(panel);
-            Debug.Log($"Added panel: {panel.name}");
+            // Debug.Log($"Added panel: {panel.name}");
             
             // Create a new list for this panel's cards
-            List<UICard> panelCards = new();
+            List<UILocationCard> panelCards = new();
             
             int cardCount = panel.transform.childCount;
-            Debug.Log($"Card count in {panel.name}: {cardCount}");
+            // Debug.Log($"Card count in {panel.name}: {cardCount}");
             
             // Loop through all cards in this panel
             for (int j = 0; j < cardCount; j++)
             {
                 GameObject cardObject = panel.transform.GetChild(j).gameObject;
                 
-                if (cardObject.TryGetComponent<UICard>(out var _card))
+                if (cardObject.TryGetComponent<UILocationCard>(out var _card))
                 {
                     // Add to the panel-specific list
                     panelCards.Add(_card);
                     cards?.Add(_card);
                     
-                    Debug.Log($"Added card: {cardObject.name} from panel: {panel.name}");
+                    // Debug.Log($"Added card: {cardObject.name} from panel: {panel.name}");
                 }
                 else
                 {
@@ -88,13 +88,13 @@ public class UICardManagement
             panelCardMap.Add(panel, panelCards);
         }
         
-        Debug.Log($"Initialization complete. Found {cardPanels.Count} panels and {panelCardMap.Sum(pair => pair.Value.Count)} cards total.");
+        // Debug.Log($"Initialization complete. Found {cardPanels.Count} panels and {panelCardMap.Sum(pair => pair.Value.Count)} cards total.");
         
         // Extra debugging to verify the dictionary contents
-        foreach (var pair in panelCardMap)
-        {
-            Debug.Log($"Panel {pair.Key.name} has {pair.Value.Count} cards");
-        }
+        // foreach (var pair in panelCardMap)
+        // {
+        //     Debug.Log($"Panel {pair.Key.name} has {pair.Value.Count} cards");
+        // }
     }
 
     public IEnumerator DisplayCards(MonoBehaviour monoBehaviour)
@@ -124,7 +124,7 @@ public class UICardManagement
         }
         
         totalTrackedObjects = MGameManager.instance.objectsToTrack.Count;
-        Debug.Log($"Total objects to track: {totalTrackedObjects}");
+        // Debug.Log($"Total objects to track: {totalTrackedObjects}");
         
         // Calculate how many panels we need to activate based on tracked objects
         CalculateActivePanels();
@@ -172,7 +172,7 @@ public class UICardManagement
             totalActivePanels = cardPanels.Count;
         }
         
-        Debug.Log($"Will activate {totalActivePanels} panels for {totalTrackedObjects} objects");
+        // Debug.Log($"Will activate {totalActivePanels} panels for {totalTrackedObjects} objects");
     }
 
     private void InitializeAllPanelsData(MonoBehaviour monoBehaviour)
@@ -183,7 +183,7 @@ public class UICardManagement
         for (int panelIndex = 0; panelIndex < totalActivePanels; panelIndex++)
         {
             GameObject panel = cardPanels[panelIndex];
-            List<UICard> panelCards = panelCardMap[panel];
+            List<UILocationCard> panelCards = panelCardMap[panel];
             
             // Loop through each card in the panel
             for (int cardIndex = 0; cardIndex < panelCards.Count; cardIndex++)
@@ -195,7 +195,7 @@ public class UICardManagement
                     continue;
                 }
                 
-                UICard card = panelCards[cardIndex];
+                UILocationCard card = panelCards[cardIndex];
                 GameObject objectToTrack = MGameManager.instance.objectsToTrack[objectIndex];
                 
                 // Set up the card with the object data
@@ -255,7 +255,7 @@ public class UICardManagement
         for (int panelIndex = totalActivePanels; panelIndex < cardPanels.Count; panelIndex++)
         {
             GameObject panel = cardPanels[panelIndex];
-            List<UICard> panelCards = panelCardMap[panel];
+            List<UILocationCard> panelCards = panelCardMap[panel];
             
             foreach (var card in panelCards)
             {
@@ -264,7 +264,7 @@ public class UICardManagement
         }
     }
 
-    private void SetupCard(UICard card, GameObject objectToTrack)
+    private void SetupCard(UILocationCard card, GameObject objectToTrack)
     {
         // Initialize the card data
         card.objectPosition = objectToTrack.transform.position;
@@ -279,7 +279,7 @@ public class UICardManagement
             if (image != null)
             {
                 image.texture = card.renderTexture;
-                Debug.Log($"Set render texture for card {card.gameObject.name}");
+                // Debug.Log($"Set render texture for card {card.gameObject.name}");
             }
             else
             {
@@ -297,7 +297,7 @@ public class UICardManagement
         // Hide all cards in all panels
         foreach (var panel in cardPanels)
         {
-            List<UICard> panelCards = panelCardMap[panel];
+            List<UILocationCard> panelCards = panelCardMap[panel];
             foreach (var card in panelCards)
             {
                 card.gameObject.SetActive(false);
@@ -381,7 +381,7 @@ public class UICardManagement
         panel.SetActive(true);
         
         // Activate all cards in this panel that have data
-        List<UICard> panelCards = panelCardMap[panel];
+        List<UILocationCard> panelCards = panelCardMap[panel];
         int startIndex = 0;
         
         // Calculate the starting index for objects to track based on previous panels
@@ -406,6 +406,6 @@ public class UICardManagement
             }
         }
         
-        Debug.Log($"Activated panel {index}: {panel.name}");
+        // Debug.Log($"Activated panel {index}: {panel.name}");
     }
 }

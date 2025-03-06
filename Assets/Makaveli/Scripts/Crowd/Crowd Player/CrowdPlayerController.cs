@@ -4,25 +4,24 @@ using UnityEngine;
 
 public class CrowdPlayerController 
 {
+    // References
+    private readonly MonoBehaviour mono;
+    private readonly TopDownMovement topDownMovement; // Top down movement class
+    // private readonly CrowdPlayerMovement movement; // FP movement class
+    public readonly CrowdPlayerUIManager UImanagement; // UI management class
+    
     public Transform chosenLocation;
-    public bool location = false;
-
-    private readonly MonoBehaviour monoBehaviour;
-    // private readonly CrowdPlayerMovement movement;
-    private readonly TopDownMovement topDownMovement;
-    private readonly CrowdPlayerUIManager UImanagement;
+    private readonly Transform npcContainer;
     private Vector2 movementInput;
 
     private bool isProcessingClick;
-    private readonly Transform npcContainer;
-    public bool isAtLocation = false;
-
+    public bool isAtLocation;
 
     public CrowdPlayerController
     (
-        MonoBehaviour monoBehaviour,
+        MonoBehaviour mono,
         CharacterController controller,
-        Transform player,
+        // Transform player,
         // Transform camera,
         // Vector2 angleLimit,
         float movementSpeed,
@@ -34,11 +33,11 @@ public class CrowdPlayerController
         int npcCount,
         GameObject cardsUI,
         List<GameObject> cardPanels,
-        List<UICard> cards,
+        List<UILocationCard> cards,
         List<GameObject> NPCs
     ) 
     {
-        this.monoBehaviour = monoBehaviour;
+        this.mono = mono;
 
         // movement = new
         // (
@@ -56,14 +55,26 @@ public class CrowdPlayerController
         topDownMovement = new
         (
             controller,
-            player,
+            controller.transform,
             movementSpeed,
             appliedMovementSpeedPercentage
         );
 
-        UImanagement = new(cardsUI, cardPanels, cards);
-        npcContainer = player.parent.transform.GetChild(2);
-        monoBehaviour.StartCoroutine(NPCsManagement.SpawnNPC(NPCs, npc, npcCount, npcContainer));    
+        UImanagement = new
+        (
+            controller.transform.parent, 
+            cardsUI, 
+            cardPanels, 
+            cards
+        );
+        
+        npcContainer = controller.transform.parent.transform.GetChild(3);
+        mono.StartCoroutine(NPCsManagement.SpawnNPC(NPCs, npc, npcCount, npcContainer));    
+    }
+
+    public void Start(CrowdPlayerManager playerManager) 
+    {
+        UImanagement.Start(mono, playerManager);
     }
 
     public void MovementInput() 
@@ -80,7 +91,7 @@ public class CrowdPlayerController
 
     public void OpenCardUI() 
     {
-        UImanagement.DisplayCards(monoBehaviour);
+        UImanagement.DisplayCards(mono);
     }
     
     public void CardPanelNavigation() 
@@ -88,7 +99,7 @@ public class CrowdPlayerController
         UImanagement.CardPanelNavigation();
     }
 
-    public void ChooseLocation(List<UICard> cards, bool _bool)
+    public void ChooseLocation(List<UILocationCard> cards, bool _bool)
     {
         // If in UI mode and not already processing a click
         if (_bool)
@@ -109,11 +120,10 @@ public class CrowdPlayerController
                             {
                                 isProcessingClick = true;
                                 chosenLocation = card.location;
-                                Debug.Log($"Location: {chosenLocation}");
-                                location = true;
+                                // Debug.Log($"Location: {chosenLocation}");
                                 // NPCsManagement.TriggerAllMovements(card.location);
                                 
-                                monoBehaviour.StartCoroutine(ResetClickState(1.0f)); // 1 second delay
+                                mono.StartCoroutine(ResetClickState(1.0f)); // 1 second delay
                             }
                         });
                     }
@@ -143,10 +153,10 @@ public class CrowdPlayerController
         }
     }
 
-    // private void ShowNavigationUI() 
-    // {
-    //     // Fetch the position from the player to the location
-    //     Vector3 endPosition = chosenLocation.position;
-        
-    // }
+    public void OpenShapePanel() 
+    {
+        UImanagement.OpenShapePanelUI();
+    }
+
+
 }

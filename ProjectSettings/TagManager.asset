@@ -6,7 +6,9 @@ TagManager:
   tags:
   - ObjectToTrack
   - PatrolArea
-  - RadiusArea
+  - NPCArea
+  - NPC
+  - PlayerParent
   layers:
   - Default
   - TransparentFX

@@ -6,7 +6,6 @@ public class CrowdPlayerManager : MonoBehaviour
     public CrowdPlayerController playerController;
 
     [SerializeField] private CharacterController controller;
-    [SerializeField] private Transform playerTransform;
     // [SerializeField] private Transform cameraTransform;
     [SerializeField] private float movementSpeed = 5f;
     [SerializeField] private float aplliedMovementSpeedPercentage = .5f;
@@ -19,7 +18,7 @@ public class CrowdPlayerManager : MonoBehaviour
     [Header("UI Stuff")]
     [SerializeField] private GameObject cardsUI;
     [SerializeField] private List<GameObject> cardPanels = new();
-    [SerializeField] private List<UICard> cards = new();
+    [SerializeField] private List<UILocationCard> cards = new();
     public bool cardButtonClicked = false;
     public bool isProcessingClick = false;
 
@@ -36,7 +35,7 @@ public class CrowdPlayerManager : MonoBehaviour
     private void Awake()
     {
         controller = transform.GetChild(0).gameObject.GetComponent<CharacterController>();
-        playerTransform = transform.GetChild(0).gameObject.GetComponent<Transform>();
+        // playerRenderer = transform.GetChild(0).gameObject.GetComponent<Transform>();
        
         // playerController = new 
         // (
@@ -62,7 +61,6 @@ public class CrowdPlayerManager : MonoBehaviour
         (
             this,
             controller,
-            playerTransform,
             movementSpeed,
             aplliedMovementSpeedPercentage,
             npcPrefab,
@@ -74,6 +72,11 @@ public class CrowdPlayerManager : MonoBehaviour
         );
 
         MGameManager.instance.allCrowdPlayers.Add(this);
+    }
+
+    private void Start()
+    {
+        playerController.Start(this);
     }
 
     private void OnEnable()
@@ -95,20 +98,31 @@ public class CrowdPlayerManager : MonoBehaviour
             if (MGameManager.instance.showLocationCards)
             {
                 inUIMode = true;
-                InputActionHandler.DisableInputActions();
+                // InputActionHandler.DisableInputActions();
                 playerController.OpenCardUI();
                 // ableToLook = false;
             }
             else
             {
-                InputActionHandler.EnableInputActions();
+                inUIMode = false;
+                // InputActionHandler.EnableInputActions();
                 playerController.HideCards();
                 // ableToLook = true;
-                inUIMode = false;
             }
 
             // Lock/unlock cursor based on UI state
-            Cursor.lockState = inUIMode ? CursorLockMode.None : CursorLockMode.Locked;
+            // Cursor.lockState = inUIMode ? CursorLockMode.None : CursorLockMode.Locked;
+        }
+
+        if(inUIMode) 
+        {
+            Cursor.lockState = CursorLockMode.None;
+            InputActionHandler.DisableInputActions();
+        }
+        else 
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            InputActionHandler.EnableInputActions();
         }
 
         // These should still be in Update if they need to run continuously

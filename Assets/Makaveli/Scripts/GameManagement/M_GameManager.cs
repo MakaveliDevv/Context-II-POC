@@ -21,6 +21,8 @@ public class MGameManager : MonoBehaviour
     public List<CrowdPlayerManager> allCrowdPlayers = new(); 
     private readonly Dictionary<CrowdPlayerManager, Transform> chosenLocations = new();
     [SerializeField] private List<DictionaryEntry<CrowdPlayerManager, Transform>> ChosenLocations = new();
+    public Dictionary<CrowdPlayerManager, GameObject> playerShapeUI = new();
+    public List<DictionaryEntry<CrowdPlayerManager, GameObject>> PlayerShapeUI = new();
     public bool navigationUI = false;
 
     // NPC related stuff
@@ -28,7 +30,7 @@ public class MGameManager : MonoBehaviour
     // public GameObject patrolArea;
     public Transform walkableArea;
     public int trackableObjectAmount;
-    [HideInInspector] public List<NPCManager> allNPCs = new();
+    public List<NPCManager> allNPCs = new();
 
     [Header("Round Management")]
     [SerializeField] private float chooseLocationTimer;
@@ -70,21 +72,20 @@ public class MGameManager : MonoBehaviour
             case GamePlayManagement.TRAVELING:
                 StopCoroutine(InitializeLocations());
 
-                int boolAmount = 0;
+                int c = 0;
                 for (int i = 0; i < allCrowdPlayers.Count; i++)
                 {
                     CrowdPlayerManager player = allCrowdPlayers[i].GetComponent<CrowdPlayerManager>();
                     Transform playerTransform = player.gameObject.transform.GetChild(0);
-                    Debug.Log(playerTransform);
                     player.playerController.CheckPlayerPosition(playerTransform);
 
                     if(player.playerController.isAtLocation) 
                     {
-                        boolAmount++;
+                        c++;
                     }
                 }
 
-                if(boolAmount == allCrowdPlayers.Count) 
+                if(c == allCrowdPlayers.Count) 
                 {
                     gamePlayManagement = GamePlayManagement.CHOOSE_SHAPE;
                     Debug.Log("All players have reached their location point");
@@ -141,6 +142,8 @@ public class MGameManager : MonoBehaviour
 
             case GamePlayManagement.CHOOSE_SHAPE:
                 // Show UI to choose a shape
+                StartCoroutine(DisplayShapePanel());
+              
 
             break;
 
@@ -148,6 +151,22 @@ public class MGameManager : MonoBehaviour
 
             break;
         }
+    }
+
+    private IEnumerator DisplayShapePanel() 
+    {
+        yield return new WaitForSeconds(2f);
+        
+        // Show the UI for each player independent
+        foreach (var player in playerShapeUI)
+        {
+            player.Key.playerController.OpenShapePanel();
+            player.Key.inUIMode = true;   
+            
+            break;
+        }
+
+        yield break;
     }
 
     public GameObject InstantiatePrefab(GameObject prefab, Transform parent) 

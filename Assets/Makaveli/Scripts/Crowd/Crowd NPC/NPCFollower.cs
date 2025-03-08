@@ -151,7 +151,7 @@ public class NPCFollower
                 
                 // Apply reduced avoidance
                 targetPosition += avoidanceVector * 0.2f;
-                Debug.Log($"Formation Mode: {(formationManager.staticFormations ? "Static" : "Following")}, Player Pos: {target.position}, Target Pos: {targetPosition}");
+                // Debug.Log($"Formation Mode: {(formationManager.staticFormations ? "Static" : "Following")}, Player Pos: {target.position}, Target Pos: {targetPosition}");
                 
                 // Optional: Add debug information
                 Debug.DrawLine(transform.position, targetPosition, Color.green);

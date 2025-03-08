@@ -6,13 +6,14 @@ using System.Collections;
 public class ShapeManagerUI
 {
     private GameObject[] panelObjects;
-    private GameObject UIShapePanel;
+    public GameObject UIShapePanel;
     private readonly Transform player;
     private TextMeshProUGUI selectedShapeText;
 
     private Button previousButton;
     private Button nextButton;
-    private Button selectButton;    
+    private Button selectButton;   
+    public Button confirmButton; 
     private int currentIndex = 0;
 
     public bool shapeSelected;
@@ -34,25 +35,40 @@ public class ShapeManagerUI
 
         PopulatePanelObjects();
         
-        previousButton = UIShapePanel.transform.GetChild(2).transform.GetChild(0).GetComponent<Button>();
-        nextButton = UIShapePanel.transform.GetChild(2).transform.GetChild(1).GetComponent<Button>();
+        previousButton = UIShapePanel.transform.GetChild(3).transform.GetChild(0).GetComponent<Button>();
+        nextButton = UIShapePanel.transform.GetChild(3).transform.GetChild(1).GetComponent<Button>();
+
         selectButton = UIShapePanel.transform.GetChild(1).GetComponent<Button>();
         selectedShapeText = selectButton.gameObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
 
-        // Debug.Log($"Previous Button: {previousButton}");
-        // Debug.Log($"Previous Button: {nextButton}");
+        confirmButton = UIShapePanel.transform.GetChild(2).GetComponent<Button>();
 
         yield return null;
 
         // Set up button listeners
         if (previousButton != null)
+        {
+            previousButton.onClick.RemoveAllListeners();
             previousButton.onClick.AddListener(NavigatePrevious);
+        }
         
         if (nextButton != null)
+        {
+            nextButton.onClick.RemoveAllListeners();
             nextButton.onClick.AddListener(NavigateNext);
+        }
 
         if (selectButton != null)
+        {
+            selectButton.onClick.RemoveAllListeners();
             selectButton.onClick.AddListener(SelectShape);
+        }
+
+        if(confirmButton != null)
+        {
+            confirmButton.onClick.RemoveAllListeners();
+            confirmButton.onClick.AddListener(() => ConfirmShape(playerManager) );
+        }
         
         // Initialize panel by activating only the first object
         UpdatePanel();
@@ -101,6 +117,11 @@ public class ShapeManagerUI
     public void OpenShapePanel() 
     {
         UIShapePanel.SetActive(true);
+    }
+
+    public void CloseShapePanel() 
+    {
+        UIShapePanel.SetActive(false);
     }
 
     private void PopulatePanelObjects()
@@ -209,11 +230,26 @@ public class ShapeManagerUI
         }
 
         shapeSelected = true;
-        
-        // Store the selected shape somewhere accessible to the player
-        // For example, you could store it in the MGameManager
-        
-        // Optional: Close the shape panel after selection
-        UIShapePanel.SetActive(false);
+    }
+
+    private bool hasConfirmedShape = false;
+
+    public void ConfirmShape(CrowdPlayerManager crowdPlayerManager) 
+    {
+        if (hasConfirmedShape) return;
+
+        hasConfirmedShape = true;
+        Debug.Log("Confirming shape, deactivating UI panel");
+
+        // Close the UI shape panel
+        // if(UIShapePanel.activeInHierarchy) UIShapePanel.SetActive(false); 
+        // UIShapePanel.SetActive(false);
+        // UIShapePanel.transform.localScale = Vector3.zero; // Force visibility off
+        // crowdPlayerManager.inUIMode = false;
+
+        Debug.Log("UI panel deactivated, checking if any part re-enables it");
+    
+        MGameManager.instance.gamePlayManagement = MGameManager.GamePlayManagement.SIGNAL;
+
     }
 }

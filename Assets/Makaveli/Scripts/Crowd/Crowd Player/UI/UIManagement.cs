@@ -51,4 +51,9 @@ public class CrowdPlayerUIManager
     {
         shapeManagerUI.OpenShapePanel();
     }
+
+    public void CloseShapePanelUI() 
+    {
+        shapeManagerUI.CloseShapePanel();
+    }
 }

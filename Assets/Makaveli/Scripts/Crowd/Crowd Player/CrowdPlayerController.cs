@@ -121,9 +121,23 @@ public class CrowdPlayerController
                                 isProcessingClick = true;
                                 chosenLocation = card.location;
                                 // Debug.Log($"Location: {chosenLocation}");
-                                // NPCsManagement.TriggerAllMovements(card.location);
+                                
+                                // Set the formation location in the formation manager
+                                if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))
+                                {
+                                    formationController.SetFormationLocation(chosenLocation);
+                                    
+                                    // If already in a formation, update it to use the new location
+                                    NPCFormationManager formManager = formationController.formationManager;
+                                    if (formManager != null && formManager.currentFormation != FormationType.Follow)
+                                    {
+                                        // Re-apply current formation to update positions
+                                        formationController.ChangeFormation(formManager.currentFormation);
+                                    }
+                                }
                                 
                                 mono.StartCoroutine(ResetClickState(1.0f)); // 1 second delay
+
                             }
                         });
                     }
@@ -137,6 +151,53 @@ public class CrowdPlayerController
             isProcessingClick = false;
         }
     }
+    
+    // public void ConfirmShape() 
+    // {
+    //     UImanagement.shapeManagerUI.ConfirmShape(mono);
+    // }
+    
+    #region Oldcode
+    // public void ChooseLocation(List<UILocationCard> cards, bool _bool)
+    // {
+    //     // If in UI mode and not already processing a click
+    //     if (_bool)
+    //     {
+    //         if (cards.Count > 0)
+    //         {
+    //             for (int i = 0; i < cards.Count; i++)
+    //             {
+    //                 var card = cards[i];
+                    
+    //                 // Remove any existing listeners to prevent duplicates
+    //                 if(card.btn != null) 
+    //                 {
+    //                     card.btn.onClick.RemoveAllListeners();
+    //                     card.btn.onClick.AddListener(() =>
+    //                     {
+    //                         if (!isProcessingClick)
+    //                         {
+    //                             isProcessingClick = true;
+    //                             chosenLocation = card.location;
+    //                             // Debug.Log($"Location: {chosenLocation}");
+    //                             // NPCsManagement.TriggerAllMovements(card.location);
+                                
+    //                             mono.StartCoroutine(ResetClickState(1.0f)); // 1 second delay
+    //                         }
+    //                     });
+    //                 }
+    //             }
+    //         }
+    //     }
+        
+    //     // Only reset if we're not in UI mode
+    //     if (!_bool)
+    //     {
+    //         isProcessingClick = false;
+    //     }
+    // }
+
+    #endregion
 
     private IEnumerator ResetClickState(float delay)
     {
@@ -156,6 +217,11 @@ public class CrowdPlayerController
     public void OpenShapePanel() 
     {
         UImanagement.OpenShapePanelUI();
+    }
+
+    public void CloseShapePanel() 
+    {
+        UImanagement.CloseShapePanelUI();
     }
 
 

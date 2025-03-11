@@ -15,7 +15,7 @@ public class ShapeManagerUI
     private Button previousButton;
     private Button nextButton;
     private Button selectButton;   
-    public Button confirmButton; 
+    public Button signalButton; 
     private int currentIndex = 0;
 
     public string shapeName;
@@ -55,7 +55,7 @@ public class ShapeManagerUI
         else { Debug.LogError("Couldn't fetch the 'previous nav button' "); yield break; }
 
         // selectButton = UIShapePanel.transform.GetChild(1).GetComponent<Button>();
-        if(UIShapePanel.transform.GetChild(1).TryGetComponent<Button>(out var selectButton)) this.selectButton = selectButton;
+        if(UIShapePanel.transform.GetChild(2).TryGetComponent<Button>(out var selectButton)) this.selectButton = selectButton;
         else { Debug.LogError("Couldn't fetch the 'select shape button' "); yield break; }
 
         // selectedShapeText = selectButton.gameObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
@@ -63,8 +63,8 @@ public class ShapeManagerUI
         else { Debug.LogError("Couldn't fetch the 'selected shape text' "); yield break; }
 
         // confirmButton = UIShapePanel.transform.GetChild(2).GetComponent<Button>();
-        if(UIShapePanel.transform.GetChild(2).TryGetComponent<Button>(out var confirmButton)) this.confirmButton = confirmButton;
-        else { Debug.LogError("Couldn't fetch the 'confirm shape button' "); yield break; }
+        if(UIShapePanel.transform.GetChild(1).TryGetComponent<Button>(out var signalButton)) this.signalButton = signalButton;
+        else { Debug.LogError("Couldn't fetch the 'signal shape button' "); yield break; }
 
         yield return null;
         
@@ -83,7 +83,7 @@ public class ShapeManagerUI
             });
         }
 
-        yield return null;
+        // yield return null;
 
         if(this.closePanelButton != null) 
         {
@@ -97,7 +97,7 @@ public class ShapeManagerUI
             });
         }
 
-        yield return null;
+        // yield return null;
         
         if (this.previousButton != null)
         {
@@ -105,7 +105,7 @@ public class ShapeManagerUI
             this.previousButton.onClick.AddListener(NavigatePrevious);
         }
 
-        yield return null;
+        // yield return null;
         
         if (this.nextButton != null)
         {
@@ -113,7 +113,7 @@ public class ShapeManagerUI
             this.nextButton.onClick.AddListener(NavigateNext);
         }
 
-        yield return null;
+        // yield return null;
 
         if (this.selectButton != null)
         {
@@ -121,12 +121,12 @@ public class ShapeManagerUI
             this.selectButton.onClick.AddListener(SelectShape);
         }
 
-        yield return null;
+        // yield return null;
 
-        if(this.confirmButton != null)
+        if(this.signalButton != null)
         {
-            this.confirmButton.onClick.RemoveAllListeners();
-            this.confirmButton.onClick.AddListener(() => ConfirmShape(playerManager) );
+            this.signalButton.onClick.RemoveAllListeners();
+            this.signalButton.onClick.AddListener(() => playerManager.StartCoroutine(SignalShape(playerManager)) );
         }
         
         // Initialize panel by activating only the first object
@@ -190,13 +190,14 @@ public class ShapeManagerUI
     public void OpenShapePanel(CrowdPlayerManager playerManager) 
     {
         UIShapePanel.SetActive(true);
-        playerManager.SetInUIMode(true); 
+        // playerManager.UIMode(true);
+        Debug.Log($"OpenShapePanel: inUIMode = {playerManager.inUIMode}, playerManager = {playerManager.name}");
     }
 
     public void CloseShapePanel(CrowdPlayerManager playerManager) 
     {
         UIShapePanel.SetActive(false);
-        playerManager.SetInUIMode(false); // Set inUIMode to false when the shape panel closes    
+        // playerManager.UIMode(false);
     }
 
     private void PopulatePanelObjects()
@@ -308,17 +309,23 @@ public class ShapeManagerUI
         shapeSelected = true;
     }
 
-    public void ConfirmShape(CrowdPlayerManager playerManager) 
+    public IEnumerator SignalShape(CrowdPlayerManager playerManager) 
     {
-        if (shapeConfirmed) return;
+        if (shapeConfirmed) yield break;
 
         shapeConfirmed = true;
         Debug.Log("Confirming shape, deactivating UI panel");
 
         CloseShapePanel(playerManager);
+        UpdatePanelButtons(true);
+        playerManager.playerState = CrowdPlayerManager.PlayerState.SIGNAL;
 
-        // Display emote of npc
+        yield return new WaitForSeconds(1f);
 
+        
+
+        // Display emote of npc       
+       
         // Close the UI shape panel
         // if(UIShapePanel.activeInHierarchy) UIShapePanel.SetActive(false); 
         // UIShapePanel.SetActive(false);

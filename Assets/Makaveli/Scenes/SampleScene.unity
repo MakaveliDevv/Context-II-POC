@@ -489,8 +489,8 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 980754334}
-  - {fileID: 480059317}
   - {fileID: 323069500}
+  - {fileID: 480059317}
   - {fileID: 121943341}
   m_Father: {fileID: 484005149}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1924,7 +1924,7 @@ GameObject:
   - component: {fileID: 323069502}
   - component: {fileID: 323069501}
   m_Layer: 5
-  m_Name: Confirm Button
+  m_Name: Signal Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9463,7 +9463,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Confirm
+  m_text: 'Signal
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

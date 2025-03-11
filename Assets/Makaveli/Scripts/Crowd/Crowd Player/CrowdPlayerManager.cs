@@ -29,22 +29,15 @@ public class CrowdPlayerManager : MonoBehaviour
     private bool openShapePanelFirstTime;
 
     public bool inUIMode = false;
-    public bool InUIMode { get; private set; } // make it private but accessible via method
     // private bool ableToLook = true;
     private bool lastDisplayUIState = false; 
 
     [Header("NPC Stuff")]
-    [SerializeField] private List<GameObject> NPCs = new();
+    public List<GameObject> NPCs = new();
     [SerializeField] private GameObject npcPrefab;
     [SerializeField] private int npcCount;
 
     float elapsedTime = 0;    
-
-    public void SetInUIMode(bool value)
-    {
-        inUIMode = value;
-        UIMode(ref inUIMode);  
-    }
 
     private void Awake()
     {
@@ -105,10 +98,10 @@ public class CrowdPlayerManager : MonoBehaviour
 
     private void Update()
     {
-        inUIMode = UILocationCard();  
+        // inUIMode = UILocationCard();  
         // Debug.Log("Update: inUIMode = " + inUIMode); // Debugging
 
-        UIMode(ref inUIMode);
+        UILocationCard();  
 
         switch (playerState)
         {
@@ -119,8 +112,7 @@ public class CrowdPlayerManager : MonoBehaviour
             break;
 
             case PlayerState.CHOOSE_LOCATION:
-                // Show the location cards
-                // inUIMode = UILocationCard();
+                UIMode(true);
                 playerController.ChooseLocation(cards, inUIMode);
                 playerController.CardPanelNavigation();
 
@@ -135,7 +127,7 @@ public class CrowdPlayerManager : MonoBehaviour
                     playerState = PlayerState.TRAVELING;
                 }
 
-                break;
+            break;
 
             case PlayerState.TRAVELING:
                 // Should move the player automatically toward the chosen location
@@ -150,7 +142,8 @@ public class CrowdPlayerManager : MonoBehaviour
 
                 if(playerController.isAtLocation == true) 
                 {
-                    InputActionHandler.EnableInputActions();
+                    // InputActionHandler.EnableInputActions();
+                    UIMode(false);
                     playerState = PlayerState.CHOOSE_SHAPE;
                 }
 
@@ -158,15 +151,15 @@ public class CrowdPlayerManager : MonoBehaviour
 
             case PlayerState.CHOOSE_SHAPE:
                 // Stop npc movement
-                for (int i = 0; i < NPCs.Count; i++)
-                {
-                    if(NPCs[i].TryGetComponent<NPCManager>(out var npc)) 
-                    {
-                        npc.nPCFollower.currentVelocity = Vector3.zero;
-                        npc.nPCFollower.smoothSpeed = 0f;
-                    }
-                    else { Debug.LogError("Couldn't fetch the NPCManager script, something went wrong!"); return; }
-                }
+                // for (int i = 0; i < NPCs.Count; i++)
+                // {
+                //     if(NPCs[i].TryGetComponent<NPCManager>(out var npc)) 
+                //     {
+                //         npc.nPCFollower.currentVelocity = Vector3.zero;
+                //         npc.nPCFollower.smoothSpeed = 0f;
+                //     }
+                //     else { Debug.LogError("Couldn't fetch the NPCManager script, something went wrong!"); return; }
+                // }
 
                 if(!openShapePanelFirstTime) 
                 {
@@ -176,16 +169,11 @@ public class CrowdPlayerManager : MonoBehaviour
                     openShapePanelFirstTime = true;
                 }
 
-                if(!inUIMode) 
-                {
-                    playerController.MovementInput();
-                }
-
             break;
 
             case PlayerState.SIGNAL:
                 openShapePanelFirstTime = false;
-                playerController.MovementInput();
+                // UIMode(false);
 
                 // When in signal mode, the player can move around
                 // The player can choose if the npcs stay at position or follow the player back
@@ -199,10 +187,9 @@ public class CrowdPlayerManager : MonoBehaviour
         }
     } 
 
-    private bool UILocationCard() 
+    private void UILocationCard() 
     {
-        // bool inUIMode = MGameManager.instance.showLocationCards; 
-        SetInUIMode(MGameManager.instance.showLocationCards);
+        inUIMode = MGameManager.instance.showLocationCards; 
         
         if (MGameManager.instance.showLocationCards != lastDisplayUIState) 
         {
@@ -219,11 +206,9 @@ public class CrowdPlayerManager : MonoBehaviour
         }
 
         // Debug.Log($"UILocationCard: showLocationCards = {MGameManager.instance.showLocationCards}, lastDisplayUIState = {lastDisplayUIState}, inUIMode = {inUIMode}");
-        
-        return inUIMode;
     }
 
-    private bool UIMode(ref bool inUIMode) 
+    public bool UIMode(bool inUIMode) 
     {
         // Debug.Log("UIMode: inUIMode = " + inUIMode); // Debugging
 

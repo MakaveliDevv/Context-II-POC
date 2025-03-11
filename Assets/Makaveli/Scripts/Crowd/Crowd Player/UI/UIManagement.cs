@@ -47,13 +47,13 @@ public class CrowdPlayerUIManager
         cardManagerUI.ButtonHandler();
     }
 
-    public void OpenShapePanelUI() 
-    {
-        shapeManagerUI.OpenShapePanel();
-    }
+    // public void OpenShapePanelUI() 
+    // {
+    //     shapeManagerUI.OpenShapePanel();
+    // }
 
-    public void CloseShapePanelUI() 
-    {
-        shapeManagerUI.CloseShapePanel();
-    }
+    // public void CloseShapePanelUI() 
+    // {
+    //     shapeManagerUI.CloseShapePanel();
+    // }
 }

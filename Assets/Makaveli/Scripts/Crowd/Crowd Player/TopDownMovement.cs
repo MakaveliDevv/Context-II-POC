@@ -4,9 +4,9 @@ public class TopDownMovement
 {
     private readonly CharacterController controller;
     private readonly Transform playerBody;
-    private Vector3 velocity;
 
-    private readonly float movementSpeed;
+    public float movementSpeed;
+    public float travelMovementSpeed = 60f;
     private readonly float appliedMovementSpeedPercentage;
     private float currentMovementSpeed;
     private readonly float rotationSpeed = 10f;

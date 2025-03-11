@@ -13,9 +13,10 @@ public class CrowdPlayerController
     public Transform chosenLocation;
     private readonly Transform npcContainer;
     private Vector2 movementInput;
-
+    
     private bool isProcessingClick;
     public bool isAtLocation;
+    public bool isLocationChosen;
 
     public CrowdPlayerController
     (
@@ -99,10 +100,10 @@ public class CrowdPlayerController
         UImanagement.CardPanelNavigation();
     }
 
-    public void ChooseLocation(List<UILocationCard> cards, bool _bool)
+    public void ChooseLocation(List<UILocationCard> cards, bool inUIMode)
     {
         // If in UI mode and not already processing a click
-        if (_bool)
+        if (inUIMode)
         {
             if (cards.Count > 0)
             {
@@ -120,7 +121,8 @@ public class CrowdPlayerController
                             {
                                 isProcessingClick = true;
                                 chosenLocation = card.location;
-                                // Debug.Log($"Location: {chosenLocation}");
+                                Debug.Log($"Location: {chosenLocation.name}");
+                                isLocationChosen = true;
                                 
                                 // Set the formation location in the formation manager
                                 if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))
@@ -146,11 +148,44 @@ public class CrowdPlayerController
         }
         
         // Only reset if we're not in UI mode
-        if (!_bool)
+        if (!inUIMode)
         {
             isProcessingClick = false;
         }
+
+        if (!isLocationChosen) 
+        {
+            RandomizeLocation(cards);
+        }
     }
+
+    private void RandomizeLocation(List<UILocationCard> cards)
+    {
+        // Check if we have any cards to randomize from
+        if (cards.Count > 0)
+        {
+            int randomIndex = Random.Range(0, cards.Count);
+            chosenLocation = cards[randomIndex].location;
+
+            Debug.Log($"Randomized Location: {chosenLocation.name}");
+            isLocationChosen = true;
+
+            // Set the formation location in the formation manager
+            if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))
+            {
+                formationController.SetFormationLocation(chosenLocation);
+
+                // If already in a formation, update it to use the new location
+                NPCFormationManager formManager = formationController.formationManager;
+                if (formManager != null && formManager.currentFormation != FormationType.Follow)
+                {
+                    // Re-apply current formation to update positions
+                    formationController.ChangeFormation(formManager.currentFormation);
+                }
+            }
+        }
+    }
+
     
     // public void ConfirmShape() 
     // {
@@ -207,22 +242,71 @@ public class CrowdPlayerController
 
     public void CheckPlayerPosition(Transform player) 
     {
-        if(Vector3.Distance(new Vector3(player.position.x, 0, player.position.z), new Vector3(chosenLocation.position.x, 0, chosenLocation.position.z)) <= 2f) 
+        if(Vector3.Distance(new Vector3(player.position.x, 0, player.position.z), new Vector3(chosenLocation.position.x, 0, chosenLocation.position.z)) <= 1f) 
         {
             isAtLocation = true;
             Debug.Log("Player is at the chosen location");
         }
     }
 
-    public void OpenShapePanel() 
+    // public void OpenShapePanel(ref bool inUIMode) 
+    // {
+    //     if(inUIMode) 
+    //     {
+    //         UImanagement.OpenShapePanelUI();
+    //     }
+    // }
+
+    // public void CloseShapePanel(ref bool inUIMode) 
+    // {
+    //     if(inUIMode) 
+    //     {
+    //         UImanagement.CloseShapePanelUI();
+    //         inUIMode = false;
+    //     }
+    // }
+
+    public void MoveTowardsChosenLocation(Transform transform, List<GameObject> npcs) 
     {
-        UImanagement.OpenShapePanelUI();
+        if (chosenLocation == null) return;
+
+        float moveSpeed = topDownMovement.travelMovementSpeed; 
+        float avoidanceStrength = 5f; 
+        float raycastDistance = 1f; 
+        float cornerCheckDistance = 0.5f; 
+        Vector3 direction = (chosenLocation.position - transform.position).normalized;
+        
+        // Perform forward raycast for obstacle avoidance
+        if (Physics.Raycast(transform.position, direction, out RaycastHit hit, raycastDistance))
+        {
+            if (hit.collider.CompareTag("Obstacle")) 
+            {
+                Debug.Log("Obstacle detected, adjusting path");
+
+                // Try to steer left or right based on which side has more clearance
+                Vector3 left = Quaternion.Euler(0, -45, 0) * direction;
+                Vector3 right = Quaternion.Euler(0, 45, 0) * direction;
+
+                bool leftClear = !Physics.Raycast(transform.position, left, cornerCheckDistance);
+                bool rightClear = !Physics.Raycast(transform.position, right, cornerCheckDistance);
+
+                if (leftClear && !rightClear)
+                    direction = left;
+                else if (rightClear && !leftClear)
+                    direction = right;
+                else if (leftClear && rightClear)
+                    direction = Random.value > 0.5f ? left : right; // Choose randomly if both are clear
+                else
+                    return; // No clear path, stop moving
+            }
+        }
+
+        // Update player's rotation to face the target direction
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
+
+        // Smooth movement towards the target position
+        Vector3 targetPosition = transform.position + moveSpeed * Time.deltaTime * direction;
+        transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * avoidanceStrength);
     }
-
-    public void CloseShapePanel() 
-    {
-        UImanagement.CloseShapePanelUI();
-    }
-
-
 }

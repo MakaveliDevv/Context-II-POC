@@ -21,12 +21,12 @@ public class NPCFollower
     private Vector3 targetPosition;
 
     // Smoothing parameters
-    private Vector3 currentVelocity;
+    public Vector3 currentVelocity;
     private const float smoothTime = 0.3f;
 
     // Flocking parameters
     private Vector3 centerOfMass;
-    private int npcIndex;
+    public int npcIndex;
 
     // Formation parameters
     private NPCFormationManager formationManager;
@@ -187,7 +187,7 @@ public class NPCFollower
         }
     }
 
-    void UpdateMovingTargetPosition(NPCManager npc)
+    public void UpdateMovingTargetPosition(NPCManager npc)
     {
         Vector3 targetForward = target.forward;
         Vector3 targetRight = Vector3.Cross(Vector3.up, targetForward).normalized;
@@ -222,7 +222,7 @@ public class NPCFollower
         targetPosition += CalculateAvoidanceVector(npc);
     }
 
-    void UpdateStoppedTargetPosition()
+    private void UpdateStoppedTargetPosition()
     {
         // Target's forward and right vectors
         Vector3 targetForward = target.forward;
@@ -270,7 +270,7 @@ public class NPCFollower
     //     return individualOffset;
     // }
 
-    Vector3 CalculateAvoidanceVector(NPCManager npc)
+    private Vector3 CalculateAvoidanceVector(NPCManager npc)
     {
         Vector3 avoidanceSum = Vector3.zero;
         

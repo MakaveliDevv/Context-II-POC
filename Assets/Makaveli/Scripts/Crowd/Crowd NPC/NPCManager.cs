@@ -12,7 +12,7 @@ public class NPCManager : MonoBehaviour
     // [SerializeField] private bool showDebugVisuals = true;
 
     // NPC Follow
-    private NPCFollower nPCFollower;
+    public NPCFollower nPCFollower;
 
     [Header("Movement Parameters")]
     public float smoothSpeed = 5f;

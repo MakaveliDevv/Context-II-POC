@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class MGameManager : MonoBehaviour
 {
-    public enum GamePlayManagement { NOTHING, TRAVELING, CHOOSE_LOCATION, CHOOSE_SHAPE, SIGNAL };
+    // public enum GamePlayManagement { NOTHING, TRAVELING, CHOOSE_LOCATION, CHOOSE_SHAPE, SIGNAL };
+    public enum GamePlayManagement { SPAWN_LOCATIONS, PLAYER_TURN, REMOVE_LOCATIONS }
     public static MGameManager instance;
     
     [Header("States")]
@@ -33,7 +33,8 @@ public class MGameManager : MonoBehaviour
     public List<NPCManager> allNPCs = new();
 
     [Header("Round Management")]
-    [SerializeField] private float chooseLocationTimer;
+    [SerializeField] private float spawnInTimer;
+    public float chooseLocationTimer;
     public bool showLocationCards = false;
     public bool roundEnd = false;
     public bool allPlayersAtLocation = false;
@@ -53,97 +54,111 @@ public class MGameManager : MonoBehaviour
 
     void Start()
     {
-        gamePlayManagement = GamePlayManagement.NOTHING;
+        gamePlayManagement = GamePlayManagement.SPAWN_LOCATIONS;
 
-        StartCoroutine(StartRound());
         chosenLocations.Clear();
         ChosenLocations.Clear();
     }
 
     void Update()
     {
+        // switch (gamePlayManagement)
+        // {
+        //     case GamePlayManagement.CHOOSE_LOCATION:
+        //         StartCoroutine(InitializeLocations());
+
+        //     break; 
+
+        //     case GamePlayManagement.TRAVELING:
+        //         StopCoroutine(InitializeLocations());
+
+        //         int c = 0;
+        //         for (int i = 0; i < allCrowdPlayers.Count; i++)
+        //         {
+        //             CrowdPlayerManager player = allCrowdPlayers[i].GetComponent<CrowdPlayerManager>();
+        //             Transform playerTransform = player.gameObject.transform.GetChild(0);
+        //             player.playerController.CheckPlayerPosition(playerTransform);
+
+        //             if(player.playerController.isAtLocation) 
+        //             {
+        //                 c++;
+        //             }
+        //         }
+
+        //         if(c == allCrowdPlayers.Count) 
+        //         {
+        //             gamePlayManagement = GamePlayManagement.CHOOSE_SHAPE;
+        //             Debug.Log("All players have reached their location point");
+        //         }
+            
+        //     break;
+
+        //     case GamePlayManagement.CHOOSE_SHAPE:
+        //         // Show UI to choose a shape
+        //         StartCoroutine(DisplayShapePanel());
+
+        //     break;
+
+        //     case GamePlayManagement.SIGNAL:
+        //         StartCoroutine(CloseShapePanel());
+
+        //     break;
+
+        //     default:
+
+        //     break;
+        // }
+
         switch (gamePlayManagement)
         {
-            case GamePlayManagement.CHOOSE_LOCATION:
-                StartCoroutine(InitializeLocations());
-
-            break; 
-
-            case GamePlayManagement.TRAVELING:
-                StopCoroutine(InitializeLocations());
-
-                int c = 0;
-                for (int i = 0; i < allCrowdPlayers.Count; i++)
-                {
-                    CrowdPlayerManager player = allCrowdPlayers[i].GetComponent<CrowdPlayerManager>();
-                    Transform playerTransform = player.gameObject.transform.GetChild(0);
-                    player.playerController.CheckPlayerPosition(playerTransform);
-
-                    if(player.playerController.isAtLocation) 
-                    {
-                        c++;
-                    }
-                }
-
-                if(c == allCrowdPlayers.Count) 
-                {
-                    gamePlayManagement = GamePlayManagement.CHOOSE_SHAPE;
-                    Debug.Log("All players have reached their location point");
-                }
-            
-            break;
-
-            case GamePlayManagement.CHOOSE_SHAPE:
-                // Show UI to choose a shape
-                StartCoroutine(DisplayShapePanel());
-              
+            case GamePlayManagement.SPAWN_LOCATIONS:
+                StartCoroutine(SpawnInLocations(spawnInTimer));
 
             break;
 
-            case GamePlayManagement.SIGNAL:
-                StartCoroutine(CloseShapePanel());
+            case GamePlayManagement.PLAYER_TURN:
 
             break;
 
-            default:
+            case GamePlayManagement.REMOVE_LOCATIONS:
 
             break;
         }
     }
 
-    private IEnumerator CloseShapePanel() 
-    {
-        Debug.Log("DisplayShapePanel Coroutine Running");
-        yield return new WaitForSeconds(1f);
+    // private IEnumerator CloseShapePanel() 
+    // {
+    //     Debug.Log("DisplayShapePanel Coroutine Running");
+    //     yield return new WaitForSeconds(1f);
         
-        // Show the UI for each player independent
-        foreach (var player in playerShapeUI)
-        {
-            player.Key.playerController.CloseShapePanel();
-            player.Key.inUIMode = false;   
+    //     // Show the UI for each player independent
+    //     foreach (var player in playerShapeUI)
+    //     {
+    //         player.Key.playerController.CloseShapePanel();
+    //         player.Key.inUIMode = false;   
             
-            break;
-        }
+    //         break;
+    //     }
 
-        yield break;
-    }
+    //     yield break;
+    // }
 
-    private IEnumerator DisplayShapePanel() 
-    {
-        Debug.Log("DisplayShapePanel Coroutine Running");
-        yield return new WaitForSeconds(1f);
+    // private IEnumerator DisplayShapePanel() 
+    // {
+    //     Debug.Log("DisplayShapePanel Coroutine Running");
+    //     yield return new WaitForSeconds(1f);
         
-        // Show the UI for each player independent
-        foreach (var player in playerShapeUI)
-        {
-            player.Key.playerController.OpenShapePanel();
-            player.Key.inUIMode = true;   
+    //     // Show the UI for each player independent
+    //     foreach (var player in playerShapeUI)
+    //     {
+    //         player.Key.playerController.OpenShapePanel();
+    //         player.Key.inUIMode = true;   
             
-            break;
-        }
+    //         break;
+    //     }
 
-        yield break;
-    }
+    //     yield break;
+    // }
 
     public GameObject InstantiatePrefab(GameObject prefab, Transform parent) 
     {
@@ -153,7 +168,7 @@ public class MGameManager : MonoBehaviour
         return newGameObject;
     }
 
-    private void SpawnObstacleLocation() 
+    private void SpawnInLocation() 
     {
         for (int i = 0; i < trackableObjectAmount; i++)
         {
@@ -161,32 +176,43 @@ public class MGameManager : MonoBehaviour
         }
     }
 
-    private IEnumerator StartRound() 
+    private IEnumerator SpawnInLocations(float spawnInTimer) 
     {
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(spawnInTimer);
 
         // Spawn in the locations
-        SpawnObstacleLocation();
+        SpawnInLocation();
+
+        gamePlayManagement = GamePlayManagement.PLAYER_TURN;
 
         // Wait a few seconds
-        yield return new WaitForSeconds(2f);
-
-        gamePlayManagement = GamePlayManagement.CHOOSE_LOCATION;
+        yield return new WaitForSeconds(4f);
 
         // Spawn in the UI for the players
         showLocationCards = true;
-
-        // Start timer to choose location
-        yield return new WaitForSeconds(chooseLocationTimer);
-
-        showLocationCards = false;
-
-        gamePlayManagement = GamePlayManagement.TRAVELING;
+        StartCoroutine(DisplayLocationCardUI());
 
         yield break;
     }
 
-    private IEnumerator InitializeLocations()
+    private IEnumerator DisplayLocationCardUI() 
+    {
+        if(showLocationCards) 
+        {
+            foreach (var player in allCrowdPlayers)
+            {
+                player.playerState = CrowdPlayerManager.PlayerState.CHOOSE_LOCATION;    
+            }
+            
+            yield return new WaitForSeconds(chooseLocationTimer);
+
+            showLocationCards = false;
+        }
+
+        yield break;
+    }
+
+    public IEnumerator InitializeLocation()
     {
         if (allCrowdPlayers == null || allCrowdPlayers.Count == 0)
         {

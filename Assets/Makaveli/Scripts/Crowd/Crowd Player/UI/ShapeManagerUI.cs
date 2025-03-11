@@ -10,14 +10,18 @@ public class ShapeManagerUI
     private readonly Transform player;
     private TextMeshProUGUI selectedShapeText;
 
+    public Button openPanelButton;
+    public Button closePanelButton;
     private Button previousButton;
     private Button nextButton;
     private Button selectButton;   
     public Button confirmButton; 
     private int currentIndex = 0;
 
-    public bool shapeSelected;
     public string shapeName;
+    public bool shapeSelected;
+    private bool shapeConfirmed = false;
+
 
     public ShapeManagerUI
     (
@@ -35,39 +39,94 @@ public class ShapeManagerUI
 
         PopulatePanelObjects();
         
-        previousButton = UIShapePanel.transform.GetChild(3).transform.GetChild(0).GetComponent<Button>();
-        nextButton = UIShapePanel.transform.GetChild(3).transform.GetChild(1).GetComponent<Button>();
+        // openPanelButton = UIShapePanel.transform.parent.GetChild(4).GetComponent<Button>();
+        if(UIShapePanel.transform.parent.GetChild(4).TryGetComponent<Button>(out var openPanelButton)) this.openPanelButton = openPanelButton;
+        else { Debug.LogError("Couldn't fetch the 'open shape panel button'");  yield break; }
 
-        selectButton = UIShapePanel.transform.GetChild(1).GetComponent<Button>();
-        selectedShapeText = selectButton.gameObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+        if(UIShapePanel.transform.parent.GetChild(5).TryGetComponent<Button>(out var closePanelButton)) this.closePanelButton = closePanelButton;
+        else { Debug.LogError("Couldn't fetch the 'open shape panel button'"); yield break; }
 
-        confirmButton = UIShapePanel.transform.GetChild(2).GetComponent<Button>();
+        // nextButton = UIShapePanel.transform.GetChild(3).transform.GetChild(1).GetComponent<Button>();
+        if(UIShapePanel.transform.GetChild(3).transform.GetChild(1).TryGetComponent<Button>(out var nextButton)) this.nextButton = nextButton;
+        else { Debug.LogError("Couldn't fetch the 'next nav button' "); yield break; }
+
+        // previousButton = UIShapePanel.transform.GetChild(3).transform.GetChild(0).GetComponent<Button>();
+        if(UIShapePanel.transform.GetChild(3).transform.GetChild(0).TryGetComponent<Button>(out var previousButton)) this.previousButton = previousButton;
+        else { Debug.LogError("Couldn't fetch the 'previous nav button' "); yield break; }
+
+        // selectButton = UIShapePanel.transform.GetChild(1).GetComponent<Button>();
+        if(UIShapePanel.transform.GetChild(1).TryGetComponent<Button>(out var selectButton)) this.selectButton = selectButton;
+        else { Debug.LogError("Couldn't fetch the 'select shape button' "); yield break; }
+
+        // selectedShapeText = selectButton.gameObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+        if(selectButton.gameObject.transform.GetChild(0).TryGetComponent<TextMeshProUGUI>(out var selectedShapeText)) this.selectedShapeText = selectedShapeText;
+        else { Debug.LogError("Couldn't fetch the 'selected shape text' "); yield break; }
+
+        // confirmButton = UIShapePanel.transform.GetChild(2).GetComponent<Button>();
+        if(UIShapePanel.transform.GetChild(2).TryGetComponent<Button>(out var confirmButton)) this.confirmButton = confirmButton;
+        else { Debug.LogError("Couldn't fetch the 'confirm shape button' "); yield break; }
+
+        yield return null;
+        
+        // Set up button listeners
+        if(this.openPanelButton != null) 
+        {
+            openPanelButton.onClick.RemoveAllListeners();
+            openPanelButton.onClick.AddListener( () => 
+            {
+                // Open the panel
+                OpenShapePanel(playerManager);
+
+                // Update the button visibility
+                UpdatePanelButtons(true);
+
+            });
+        }
 
         yield return null;
 
-        // Set up button listeners
-        if (previousButton != null)
+        if(this.closePanelButton != null) 
         {
-            previousButton.onClick.RemoveAllListeners();
-            previousButton.onClick.AddListener(NavigatePrevious);
+            closePanelButton.onClick.RemoveAllListeners();
+            closePanelButton.onClick.AddListener(() => 
+            {
+                CloseShapePanel(playerManager);
+
+                // Update the button visibility
+                UpdatePanelButtons(false);
+            });
         }
+
+        yield return null;
         
-        if (nextButton != null)
+        if (this.previousButton != null)
         {
-            nextButton.onClick.RemoveAllListeners();
-            nextButton.onClick.AddListener(NavigateNext);
+            this.previousButton.onClick.RemoveAllListeners();
+            this.previousButton.onClick.AddListener(NavigatePrevious);
         }
 
-        if (selectButton != null)
+        yield return null;
+        
+        if (this.nextButton != null)
         {
-            selectButton.onClick.RemoveAllListeners();
-            selectButton.onClick.AddListener(SelectShape);
+            this.nextButton.onClick.RemoveAllListeners();
+            this.nextButton.onClick.AddListener(NavigateNext);
         }
 
-        if(confirmButton != null)
+        yield return null;
+
+        if (this.selectButton != null)
         {
-            confirmButton.onClick.RemoveAllListeners();
-            confirmButton.onClick.AddListener(() => ConfirmShape(playerManager) );
+            this.selectButton.onClick.RemoveAllListeners();
+            this.selectButton.onClick.AddListener(SelectShape);
+        }
+
+        yield return null;
+
+        if(this.confirmButton != null)
+        {
+            this.confirmButton.onClick.RemoveAllListeners();
+            this.confirmButton.onClick.AddListener(() => ConfirmShape(playerManager) );
         }
         
         // Initialize panel by activating only the first object
@@ -114,14 +173,30 @@ public class ShapeManagerUI
         }
     }
 
-    public void OpenShapePanel() 
+    public void UpdatePanelButtons(bool display) 
     {
-        UIShapePanel.SetActive(true);
+        if(display) 
+        {   
+            openPanelButton.gameObject.SetActive(false);
+            closePanelButton.gameObject.SetActive(true);
+        }
+        else 
+        {
+            openPanelButton.gameObject.SetActive(true);
+            closePanelButton.gameObject.SetActive(false);
+        }
     }
 
-    public void CloseShapePanel() 
+    public void OpenShapePanel(CrowdPlayerManager playerManager) 
+    {
+        UIShapePanel.SetActive(true);
+        playerManager.SetInUIMode(true); 
+    }
+
+    public void CloseShapePanel(CrowdPlayerManager playerManager) 
     {
         UIShapePanel.SetActive(false);
+        playerManager.SetInUIMode(false); // Set inUIMode to false when the shape panel closes    
     }
 
     private void PopulatePanelObjects()
@@ -227,19 +302,22 @@ public class ShapeManagerUI
         {
             selectedShapeText.text = $"{shapeName}";
             this.shapeName = shapeName;
+            Debug.Log($"Shape selected: {this.shapeName}");
         }
 
         shapeSelected = true;
     }
 
-    private bool hasConfirmedShape = false;
-
-    public void ConfirmShape(CrowdPlayerManager crowdPlayerManager) 
+    public void ConfirmShape(CrowdPlayerManager playerManager) 
     {
-        if (hasConfirmedShape) return;
+        if (shapeConfirmed) return;
 
-        hasConfirmedShape = true;
+        shapeConfirmed = true;
         Debug.Log("Confirming shape, deactivating UI panel");
+
+        CloseShapePanel(playerManager);
+
+        // Display emote of npc
 
         // Close the UI shape panel
         // if(UIShapePanel.activeInHierarchy) UIShapePanel.SetActive(false); 
@@ -249,7 +327,6 @@ public class ShapeManagerUI
 
         Debug.Log("UI panel deactivated, checking if any part re-enables it");
     
-        MGameManager.instance.gamePlayManagement = MGameManager.GamePlayManagement.SIGNAL;
-
+        // MGameManager.instance.gamePlayManagement = MGameManager.GamePlayManagement.SIGNAL;
     }
 }

@@ -1,8 +1,13 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class CrowdPlayerManager : MonoBehaviour 
 {
+    public enum PlayerState { ROAM_AROUND, CHOOSE_LOCATION, TRAVELING, CHOOSE_SHAPE, SIGNAL }
+    public PlayerState playerState; 
+
     public CrowdPlayerController playerController;
 
     [SerializeField] private CharacterController controller;
@@ -21,8 +26,10 @@ public class CrowdPlayerManager : MonoBehaviour
     [SerializeField] private List<UILocationCard> cards = new();
     public bool cardButtonClicked = false;
     public bool isProcessingClick = false;
+    private bool openShapePanelFirstTime;
 
     public bool inUIMode = false;
+    public bool InUIMode { get; private set; } // make it private but accessible via method
     // private bool ableToLook = true;
     private bool lastDisplayUIState = false; 
 
@@ -30,7 +37,14 @@ public class CrowdPlayerManager : MonoBehaviour
     [SerializeField] private List<GameObject> NPCs = new();
     [SerializeField] private GameObject npcPrefab;
     [SerializeField] private int npcCount;
-    
+
+    float elapsedTime = 0;    
+
+    public void SetInUIMode(bool value)
+    {
+        inUIMode = value;
+        UIMode(ref inUIMode);  
+    }
 
     private void Awake()
     {
@@ -91,45 +105,143 @@ public class CrowdPlayerManager : MonoBehaviour
 
     private void Update()
     {
+        inUIMode = UILocationCard();  
+        // Debug.Log("Update: inUIMode = " + inUIMode); // Debugging
+
+        UIMode(ref inUIMode);
+
+        switch (playerState)
+        {
+            case PlayerState.ROAM_AROUND:
+                // Player is able to walk around
+                playerController.MovementInput();
+
+            break;
+
+            case PlayerState.CHOOSE_LOCATION:
+                // Show the location cards
+                // inUIMode = UILocationCard();
+                playerController.ChooseLocation(cards, inUIMode);
+                playerController.CardPanelNavigation();
+
+                // An extra method to keep track of the chosen locations
+                StartCoroutine(MGameManager.instance.InitializeLocation());
+
+                elapsedTime += Time.deltaTime; 
+
+                if(playerController.chosenLocation != null && elapsedTime >= MGameManager.instance.chooseLocationTimer) 
+                {
+                    elapsedTime = 0f;
+                    playerState = PlayerState.TRAVELING;
+                }
+
+                break;
+
+            case PlayerState.TRAVELING:
+                // Should move the player automatically toward the chosen location
+                // Debug.Log("Player is traveling");
+
+                // Travel mechanic
+                playerController.MoveTowardsChosenLocation(transform, NPCs);
+                InputActionHandler.DisableInputActions();
+
+                // Check if player at position
+                playerController.CheckPlayerPosition(transform);
+
+                if(playerController.isAtLocation == true) 
+                {
+                    InputActionHandler.EnableInputActions();
+                    playerState = PlayerState.CHOOSE_SHAPE;
+                }
+
+            break;
+
+            case PlayerState.CHOOSE_SHAPE:
+                // Stop npc movement
+                for (int i = 0; i < NPCs.Count; i++)
+                {
+                    if(NPCs[i].TryGetComponent<NPCManager>(out var npc)) 
+                    {
+                        npc.nPCFollower.currentVelocity = Vector3.zero;
+                        npc.nPCFollower.smoothSpeed = 0f;
+                    }
+                    else { Debug.LogError("Couldn't fetch the NPCManager script, something went wrong!"); return; }
+                }
+
+                if(!openShapePanelFirstTime) 
+                {
+                    playerController.UImanagement.shapeManagerUI.closePanelButton.gameObject.SetActive(false);
+                    playerController.UImanagement.shapeManagerUI.openPanelButton.gameObject.SetActive(true);
+                    // playerController.UImanagement.shapeManagerUI.UpdatePanelButtons(true);
+                    openShapePanelFirstTime = true;
+                }
+
+                if(!inUIMode) 
+                {
+                    playerController.MovementInput();
+                }
+
+            break;
+
+            case PlayerState.SIGNAL:
+                openShapePanelFirstTime = false;
+                playerController.MovementInput();
+
+                // When in signal mode, the player can move around
+                // The player can choose if the npcs stay at position or follow the player back
+                // The player can choose to switch from shape 
+
+            break;
+
+            default:
+
+            break;
+        }
+    } 
+
+    private bool UILocationCard() 
+    {
+        // bool inUIMode = MGameManager.instance.showLocationCards; 
+        SetInUIMode(MGameManager.instance.showLocationCards);
+        
         if (MGameManager.instance.showLocationCards != lastDisplayUIState) 
         {
-            lastDisplayUIState = MGameManager.instance.showLocationCards; 
+            lastDisplayUIState = MGameManager.instance.showLocationCards;
 
             if (MGameManager.instance.showLocationCards)
             {
-                inUIMode = true;
-                // InputActionHandler.DisableInputActions();
                 playerController.OpenCardUI();
-                // ableToLook = false;
             }
             else
             {
-                inUIMode = false;
-                // InputActionHandler.EnableInputActions();
                 playerController.HideCards();
-                // ableToLook = true;
             }
-
-            // Lock/unlock cursor based on UI state
-            // Cursor.lockState = inUIMode ? CursorLockMode.None : CursorLockMode.Locked;
         }
+
+        // Debug.Log($"UILocationCard: showLocationCards = {MGameManager.instance.showLocationCards}, lastDisplayUIState = {lastDisplayUIState}, inUIMode = {inUIMode}");
+        
+        return inUIMode;
+    }
+
+    private bool UIMode(ref bool inUIMode) 
+    {
+        // Debug.Log("UIMode: inUIMode = " + inUIMode); // Debugging
 
         if(inUIMode) 
         {
-            Cursor.lockState = CursorLockMode.None;
+            // Debug.Log("Unlocking Cursor");
+            // Cursor.lockState = CursorLockMode.None;
             InputActionHandler.DisableInputActions();
         }
         else 
         {
-            Cursor.lockState = CursorLockMode.Locked;
+            // Debug.Log("Locking Cursor");
+            // Cursor.lockState = CursorLockMode.Locked;
             InputActionHandler.EnableInputActions();
         }
 
-        // These should still be in Update if they need to run continuously
-        playerController.MovementInput();
-        playerController.CardPanelNavigation();
-        playerController.ChooseLocation(cards, inUIMode);
-    } 
+        return inUIMode;
+    }
 
     private void OnDestroy()
     {

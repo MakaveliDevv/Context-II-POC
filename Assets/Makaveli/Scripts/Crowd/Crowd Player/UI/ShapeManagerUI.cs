@@ -190,13 +190,13 @@ public class ShapeManagerUI
     public void OpenShapePanel(CrowdPlayerManager playerManager) 
     {
         UIShapePanel.SetActive(true);
-        playerManager.SetInUIMode(true); 
+        playerManager.UIMode(true);
     }
 
     public void CloseShapePanel(CrowdPlayerManager playerManager) 
     {
         UIShapePanel.SetActive(false);
-        playerManager.SetInUIMode(false); // Set inUIMode to false when the shape panel closes    
+        playerManager.UIMode(false);
     }
 
     private void PopulatePanelObjects()

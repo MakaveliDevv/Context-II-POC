@@ -1,11 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class CrowdPlayerManager : MonoBehaviour 
 {
-    public enum PlayerState { ROAM_AROUND, CHOOSE_LOCATION, TRAVELING, CHOOSE_SHAPE, SIGNAL }
+    public enum PlayerState { ROAM_AROUND, CHOOSE_LOCATION, TRAVELING, CHOOSE_SHAPE, REARRANGE_SHAPE, SIGNAL, END }
     public PlayerState playerState; 
 
     public CrowdPlayerController playerController;
@@ -36,8 +35,14 @@ public class CrowdPlayerManager : MonoBehaviour
     [SerializeField] private List<GameObject> NPCs = new();
     [SerializeField] private GameObject npcPrefab;
     [SerializeField] private int npcCount;
+    [SerializeField] private LayerMask npcLayer;
 
-    float elapsedTime = 0;    
+    private float elapsedTime = 0;    
+    public Camera cam;
+    // public Vector3 og_camPos = new();
+    public Quaternion og_camRot = new();
+    public float distanceOffset;
+    
 
     private void Awake()
     {
@@ -75,7 +80,9 @@ public class CrowdPlayerManager : MonoBehaviour
             cardsUI,
             cardPanels,
             cards,
-            NPCs
+            NPCs,
+            npcLayer,
+            cam
         );
 
         MGameManager.instance.allCrowdPlayers.Add(this);
@@ -84,6 +91,10 @@ public class CrowdPlayerManager : MonoBehaviour
     private void Start()
     {
         playerController.Start(this);
+
+        // Original cam rotation and Y and Z position
+        // og_camPos = cam.transform.position;
+        og_camRot = cam.transform.rotation;
     }
 
     private void OnEnable()
@@ -95,25 +106,28 @@ public class CrowdPlayerManager : MonoBehaviour
     {
         InputActionHandler.DisableInputActions();
     }
-
+    
     private void Update()
     {
         inUIMode = UILocationCard();  
-        // Debug.Log("Update: inUIMode = " + inUIMode); // Debugging
-
         UIMode(inUIMode);
 
         switch (playerState)
         {
             case PlayerState.ROAM_AROUND:
+                playerController.chosenLocation = null;
+                StopCoroutine(TiltCamera());
+                StopCoroutine(StopNPCMovement());
+
+                StartCoroutine(RepositionCamera());
+                StartCoroutine(ResumeNPCMovement());
+
                 // Player is able to walk around
                 playerController.MovementInput();
 
             break;
 
             case PlayerState.CHOOSE_LOCATION:
-                // Show the location cards
-                // inUIMode = UILocationCard();
                 playerController.ChooseLocation(cards, inUIMode);
                 playerController.CardPanelNavigation();
 
@@ -131,54 +145,51 @@ public class CrowdPlayerManager : MonoBehaviour
                 break;
 
             case PlayerState.TRAVELING:
-                // Should move the player automatically toward the chosen location
-                // Debug.Log("Player is traveling");
+                // Debug.Log("🚀 TRAVELING state running...");
+                playerController.MovementInput();
 
                 // Travel mechanic
-                playerController.MoveTowardsChosenLocation(transform, NPCs);
-                InputActionHandler.DisableInputActions();
+                // playerController.MoveTowardsChosenLocation(transform);
+                // InputActionHandler.DisableInputActions();
 
                 // Check if player at position
-                playerController.CheckPlayerPosition(transform);
+                playerController.CheckPlayerPosition(controller.transform);
 
                 if(playerController.isAtLocation == true) 
                 {
-                    InputActionHandler.EnableInputActions();
+                    Debug.Log("✅ Switching to CHOOSE_SHAPE state");
                     playerState = PlayerState.CHOOSE_SHAPE;
                 }
 
             break;
 
             case PlayerState.CHOOSE_SHAPE:
-                // Stop npc movement
-                // for (int i = 0; i < NPCs.Count; i++)
-                // {
-                //     if(NPCs[i].TryGetComponent<NPCManager>(out var npc)) 
-                //     {
-                //         npc.nPCFollower.currentVelocity = Vector3.zero;
-                //         npc.nPCFollower.smoothSpeed = 0f;
-                //     }
-                //     else { Debug.LogError("Couldn't fetch the NPCManager script, something went wrong!"); return; }
-                // }
-
                 if(!openShapePanelFirstTime) 
                 {
-                    playerController.UImanagement.shapeManagerUI.closePanelButton.gameObject.SetActive(false);
-                    playerController.UImanagement.shapeManagerUI.openPanelButton.gameObject.SetActive(true);
-                    // playerController.UImanagement.shapeManagerUI.UpdatePanelButtons(true);
+                    playerController.UImanagement.shapeManagerUI.OpenShapePanel(this);
                     openShapePanelFirstTime = true;
                 }
 
-                if(!inUIMode) 
+            
+
+            break;
+
+            case PlayerState.REARRANGE_SHAPE:
+                if (playerController.UImanagement.shapeManagerUI.shapeConfirmed) 
                 {
-                    playerController.MovementInput();
+                    // playerController.UImanagement.shapeManagerUI.CloseShapePanel(this);
+
+                    // Stop the movement of each npc
+                    StartCoroutine(StopNPCMovement());
+                    StartCoroutine(TiltCamera());
                 }
 
             break;
 
             case PlayerState.SIGNAL:
                 openShapePanelFirstTime = false;
-                playerController.MovementInput();
+                StartCoroutine(WaitBeforeTurnState());
+                // playerController.MovementInput();
 
                 // When in signal mode, the player can move around
                 // The player can choose if the npcs stay at position or follow the player back
@@ -186,11 +197,95 @@ public class CrowdPlayerManager : MonoBehaviour
 
             break;
 
-            default:
+            case PlayerState.END:
+                StopCoroutine(TiltCamera());
+                StopCoroutine(StopNPCMovement());
+
+                StartCoroutine(RepositionCamera());
+                StartCoroutine(ResumeNPCMovement());
 
             break;
         }
     } 
+
+    private IEnumerator WaitBeforeTurnState() 
+    {
+        yield return new WaitForSeconds(3f);
+        playerState = PlayerState.END;
+
+        yield return new WaitForSeconds(2f);
+
+        playerState = PlayerState.ROAM_AROUND;
+        yield break;
+    }
+
+    private IEnumerator TiltCamera() 
+    {
+        yield return new WaitForSeconds(2f);
+        playerController.shapeSetter.Start(playerController.chosenLocation);
+        playerController.shapeSetter.Update();
+
+        // Tilt camera
+        TopDownCameraController camScript = cam.GetComponent<TopDownCameraController>();
+        camScript.enabled = false;
+
+        cam.transform.rotation = Quaternion.Euler(90f, 0, 0);
+
+        float maxSize = Mathf.Max(playerController.chosenLocation.localScale.x, playerController.chosenLocation.localScale.z);
+
+        // Adjust the camera position
+        float distance = maxSize * distanceOffset;
+        Vector3 cameraPosition = playerController.chosenLocation.position + Vector3.up * distance;
+
+        // Set the camera position without altering the FOV calculation
+        cam.transform.position = cameraPosition;
+
+        // Camera camComponent = cam.GetComponent<Camera>();
+
+        // // Adjust the field of view based on the distance
+        // // We use a fixed distance here, no matter how far the camera is, to ensure it fits the object
+        // float fov = Mathf.Atan(maxSize / (2 * distance)) * Mathf.Rad2Deg * 2;
+        
+        // camComponent.fieldOfView = Mathf.Clamp(fov, 30f, 60f); // Optionally, clamp the FOV to a reasonable range
+
+        yield break;
+    }
+
+    private IEnumerator RepositionCamera() 
+    {
+        TopDownCameraController camScript = cam.GetComponent<TopDownCameraController>();
+        camScript.enabled = true;
+
+        yield break;
+    }
+
+    private IEnumerator StopNPCMovement() 
+    {
+        yield return new WaitForSeconds(5f);
+
+        for (int i = 0; i < NPCs.Count; i++)
+        {
+            var npc = NPCs[i].GetComponent<NPCManager>();
+            npc.moveable = false;
+
+        }
+
+        yield break;
+    }
+
+    private IEnumerator ResumeNPCMovement() 
+    {
+        for (int i = 0; i < NPCs.Count; i++)
+        {
+            var npc = NPCs[i].GetComponent<NPCManager>();
+            npc.moveable = true;
+        }
+
+        NPCFormationManager formationManager = GetComponent<NPCFormationManager>();
+        formationManager.currentFormation = FormationType.Follow;
+
+        yield break;
+    }
 
     private bool UILocationCard() 
     {
@@ -239,4 +334,17 @@ public class CrowdPlayerManager : MonoBehaviour
     {
         InputActionHandler.DisableInputActions();
     }
+
+    // Helper method to visualize the boundary in the editor
+    // private void OnDrawGizmos()
+    // {
+    //     if (minBoundary == null || maxBoundary == null) return;
+
+    //     Gizmos.color = Color.yellow;
+
+    //     // Draw the boundary as a wireframe box
+    //     Vector3 size = new Vector3(maxBoundary.x - minBoundary.x, 0.1f, maxBoundary.y - minBoundary.y);
+    //     Vector3 center = new Vector3((minBoundary.x + maxBoundary.x) * 0.5f, 0, (minBoundary.y + maxBoundary.y) * 0.5f);
+    //     Gizmos.DrawWireCube(center, size);
+    // }
 }

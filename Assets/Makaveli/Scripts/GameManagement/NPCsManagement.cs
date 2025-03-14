@@ -6,11 +6,18 @@ public static class NPCsManagement
 {
     private static readonly List<ITriggerMovement> triggerMovements = new();
 
-    public static IEnumerator SpawnNPC(List<GameObject> NPCs, GameObject npc, int npcCount, Transform npcContainer) 
+    public static IEnumerator SpawnNPC
+    (
+        List<GameObject> NPCs, 
+        int npcCount, 
+        GameObject npc,
+        Vector3 position, 
+        Transform npcContainer
+    ) 
     {
         for (int i = 0; i < npcCount; i++)
         {
-            GameObject newNPC = MGameManager.instance.InstantiatePrefab(npc, npcContainer);
+            GameObject newNPC = MGameManager.instance.InstantiatePrefab(npc, position, npc.transform.rotation, npcContainer);
             NPCs.Add(newNPC);
 
             yield return null;

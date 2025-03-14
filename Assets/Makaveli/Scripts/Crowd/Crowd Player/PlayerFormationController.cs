@@ -63,7 +63,7 @@ public class PlayerFormationController : MonoBehaviour
             UpdateFormationText();
         }
 
-        if(playerManager.playerController.UImanagement.shapeManagerUI.shapeSelected) 
+        if(playerManager.playerController.UImanagement.shapeManagerUI.shapeConfirmed) 
         {
             // Fetch the shape name
             string shapeName = playerManager.playerController.UImanagement.shapeManagerUI.shapeName;
@@ -84,32 +84,6 @@ public class PlayerFormationController : MonoBehaviour
                 Debug.LogError($"Invalid shape name: {shapeName}");
             }
         }
-
-
-        // if (Input.GetKeyDown(formationHotkeys[0]))
-        // {
-        //     ChangeFormation(FormationType.Follow);
-        // }
-        // else if (Input.GetKeyDown(formationHotkeys[1]))
-        // {
-        //     ChangeFormation(FormationType.Triangle);
-        // }
-        // else if (Input.GetKeyDown(formationHotkeys[2]))
-        // {
-        //     ChangeFormation(FormationType.Rectangle);
-        // }
-        // else if (Input.GetKeyDown(formationHotkeys[3]))
-        // {
-        //     ChangeFormation(FormationType.Circle);
-        // }
-        // else if (Input.GetKeyDown(formationHotkeys[4]))
-        // {
-        //     ChangeFormation(FormationType.Line);
-        // }
-        // else if (Input.GetKeyDown(formationHotkeys[5]))
-        // {
-        //     ChangeFormation(FormationType.Arrow);
-        // }
     }
     
     public void ChangeFormation(FormationType newFormation)
@@ -142,3 +116,37 @@ public class PlayerFormationController : MonoBehaviour
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+        // if (Input.GetKeyDown(formationHotkeys[0]))
+        // {
+        //     ChangeFormation(FormationType.Follow);
+        // }
+        // else if (Input.GetKeyDown(formationHotkeys[1]))
+        // {
+        //     ChangeFormation(FormationType.Triangle);
+        // }
+        // else if (Input.GetKeyDown(formationHotkeys[2]))
+        // {
+        //     ChangeFormation(FormationType.Rectangle);
+        // }
+        // else if (Input.GetKeyDown(formationHotkeys[3]))
+        // {
+        //     ChangeFormation(FormationType.Circle);
+        // }
+        // else if (Input.GetKeyDown(formationHotkeys[4]))
+        // {
+        //     ChangeFormation(FormationType.Line);
+        // }
+        // else if (Input.GetKeyDown(formationHotkeys[5]))
+        // {
+        //     ChangeFormation(FormationType.Arrow);
+        // }

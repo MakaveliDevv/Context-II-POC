@@ -25,7 +25,7 @@ public class NPCManager : MonoBehaviour
     public float maxNPCDistance = 3f;
     public float spreadFactor = 1.5f;
     public float fixedYPosition = 1f;
-
+    public bool moveable;
 
     void Awake()
     {
@@ -55,7 +55,7 @@ public class NPCManager : MonoBehaviour
             fixedYPosition
         );
 
-
+        moveable = true;
     }
 
     void Start()
@@ -66,9 +66,10 @@ public class NPCManager : MonoBehaviour
     void Update()
     {
         // nPCPatrol.MoveNPC();
-
-        nPCFollower.CustomUpdate(this);
-        
+        if(moveable) 
+        {
+            nPCFollower.CustomUpdate(this);
+        }      
     }
     
     private void OnDestroy()

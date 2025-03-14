@@ -15,7 +15,7 @@ public class ObjectToTrack : MonoBehaviour
 
         MGameManager.instance.objectsToTrack.Add(gameObject);
 
-        transform.position = InitializePosition();
+        // transform.position = InitializePosition();
     }
 
     private void OnDestroy()
@@ -27,29 +27,49 @@ public class ObjectToTrack : MonoBehaviour
         }
     }
 
-    private Vector3 InitializePosition() 
+    public void InitializePosition(Transform location) 
     {
-        Vector3 randomPosition = GetRandomPositionWithinBounds();
+        // Vector3 randomPosition = GetRandomPositionWithinBounds(location);
+        // transform.position = randomPosition; // Set the position here
+
+        transform.position = location.position; // Set the position here
+
+
         MiniMapTracker tracker = FindFirstObjectByType<MiniMapTracker>();
 
-        if(tracker != null) 
+        if (tracker != null) 
         {
             tracker.AddTrackedObject(gameObject.transform);
         }
-        else { Debug.LogError("No minimap found!"); }
-
-        return randomPosition;
+        else 
+        { 
+            Debug.LogError("No minimap found!"); 
+        }
     }
 
-    private Vector3 GetRandomPositionWithinBounds()
-    {
-        if (MGameManager.instance.walkableArea == null)
-        {
-            Debug.LogError("Spawn area collider is missing!");
-            return transform.position;
-        }
+    // private Vector3 InitializePosition(Transform location) 
+    // {
+    //     Vector3 randomPosition = GetRandomPositionWithinBounds(location);
+    //     MiniMapTracker tracker = FindFirstObjectByType<MiniMapTracker>();
 
-        Bounds bounds = MGameManager.instance.walkableArea.gameObject.GetComponent<Collider>().bounds;
+    //     if(tracker != null) 
+    //     {
+    //         tracker.AddTrackedObject(gameObject.transform);
+    //     }
+    //     else { Debug.LogError("No minimap found!"); }
+
+    //     return randomPosition;
+    // }
+
+    private Vector3 GetRandomPositionWithinBounds(Transform location)
+    {
+        // if (MGameManager.instance.walkableArea == null)
+        // {
+        //     Debug.LogError("Spawn area collider is missing!");
+        //     return transform.position;
+        // }
+
+        Bounds bounds = location.gameObject.GetComponent<Collider>().bounds;
 
         float randomX = Random.Range(bounds.min.x, bounds.max.x);
         float randomZ = Random.Range(bounds.min.z, bounds.max.z);
@@ -58,12 +78,12 @@ public class ObjectToTrack : MonoBehaviour
         return new Vector3(randomX, spawnY, randomZ);
     }
 
-    void OnDrawGizmos()
-    {
-        Vector3 halfExtents = new(2f, 1f, 2f); 
-        Gizmos.color = Color.red;
-        Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
-        Gizmos.DrawWireCube(Vector3.zero, halfExtents * 2);
-    }
+    // void OnDrawGizmos()
+    // {
+    //     Vector3 halfExtents = new(2f, 1f, 2f); 
+    //     Gizmos.color = Color.red;
+    //     Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
+    //     Gizmos.DrawWireCube(Vector3.zero, halfExtents * 2);
+    // }
 }
 

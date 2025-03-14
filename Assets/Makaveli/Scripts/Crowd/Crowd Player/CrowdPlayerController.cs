@@ -8,10 +8,11 @@ public class CrowdPlayerController
     private readonly MonoBehaviour mono;
     private readonly TopDownMovement topDownMovement; // Top down movement class
     // private readonly CrowdPlayerMovement movement; // FP movement class
-    public readonly CrowdPlayerUIManager UImanagement; // UI management class
+    public CrowdPlayerUIManager UImanagement; // UI management class
+    public ShapeSetterTest shapeSetter;
     
     public Transform chosenLocation;
-    private readonly Transform npcContainer;
+    // private readonly Transform npcArea;
     private Vector2 movementInput;
     
     private bool isProcessingClick;
@@ -35,7 +36,9 @@ public class CrowdPlayerController
         GameObject cardsUI,
         List<GameObject> cardPanels,
         List<UILocationCard> cards,
-        List<GameObject> NPCs
+        List<GameObject> NPCs,
+        LayerMask npcLayer,
+        Camera cam
     ) 
     {
         this.mono = mono;
@@ -68,9 +71,12 @@ public class CrowdPlayerController
             cardPanels, 
             cards
         );
+
+        shapeSetter = new(npcLayer, cam);
         
-        npcContainer = controller.transform.parent.transform.GetChild(3);
-        mono.StartCoroutine(NPCsManagement.SpawnNPC(NPCs, npc, npcCount, npcContainer));    
+        Transform npcContainer = controller.transform.parent.transform.GetChild(3);
+        Transform npcArea = controller.transform.GetChild(1);
+        mono.StartCoroutine(NPCsManagement.SpawnNPC(NPCs, npcCount, npc, npcArea.position, npcContainer));    
     }
 
     public void Start(CrowdPlayerManager playerManager) 
@@ -153,10 +159,10 @@ public class CrowdPlayerController
             isProcessingClick = false;
         }
 
-        if (!isLocationChosen) 
-        {
-            RandomizeLocation(cards);
-        }
+        // if (!isLocationChosen) 
+        // {
+        //     RandomizeLocation(cards);
+        // }
     }
 
     private void RandomizeLocation(List<UILocationCard> cards)
@@ -186,54 +192,6 @@ public class CrowdPlayerController
         }
     }
 
-    
-    // public void ConfirmShape() 
-    // {
-    //     UImanagement.shapeManagerUI.ConfirmShape(mono);
-    // }
-    
-    #region Oldcode
-    // public void ChooseLocation(List<UILocationCard> cards, bool _bool)
-    // {
-    //     // If in UI mode and not already processing a click
-    //     if (_bool)
-    //     {
-    //         if (cards.Count > 0)
-    //         {
-    //             for (int i = 0; i < cards.Count; i++)
-    //             {
-    //                 var card = cards[i];
-                    
-    //                 // Remove any existing listeners to prevent duplicates
-    //                 if(card.btn != null) 
-    //                 {
-    //                     card.btn.onClick.RemoveAllListeners();
-    //                     card.btn.onClick.AddListener(() =>
-    //                     {
-    //                         if (!isProcessingClick)
-    //                         {
-    //                             isProcessingClick = true;
-    //                             chosenLocation = card.location;
-    //                             // Debug.Log($"Location: {chosenLocation}");
-    //                             // NPCsManagement.TriggerAllMovements(card.location);
-                                
-    //                             mono.StartCoroutine(ResetClickState(1.0f)); // 1 second delay
-    //                         }
-    //                     });
-    //                 }
-    //             }
-    //         }
-    //     }
-        
-    //     // Only reset if we're not in UI mode
-    //     if (!_bool)
-    //     {
-    //         isProcessingClick = false;
-    //     }
-    // }
-
-    #endregion
-
     private IEnumerator ResetClickState(float delay)
     {
         yield return new WaitForSeconds(delay);
@@ -242,31 +200,30 @@ public class CrowdPlayerController
 
     public void CheckPlayerPosition(Transform player) 
     {
-        if(Vector3.Distance(new Vector3(player.position.x, 0, player.position.z), new Vector3(chosenLocation.position.x, 0, chosenLocation.position.z)) <= 1f) 
+        if (chosenLocation == null) 
+        {
+            Debug.LogWarning("❌ chosenLocation is NULL.");
+            return;
+        }
+
+        // Debug.Log($"Player Position: {player.position}");
+        // Debug.Log($"Target Position: {chosenLocation.position}");
+
+        float distance = Vector3.Distance(
+            new Vector3(player.position.x, 0, player.position.z), 
+            new Vector3(chosenLocation.position.x, 0, chosenLocation.position.z)
+        );
+
+        // Debug.Log($"📏 Distance to target: {distance}");
+
+        if (distance <= 2.5f) 
         {
             isAtLocation = true;
-            Debug.Log("Player is at the chosen location");
+            Debug.Log("✅ Player is at the chosen location!");
         }
     }
 
-    // public void OpenShapePanel(ref bool inUIMode) 
-    // {
-    //     if(inUIMode) 
-    //     {
-    //         UImanagement.OpenShapePanelUI();
-    //     }
-    // }
-
-    // public void CloseShapePanel(ref bool inUIMode) 
-    // {
-    //     if(inUIMode) 
-    //     {
-    //         UImanagement.CloseShapePanelUI();
-    //         inUIMode = false;
-    //     }
-    // }
-
-    public void MoveTowardsChosenLocation(Transform transform, List<GameObject> npcs) 
+    public void MoveTowardsChosenLocation(Transform transform) 
     {
         if (chosenLocation == null) return;
 

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class MGameManager : MonoBehaviour
@@ -16,6 +17,7 @@ public class MGameManager : MonoBehaviour
     public GameObject trackableObject;
     public Transform trackableObjectParent;
     [HideInInspector] public List<GameObject> objectsToTrack = new();
+    public List<Transform> locations = new();
 
     [Header("Crowd Player Stuff")]
     public List<CrowdPlayerManager> allCrowdPlayers = new(); 
@@ -38,6 +40,7 @@ public class MGameManager : MonoBehaviour
     public bool showLocationCards = false;
     public bool roundEnd = false;
     public bool allPlayersAtLocation = false;
+    private bool spawn;
 
     void Awake()
     {
@@ -112,7 +115,11 @@ public class MGameManager : MonoBehaviour
         switch (gamePlayManagement)
         {
             case GamePlayManagement.SPAWN_LOCATIONS:
-                StartCoroutine(SpawnInLocations(spawnInTimer));
+                if(!spawn) 
+                {
+                    StartCoroutine(SpawnInLocations(spawnInTimer));
+                    spawn = true;
+                }
 
             break;
 
@@ -126,55 +133,60 @@ public class MGameManager : MonoBehaviour
         }
     }
 
-    // private IEnumerator CloseShapePanel() 
-    // {
-    //     Debug.Log("DisplayShapePanel Coroutine Running");
-    //     yield return new WaitForSeconds(1f);
-        
-    //     // Show the UI for each player independent
-    //     foreach (var player in playerShapeUI)
-    //     {
-    //         player.Key.playerController.CloseShapePanel();
-    //         player.Key.inUIMode = false;   
-            
-    //         break;
-    //     }
-
-    //     yield break;
-    // }
-
-    // private IEnumerator DisplayShapePanel() 
-    // {
-    //     Debug.Log("DisplayShapePanel Coroutine Running");
-    //     yield return new WaitForSeconds(1f);
-        
-    //     // Show the UI for each player independent
-    //     foreach (var player in playerShapeUI)
-    //     {
-    //         player.Key.playerController.OpenShapePanel();
-    //         player.Key.inUIMode = true;   
-            
-    //         break;
-    //     }
-
-    //     yield break;
-    // }
-
-    public GameObject InstantiatePrefab(GameObject prefab, Transform parent) 
+    public GameObject InstantiatePrefab
+    (
+        GameObject original,
+        Vector3 position,
+        Quaternion rotation, 
+        Transform parent
+    ) 
     {
-        GameObject newGameObject = Instantiate(prefab);
-        newGameObject.transform.SetParent(parent, true);
+        GameObject newGameObject = Instantiate(original, position, rotation, parent);
 
         return newGameObject;
     }
 
     private void SpawnInLocation() 
     {
-        for (int i = 0; i < trackableObjectAmount; i++)
+        if (locations == null || locations.Count == 0) 
         {
-            InstantiatePrefab(trackableObject, trackableObjectParent);
+            Debug.LogError("locations array is null or empty!");
+            return;
+        }
+
+        // Shuffle the list to get random locations
+        List<Transform> shuffledLocations = locations.OrderBy(x => Random.value).ToList();
+        
+        int spawnCount = Mathf.Min(trackableObjectAmount, shuffledLocations.Count);
+
+        for (int i = 0; i < spawnCount; i++)
+        {
+            Transform randomLocation = shuffledLocations[i]; // Pick a random location
+            Debug.Log($"Spawning at: {randomLocation.localPosition}");
+
+            GameObject obj = InstantiatePrefab(trackableObject, randomLocation.position, trackableObject.transform.rotation, null);
+
+            if (obj.TryGetComponent<ObjectToTrack>(out var objScript))
+            {
+                objScript.InitializePosition(randomLocation); // Pass location for bounds check
+            }
         }
     }
+
+    // private void SpawnInLocation() 
+    // {
+    //     if (locations == null || locations.Count == 0) 
+    //     {
+    //         Debug.LogError("locations array is null or empty!");
+    //         return;
+    //     }
+
+    //     for (int i = 0; i < trackableObjectAmount; i++)
+    //     {
+    //         Debug.Log($"Spawning at index {i}: {locations[i].localPosition}");            
+    //         InstantiatePrefab(trackableObject, locations[i].localPosition, trackableObject.transform.rotation, null);
+    //     }
+    // }
 
     private IEnumerator SpawnInLocations(float spawnInTimer) 
     {
@@ -229,18 +241,15 @@ public class MGameManager : MonoBehaviour
             }
         }
 
-        // Convert dictionary to list entries and avoid duplicates
         foreach (var element in chosenLocations)
         {
-            var entry = new DictionaryEntry<CrowdPlayerManager, Transform> 
+            if (!ChosenLocations.Any(e => e.Key == element.Key)) // Check by player reference
             {
-                Key = element.Key,
-                Value = element.Value
-            };
-
-            if (!ChosenLocations.Contains(entry)) 
-            {
-                ChosenLocations.Add(entry);
+                ChosenLocations.Add(new DictionaryEntry<CrowdPlayerManager, Transform>
+                {
+                    Key = element.Key,
+                    Value = element.Value
+                });
             }
         }
 

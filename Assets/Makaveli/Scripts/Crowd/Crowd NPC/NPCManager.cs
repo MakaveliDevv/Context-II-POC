@@ -71,6 +71,17 @@ public class NPCManager : MonoBehaviour
             nPCFollower.CustomUpdate(this);
         }      
     }
+
+    public void Signal() 
+    {
+        // Show UI on top of the npc
+        gameObject.transform.GetChild(0).gameObject.SetActive(true);
+    }
+
+    private void Emote() 
+    {
+
+    }
     
     private void OnDestroy()
     {

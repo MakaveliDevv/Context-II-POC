@@ -6,7 +6,7 @@ using UnityEngine;
 public class MGameManager : MonoBehaviour
 {
     // public enum GamePlayManagement { NOTHING, TRAVELING, CHOOSE_LOCATION, CHOOSE_SHAPE, SIGNAL };
-    public enum GamePlayManagement { SPAWN_LOCATIONS, PLAYER_TURN, REMOVE_LOCATIONS }
+    public enum GamePlayManagement { SPAWN_LOCATIONS, CROWD_TURN, REMOVE_LOCATIONS }
     public static MGameManager instance;
     
     [Header("States")]
@@ -123,14 +123,42 @@ public class MGameManager : MonoBehaviour
 
             break;
 
-            case GamePlayManagement.PLAYER_TURN:
+            case GamePlayManagement.CROWD_TURN:
+                spawn = false;
+                
+                if(allCrowdPlayers.All(p => p.hasSignaled)) 
+                {
+                    gamePlayManagement = GamePlayManagement.REMOVE_LOCATIONS;
+                }
 
             break;
 
             case GamePlayManagement.REMOVE_LOCATIONS:
+                foreach (var player in allCrowdPlayers)
+                {
+                    player.hasSignaled = false;
+                }
+
+                StartCoroutine(ResetState());
 
             break;
         }
+    }
+
+    private IEnumerator ResetState() 
+    {
+        yield return new WaitForSeconds(2f);
+        
+        for (int i = 0; i < locations.Count; i++)
+        {
+            GameObject location = locations[i].gameObject;
+            Destroy(location);    
+        }
+
+        locations.Clear();
+        gamePlayManagement = GamePlayManagement.SPAWN_LOCATIONS;
+
+        yield break;
     }
 
     public GameObject InstantiatePrefab
@@ -173,21 +201,6 @@ public class MGameManager : MonoBehaviour
         }
     }
 
-    // private void SpawnInLocation() 
-    // {
-    //     if (locations == null || locations.Count == 0) 
-    //     {
-    //         Debug.LogError("locations array is null or empty!");
-    //         return;
-    //     }
-
-    //     for (int i = 0; i < trackableObjectAmount; i++)
-    //     {
-    //         Debug.Log($"Spawning at index {i}: {locations[i].localPosition}");            
-    //         InstantiatePrefab(trackableObject, locations[i].localPosition, trackableObject.transform.rotation, null);
-    //     }
-    // }
-
     private IEnumerator SpawnInLocations(float spawnInTimer) 
     {
         yield return new WaitForSeconds(spawnInTimer);
@@ -195,7 +208,7 @@ public class MGameManager : MonoBehaviour
         // Spawn in the locations
         SpawnInLocation();
 
-        gamePlayManagement = GamePlayManagement.PLAYER_TURN;
+        gamePlayManagement = GamePlayManagement.CROWD_TURN;
 
         // Wait a few seconds
         yield return new WaitForSeconds(4f);
@@ -220,6 +233,8 @@ public class MGameManager : MonoBehaviour
 
             showLocationCards = false;
         }
+
+        gamePlayManagement = GamePlayManagement.CROWD_TURN;
 
         yield break;
     }

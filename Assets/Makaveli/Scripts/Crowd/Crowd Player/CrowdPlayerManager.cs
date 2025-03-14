@@ -42,6 +42,8 @@ public class CrowdPlayerManager : MonoBehaviour
     // public Vector3 og_camPos = new();
     public Quaternion og_camRot = new();
     public float distanceOffset;
+
+    public bool hasSignaled;
     
 
     private void Awake()
@@ -116,10 +118,11 @@ public class CrowdPlayerManager : MonoBehaviour
         {
             case PlayerState.ROAM_AROUND:
                 playerController.chosenLocation = null;
-                StopCoroutine(TiltCamera());
+
+                // StopCoroutine(TiltCamera());
                 StopCoroutine(StopNPCMovement());
 
-                StartCoroutine(RepositionCamera());
+                // StartCoroutine(RepositionCamera());
                 StartCoroutine(ResumeNPCMovement());
 
                 // Player is able to walk around
@@ -170,15 +173,11 @@ public class CrowdPlayerManager : MonoBehaviour
                     openShapePanelFirstTime = true;
                 }
 
-            
-
             break;
 
             case PlayerState.REARRANGE_SHAPE:
                 if (playerController.UImanagement.shapeManagerUI.shapeConfirmed) 
                 {
-                    // playerController.UImanagement.shapeManagerUI.CloseShapePanel(this);
-
                     // Stop the movement of each npc
                     StartCoroutine(StopNPCMovement());
                     StartCoroutine(TiltCamera());
@@ -188,32 +187,27 @@ public class CrowdPlayerManager : MonoBehaviour
 
             case PlayerState.SIGNAL:
                 openShapePanelFirstTime = false;
-                StartCoroutine(WaitBeforeTurnState());
-                // playerController.MovementInput();
+                StopCoroutine(TiltCamera());
+                StartCoroutine(RepositionCamera());
+
+                playerController.MovementInput();
+                StartCoroutine(Signal());
 
                 // When in signal mode, the player can move around
                 // The player can choose if the npcs stay at position or follow the player back
                 // The player can choose to switch from shape 
 
             break;
-
-            case PlayerState.END:
-                StopCoroutine(TiltCamera());
-                StopCoroutine(StopNPCMovement());
-
-                StartCoroutine(RepositionCamera());
-                StartCoroutine(ResumeNPCMovement());
-
-            break;
         }
     } 
 
-    private IEnumerator WaitBeforeTurnState() 
+    private IEnumerator Signal() 
     {
-        yield return new WaitForSeconds(3f);
-        playerState = PlayerState.END;
-
-        yield return new WaitForSeconds(2f);
+        hasSignaled = true;
+        
+        // Signal stuff
+        yield return new WaitForSeconds(5f);
+        
 
         playerState = PlayerState.ROAM_AROUND;
         yield break;

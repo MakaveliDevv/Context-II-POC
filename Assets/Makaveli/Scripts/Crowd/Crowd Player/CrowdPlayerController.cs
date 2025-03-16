@@ -146,6 +146,8 @@ public class CrowdPlayerController
         if (distance <= 2.5f) 
         {
             isAtLocation = true;
+            TaskLocation taskLocation = chosenLocation.gameObject.GetComponent<TaskLocation>();
+            taskLocation.fixable = true;
             // Debug.Log("✅ Player is at the chosen location!");
         }
     }
@@ -224,7 +226,7 @@ public class CrowdPlayerController
                             {
                                 isProcessingClick = true;
                                 chosenLocation = card.location;
-                                // Debug.Log($"Location: {chosenLocation.name}");
+                                Debug.Log($"Location: {chosenLocation.gameObject.name}");
                                 locationChosen = true;
                                 
                                 // Set the formation location in the formation manager

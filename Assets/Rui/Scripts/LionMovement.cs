@@ -59,11 +59,11 @@ public class LionMovement : MonoBehaviour
         // Handle movement
         if (moveDirection.magnitude > 0)
         {
-            rb.velocity = Vector3.MoveTowards(rb.velocity, moveDirection * maxSpeed, acceleration * Time.fixedDeltaTime);
+            rb.linearVelocity = Vector3.MoveTowards(rb.linearVelocity, moveDirection * maxSpeed, acceleration * Time.fixedDeltaTime);
         }
         else
         {
-            rb.velocity = Vector3.MoveTowards(rb.velocity, Vector3.zero, deceleration * Time.fixedDeltaTime);
+            rb.linearVelocity = Vector3.MoveTowards(rb.linearVelocity, Vector3.zero, deceleration * Time.fixedDeltaTime);
         }
     }
 }

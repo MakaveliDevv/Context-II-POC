@@ -268,7 +268,7 @@ public class CardManagerUI
     {
         // Initialize the card data
         card.objectPosition = objectToTrack.transform.position;
-        card.location = objectToTrack.transform;
+        card.location = objectToTrack.transform.parent.transform;
         
         // Get the render texture from the object to track
         ObjectToTrack trackComponent = objectToTrack.GetComponent<ObjectToTrack>();

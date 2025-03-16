@@ -56,7 +56,7 @@ public class NPCFollower
         this.fixedYPosition = fixedYPosition;
     }
 
-    public void CustomStart(NPCManager npc)
+    public void Start(NPCManager npc)
     {
         // Ensure target is set
         if (target == null)
@@ -73,7 +73,7 @@ public class NPCFollower
         }
     }
 
-    public void CustomUpdate(NPCManager npc)
+    public void Update(NPCManager npc)
     {
         if (target == null || MGameManager.instance.allNPCs == null) return;
 
@@ -84,7 +84,7 @@ public class NPCFollower
         if (formationManager != null && formationManager.currentFormation != FormationType.Follow)
         {
             useFormation = true;
-            UpdateFormationTargetPosition();
+            UpdateFormationTargetPosition(target);
         }
         else
         {
@@ -113,11 +113,11 @@ public class NPCFollower
         );
 
         // Maintain fixed Y position
-        smoothedPosition.y = fixedYPosition;
+        smoothedPosition.y = target.position.y;
         transform.position = smoothedPosition;
     }
 
-    void UpdateFormationTargetPosition()
+    void UpdateFormationTargetPosition(Transform target)
     {
         // Get the desired position in the formation
         int totalNPCs = MGameManager.instance.allNPCs.Count;
@@ -127,7 +127,7 @@ public class NPCFollower
         if (formationPos != Vector3.zero)
         {
             targetPosition = formationPos;
-            targetPosition.y = fixedYPosition;
+            targetPosition.y = target.position.y;
             
             if (useFormation)
             {

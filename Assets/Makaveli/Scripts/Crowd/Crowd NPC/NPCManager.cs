@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 public class NPCManager : MonoBehaviour
 {   
@@ -26,6 +27,8 @@ public class NPCManager : MonoBehaviour
     public float spreadFactor = 1.5f;
     public float fixedYPosition = 1f;
     public bool moveable;
+
+    public bool signal;
 
     void Awake()
     {
@@ -60,7 +63,7 @@ public class NPCManager : MonoBehaviour
 
     void Start()
     {
-        nPCFollower.CustomStart(this);
+        nPCFollower.Start(this);
     }
 
     void Update()
@@ -68,14 +71,18 @@ public class NPCManager : MonoBehaviour
         // nPCPatrol.MoveNPC();
         if(moveable) 
         {
-            nPCFollower.CustomUpdate(this);
+            nPCFollower.Update(this);
         }      
     }
 
-    public void Signal() 
+    public IEnumerator Signal(float signalTimer) 
     {
         // Show UI on top of the npc
         gameObject.transform.GetChild(0).gameObject.SetActive(true);
+
+        yield return new WaitForSeconds(signalTimer);
+
+        gameObject.transform.GetChild(0).gameObject.SetActive(false);
     }
 
     private void Emote() 

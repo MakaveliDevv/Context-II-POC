@@ -1,47 +1,34 @@
 using UnityEngine;
 
-public class ShapeSetterTest
+public class ShapeRearrangement
 {
+    private readonly Camera camera;    
     private LayerMask npcLayer;
-    private readonly Camera camera;
-    // private GameObject locationObject; // The plane object representing the location
-    
-    // private List<GameObject> allNpcs = new List<GameObject>();
     private GameObject currentlySelectedNpc;
-    private bool isDragging = false;
+    private Vector3 targetPosition;
+    private bool isDragging;
+    private bool isMovingToTarget;
+    private readonly float lerpSpeed = 3f;
 
     private Vector2 minBoundary;
     private Vector2 maxBoundary;
 
-    public ShapeSetterTest(LayerMask npcLayer, Camera camera) 
+    public ShapeRearrangement(Camera camera, LayerMask npcLayer) 
     {
-        this.npcLayer = npcLayer;
         this.camera = camera;
+        this.npcLayer = npcLayer;
     }
 
-    public void Start(Transform locationObject)
+    public void Start(Transform location)
     {
-        // if (mainCamera == null)
-        //     mainCamera = Camera.main;
-
-        // // If no location object is set, attempt to find it by tag (assuming it's a plane).
-        // if (locationObject == null)
-        // {
-        //     locationObject = GameObject.FindWithTag("Location");
-        // }
-
-        // // Find all NPCs in the scene
-        // GameObject[] npcsInScene = GameObject.FindGameObjectsWithTag("NPC");
-        // allNpcs.AddRange(npcsInScene);
-
         // Get the boundaries of the location (plane object)
-        if (locationObject != null)
+        if (location != null)
         {
-            UpdateLocationBoundaries(locationObject);
+            UpdateLocationBoundaries(location);
         }
         
         // Debug the boundary values at start
-        Debug.Log($"Boundaries: Min({minBoundary.x}, {minBoundary.y}), Max({maxBoundary.x}, {maxBoundary.y})");
+        // Debug.Log($"Boundaries: Min({minBoundary.x}, {minBoundary.y}), Max({maxBoundary.x}, {maxBoundary.y})");
     }
 
     public void Update()
@@ -55,7 +42,8 @@ public class ShapeSetterTest
             {
                 currentlySelectedNpc = hit.collider.gameObject;
                 isDragging = true;
-                Debug.Log($"Selected NPC at position: {currentlySelectedNpc.transform.position}");
+                isMovingToTarget = true;
+                // Debug.Log($"Selected NPC at position: {currentlySelectedNpc.transform.position}");
             }
         }
 
@@ -66,21 +54,24 @@ public class ShapeSetterTest
             Vector3 mouseWorldPos = GetMousePositionOnXZPlane();
 
             // Create a new position, keeping the Y value the same
-            Vector3 newPosition = new(
+            targetPosition = new(
                 mouseWorldPos.x,
                 currentlySelectedNpc.transform.position.y,
                 mouseWorldPos.z
             );
 
             // Debug pre-clamped position
-            Debug.Log($"Pre-clamp position: {newPosition}");
+            // Debug.Log($"Pre-clamp position: {targetPosition}");
 
             // Clamp the position within proper boundaries
-            newPosition.x = Mathf.Clamp(newPosition.x, minBoundary.x, maxBoundary.x);
-            newPosition.z = Mathf.Clamp(newPosition.z, minBoundary.y, maxBoundary.y);
+            targetPosition.x = Mathf.Clamp(targetPosition.x, minBoundary.x, maxBoundary.x);
+            targetPosition.z = Mathf.Clamp(targetPosition.z, minBoundary.y, maxBoundary.y);
 
             // Debug post-clamped position
-            Debug.Log($"Post-clamp position: {newPosition}");
+            // Debug.Log($"Post-clamp position: {targetPosition}");
+
+            Vector3 newPosition = Vector3.Lerp(currentlySelectedNpc.transform.position, targetPosition, lerpSpeed * Time.deltaTime);
+         
 
             // Update the NPC position
             currentlySelectedNpc.transform.position = newPosition;
@@ -90,7 +81,25 @@ public class ShapeSetterTest
         if (Input.GetMouseButtonUp(0))
         {
             isDragging = false;
-            currentlySelectedNpc = null;
+        }
+
+        if(isMovingToTarget && currentlySelectedNpc != null && !isDragging) 
+        {
+            Vector3 newPosition = Vector3.Lerp(currentlySelectedNpc.transform.position, targetPosition, Time.deltaTime * lerpSpeed);
+            
+            // Debug lerped position
+            // Debug.Log($"Lerped position: {newPosition}");
+            
+            // Update the NPC position
+            currentlySelectedNpc.transform.position = newPosition;
+            
+            // Check if we've essentially reached the target position
+            if (!isDragging && Vector3.Distance(currentlySelectedNpc.transform.position, targetPosition) < 0.01f)
+            {
+                isMovingToTarget = false;
+                currentlySelectedNpc = null;
+                // Debug.Log("Movement complete");
+            }
         }
     }
 
@@ -138,7 +147,7 @@ public class ShapeSetterTest
                     locationCollider.bounds.max.z
                 );
 
-                Debug.Log($"Updated Boundaries: Min({minBoundary.x}, {minBoundary.y}), Max({maxBoundary.x}, {maxBoundary.y})");
+                // Debug.Log($"Updated Boundaries: Min({minBoundary.x}, {minBoundary.y}), Max({maxBoundary.x}, {maxBoundary.y})");
             }
             else
             {

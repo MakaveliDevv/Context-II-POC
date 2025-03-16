@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class CrowdPlayerManager : MonoBehaviour 
@@ -7,95 +6,68 @@ public class CrowdPlayerManager : MonoBehaviour
     public enum PlayerState { ROAM_AROUND, CHOOSE_LOCATION, TRAVELING, CHOOSE_SHAPE, REARRANGE_SHAPE, SIGNAL, END }
     public PlayerState playerState; 
 
-    public CrowdPlayerController playerController;
+    [HideInInspector] public CrowdPlayerController playerController; // Class reference
 
-    [SerializeField] private CharacterController controller;
-    // [SerializeField] private Transform cameraTransform;
+    [Header("Movement Management")]
     [SerializeField] private float movementSpeed = 5f;
     [SerializeField] private float aplliedMovementSpeedPercentage = .5f;
-    // [SerializeField] private float jumpForce = 5f;
-    // [SerializeField] private float sensivity = 5f;
-    // [SerializeField] private bool invert;
-    // [SerializeField] private Vector2 angleLimit = new(-70f, 70f);
 
-    // UI Stuff
-    [Header("UI Stuff")]
+
+    // UI Management
+    [Header("UI Management")]
     [SerializeField] private GameObject cardsUI;
-    [SerializeField] private List<GameObject> cardPanels = new();
-    [SerializeField] private List<UILocationCard> cards = new();
-    public bool cardButtonClicked = false;
-    public bool isProcessingClick = false;
+    private bool inUIMode = false;
+    private bool lastDisplayUIState = false; 
     private bool openShapePanelFirstTime;
 
-    public bool inUIMode = false;
-    // private bool ableToLook = true;
-    private bool lastDisplayUIState = false; 
-
-    [Header("NPC Stuff")]
-    [SerializeField] private List<GameObject> NPCs = new();
+    // NPC Management
+    [Header("NPC Management")]
     [SerializeField] private GameObject npcPrefab;
-    [SerializeField] private int npcCount;
     [SerializeField] private LayerMask npcLayer;
+    [SerializeField] private Vector3 npcSpawnOffset = new();    
+    [SerializeField] private int npcCount;
 
     private float elapsedTime = 0;    
+
+    // Camera Management
+    [Header("Camera Management")]
     public Camera cam;
-    // public Vector3 og_camPos = new();
+    [SerializeField] private Vector3 camOffset = new(0, 10, -5);    
+    [SerializeField] private float camSmoothSpeed = 5f;
+    [SerializeField] private float camRotationSpeed = 100f;  
     public Quaternion og_camRot = new();
     public float distanceOffset;
+    public float interpolationDuration;
 
-    public bool hasSignaled;
-    
+    // State management
+    public bool rearrangeFormation;
+    public bool signal;
 
     private void Awake()
     {
-        controller = transform.GetChild(0).gameObject.GetComponent<CharacterController>();
-        // playerRenderer = transform.GetChild(0).gameObject.GetComponent<Transform>();
-       
-        // playerController = new 
-        // (
-        //     this,
-        //     controller,                         // Character controller component
-        //     playerTransform,                    // Player transform
-        //     cameraTransform,                    // Camera transform object
-        //     angleLimit,                         // Look angle limits
-        //     movementSpeed,                      // Movement speed
-        //     aplliedMovementSpeedPercentage,     // Applied movement speed
-        //     jumpForce,                          // Jump force
-        //     sensivity,                          // Look sensivity
-        //     invert,                             // Invert look
-        //     npcPrefab,                          // NPC prefab
-        //     npcCount,                           // NPC count
-        //     cardsUI,
-        //     cardPanels,
-        //     cards,
-        //     NPCs
-        // );
-
         playerController = new
         (
-            this,
-            controller,
-            movementSpeed,
-            aplliedMovementSpeedPercentage,
-            npcPrefab,
-            npcCount,                           
-            cardsUI,
-            cardPanels,
-            cards,
-            NPCs,
-            npcLayer,
-            cam
+            this,                               // Reference to the mono class
+            cam,                                // Reference to the top down camera
+            camOffset,                          // Reference to the camera offset position
+            camSmoothSpeed,                     // Reference to the camera movement
+            camRotationSpeed,                   // Reference to the camera rotation
+            movementSpeed,                      // Reference to the player movement speed
+            aplliedMovementSpeedPercentage,     // Reference to the applied player movement speed
+            npcPrefab,                          // Reference to the npc prefab
+            npcCount,                           // Reference to the amount of npcs to spawn in for the player
+            npcLayer,                           // Reference to the npc layer
+            npcSpawnOffset,                     // Reference to the spawn offset for the npc
+            cardsUI                             // Reference to the main panel for the UI location cards
         );
-
-        MGameManager.instance.allCrowdPlayers.Add(this);
+        
     }
 
     private void Start()
     {
-        playerController.Start(this);
+        MGameManager.instance.allCrowdPlayers.Add(this);
 
-        // Original cam rotation and Y and Z position
-        // og_camPos = cam.transform.position;
+        playerController.Start(this);
         og_camRot = cam.transform.rotation;
     }
 
@@ -111,19 +83,15 @@ public class CrowdPlayerManager : MonoBehaviour
     
     private void Update()
     {
-        inUIMode = UILocationCard();  
+        inUIMode = LocationCardsUIVisibility();  
         UIMode(inUIMode);
+        playerController.Update(this);
 
         switch (playerState)
         {
             case PlayerState.ROAM_AROUND:
                 playerController.chosenLocation = null;
-
-                // StopCoroutine(TiltCamera());
-                StopCoroutine(StopNPCMovement());
-
-                // StartCoroutine(RepositionCamera());
-                StartCoroutine(ResumeNPCMovement());
+                StartCoroutine(NPCsManagement.ResumeNPCMovement(playerController.npcs, transform));
 
                 // Player is able to walk around
                 playerController.MovementInput();
@@ -131,17 +99,16 @@ public class CrowdPlayerManager : MonoBehaviour
             break;
 
             case PlayerState.CHOOSE_LOCATION:
-                playerController.ChooseLocation(cards, inUIMode);
+                playerController.ChooseLocation(playerController.cards, inUIMode);
                 playerController.CardPanelNavigation();
 
                 // An extra method to keep track of the chosen locations
                 StartCoroutine(MGameManager.instance.InitializeLocation());
 
-                elapsedTime += Time.deltaTime; 
-
-                if(playerController.chosenLocation != null && elapsedTime >= MGameManager.instance.chooseLocationTimer) 
+                // If location selected, change state
+                if(playerController.locationChosen) 
                 {
-                    elapsedTime = 0f;
+                    MGameManager.instance.showLocationCards = false;
                     playerState = PlayerState.TRAVELING;
                 }
 
@@ -156,11 +123,11 @@ public class CrowdPlayerManager : MonoBehaviour
                 // InputActionHandler.DisableInputActions();
 
                 // Check if player at position
-                playerController.CheckPlayerPosition(controller.transform);
+                playerController.CheckPlayerPosition(playerController.controller.transform);
 
                 if(playerController.isAtLocation == true) 
                 {
-                    Debug.Log("✅ Switching to CHOOSE_SHAPE state");
+                    // Debug.Log("✅ Switching to CHOOSE_SHAPE state");
                     playerState = PlayerState.CHOOSE_SHAPE;
                 }
 
@@ -176,112 +143,66 @@ public class CrowdPlayerManager : MonoBehaviour
             break;
 
             case PlayerState.REARRANGE_SHAPE:
-                if (playerController.UImanagement.shapeManagerUI.shapeConfirmed) 
+                openShapePanelFirstTime = false;
+                signal = false; 
+
+                playerController.DragNPC();
+
+                if(!rearrangeFormation) 
                 {
-                    // Stop the movement of each npc
-                    StartCoroutine(StopNPCMovement());
-                    StartCoroutine(TiltCamera());
+                    if (playerController.UImanagement.shapeManagerUI.shapeConfirmed) 
+                    {
+                        // Stop the movement of each npc
+                        StartCoroutine(NPCsManagement.StopNPCMovement(playerController.npcs));
+                        playerController.TitlCamera(distanceOffset, interpolationDuration);
+                        rearrangeFormation = true;
+                    }
                 }
 
             break;
 
             case PlayerState.SIGNAL:
-                openShapePanelFirstTime = false;
-                StopCoroutine(TiltCamera());
-                StartCoroutine(RepositionCamera());
+                rearrangeFormation = false;
+                if(!signal) 
+                {
+                    playerController.RepositionCamera(distanceOffset, interpolationDuration);
 
-                playerController.MovementInput();
-                StartCoroutine(Signal());
+                    signal = true;
+                }
 
-                // When in signal mode, the player can move around
-                // The player can choose if the npcs stay at position or follow the player back
-                // The player can choose to switch from shape 
+                if(signal) 
+                {
+                    transform.GetChild(4).GetChild(8).gameObject.SetActive(true); // Display the signal button
+                    playerController.MovementInput();
+                }
+
+            break;   
+
+            default:
 
             break;
         }
-    } 
+    }
+
+    private void LateUpdate()
+    {
+        playerController.CameraMovement();
+    }
 
     private IEnumerator Signal() 
     {
-        hasSignaled = true;
+        signal = true;
         
         // Signal stuff
         yield return new WaitForSeconds(5f);
-        
+
 
         playerState = PlayerState.ROAM_AROUND;
         yield break;
     }
 
-    private IEnumerator TiltCamera() 
-    {
-        yield return new WaitForSeconds(2f);
-        playerController.shapeSetter.Start(playerController.chosenLocation);
-        playerController.shapeSetter.Update();
-
-        // Tilt camera
-        TopDownCameraController camScript = cam.GetComponent<TopDownCameraController>();
-        camScript.enabled = false;
-
-        cam.transform.rotation = Quaternion.Euler(90f, 0, 0);
-
-        float maxSize = Mathf.Max(playerController.chosenLocation.localScale.x, playerController.chosenLocation.localScale.z);
-
-        // Adjust the camera position
-        float distance = maxSize * distanceOffset;
-        Vector3 cameraPosition = playerController.chosenLocation.position + Vector3.up * distance;
-
-        // Set the camera position without altering the FOV calculation
-        cam.transform.position = cameraPosition;
-
-        // Camera camComponent = cam.GetComponent<Camera>();
-
-        // // Adjust the field of view based on the distance
-        // // We use a fixed distance here, no matter how far the camera is, to ensure it fits the object
-        // float fov = Mathf.Atan(maxSize / (2 * distance)) * Mathf.Rad2Deg * 2;
-        
-        // camComponent.fieldOfView = Mathf.Clamp(fov, 30f, 60f); // Optionally, clamp the FOV to a reasonable range
-
-        yield break;
-    }
-
-    private IEnumerator RepositionCamera() 
-    {
-        TopDownCameraController camScript = cam.GetComponent<TopDownCameraController>();
-        camScript.enabled = true;
-
-        yield break;
-    }
-
-    private IEnumerator StopNPCMovement() 
-    {
-        yield return new WaitForSeconds(5f);
-
-        for (int i = 0; i < NPCs.Count; i++)
-        {
-            var npc = NPCs[i].GetComponent<NPCManager>();
-            npc.moveable = false;
-
-        }
-
-        yield break;
-    }
-
-    private IEnumerator ResumeNPCMovement() 
-    {
-        for (int i = 0; i < NPCs.Count; i++)
-        {
-            var npc = NPCs[i].GetComponent<NPCManager>();
-            npc.moveable = true;
-        }
-
-        NPCFormationManager formationManager = GetComponent<NPCFormationManager>();
-        formationManager.currentFormation = FormationType.Follow;
-
-        yield break;
-    }
-
-    private bool UILocationCard() 
+    // UI stuff
+    private bool LocationCardsUIVisibility() 
     {
         bool inUIMode = MGameManager.instance.showLocationCards; 
         

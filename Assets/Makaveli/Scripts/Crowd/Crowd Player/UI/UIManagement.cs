@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CrowdPlayerUIManager 
 {
     private readonly CardManagerUI cardManagerUI;
     public readonly ShapeManagerUI shapeManagerUI;
+
+    private Button signalBtn;
     
     public CrowdPlayerUIManager
     (
@@ -27,7 +30,7 @@ public class CrowdPlayerUIManager
         ); 
     }
 
-    public void Start(MonoBehaviour mono, CrowdPlayerManager playerManager) 
+    public void InitializeShapeManagement(MonoBehaviour mono, CrowdPlayerManager playerManager) 
     {
         mono.StartCoroutine(shapeManagerUI.Start(playerManager));
     }
@@ -45,6 +48,14 @@ public class CrowdPlayerUIManager
     public void CardPanelNavigation() 
     {
         cardManagerUI.ButtonHandler();
+    }
+
+    public void Update(CrowdPlayerManager playerManager) 
+    {
+        if(!playerManager.signal) 
+        {
+            playerManager.transform.GetChild(4).GetChild(8).gameObject.SetActive(false);
+        }
     }
 
     // public void OpenShapePanelUI() 

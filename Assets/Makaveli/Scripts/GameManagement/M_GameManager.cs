@@ -5,42 +5,37 @@ using UnityEngine;
 
 public class MGameManager : MonoBehaviour
 {
-    // public enum GamePlayManagement { NOTHING, TRAVELING, CHOOSE_LOCATION, CHOOSE_SHAPE, SIGNAL };
-    public enum GamePlayManagement { SPAWN_LOCATIONS, CROWD_TURN, REMOVE_LOCATIONS }
     public static MGameManager instance;
-    
-    [Header("States")]
+    public enum GamePlayManagement { SPAWN_LOCATIONS, CROWD_TURN, SOLVING_PROBLEM, REMOVE_LOCATIONS }
     public GamePlayManagement gamePlayManagement; 
 
-    [Header("Obstacle Location Trackers")]
+    [Header("Minimap Management")]
     public List<GameObject> markers = new();
-    public GameObject trackableObject;
-    public Transform trackableObjectParent;
-    [HideInInspector] public List<GameObject> objectsToTrack = new();
+    [HideInInspector] public List<GameObject> trackables = new();
+    public GameObject trackableGo;
+    public Transform trackablesParent;
     public List<Transform> locations = new();
+    public int trackableAmount;
 
-    [Header("Crowd Player Stuff")]
+    [Header("Crowd Player Management")]
     public List<CrowdPlayerManager> allCrowdPlayers = new(); 
     private readonly Dictionary<CrowdPlayerManager, Transform> chosenLocations = new();
     [SerializeField] private List<DictionaryEntry<CrowdPlayerManager, Transform>> ChosenLocations = new();
     public Dictionary<CrowdPlayerManager, GameObject> playerShapeUI = new();
     public List<DictionaryEntry<CrowdPlayerManager, GameObject>> PlayerShapeUI = new();
-    public bool navigationUI = false;
 
-    // NPC related stuff
-    [Header("NPC Stuff")]
-    // public GameObject patrolArea;
+    [Header("NPC Management")]
     public Transform walkableArea;
-    public int trackableObjectAmount;
     public List<NPCManager> allNPCs = new();
 
     [Header("Round Management")]
     [SerializeField] private float spawnInTimer;
     public float chooseLocationTimer;
     public bool showLocationCards = false;
-    public bool roundEnd = false;
     public bool allPlayersAtLocation = false;
-    private bool spawn;
+    private bool spawnLocations;
+
+    private bool stateChange;
 
     void Awake()
     {
@@ -65,81 +60,56 @@ public class MGameManager : MonoBehaviour
 
     void Update()
     {
-        // switch (gamePlayManagement)
-        // {
-        //     case GamePlayManagement.CHOOSE_LOCATION:
-        //         StartCoroutine(InitializeLocations());
-
-        //     break; 
-
-        //     case GamePlayManagement.TRAVELING:
-        //         StopCoroutine(InitializeLocations());
-
-        //         int c = 0;
-        //         for (int i = 0; i < allCrowdPlayers.Count; i++)
-        //         {
-        //             CrowdPlayerManager player = allCrowdPlayers[i].GetComponent<CrowdPlayerManager>();
-        //             Transform playerTransform = player.gameObject.transform.GetChild(0);
-        //             player.playerController.CheckPlayerPosition(playerTransform);
-
-        //             if(player.playerController.isAtLocation) 
-        //             {
-        //                 c++;
-        //             }
-        //         }
-
-        //         if(c == allCrowdPlayers.Count) 
-        //         {
-        //             gamePlayManagement = GamePlayManagement.CHOOSE_SHAPE;
-        //             Debug.Log("All players have reached their location point");
-        //         }
-            
-        //     break;
-
-        //     case GamePlayManagement.CHOOSE_SHAPE:
-        //         // Show UI to choose a shape
-        //         StartCoroutine(DisplayShapePanel());
-
-        //     break;
-
-        //     case GamePlayManagement.SIGNAL:
-        //         StartCoroutine(CloseShapePanel());
-
-        //     break;
-
-        //     default:
-
-        //     break;
-        // }
-
         switch (gamePlayManagement)
         {
             case GamePlayManagement.SPAWN_LOCATIONS:
-                if(!spawn) 
+                if(!spawnLocations) 
                 {
-                    StartCoroutine(SpawnInLocations(spawnInTimer));
-                    spawn = true;
+                    StartCoroutine(StartRound(spawnInTimer));
+                    spawnLocations = true;
                 }
 
             break;
 
             case GamePlayManagement.CROWD_TURN:
-                spawn = false;
+                spawnLocations = false;
                 
-                if(allCrowdPlayers.All(p => p.hasSignaled)) 
+                if(!stateChange) 
                 {
-                    gamePlayManagement = GamePlayManagement.REMOVE_LOCATIONS;
-                }
+                    for (int i = 0; i < allCrowdPlayers.Count; i++)
+                    {
+                        // var player = allCrowdPlayers[i];
+                        allCrowdPlayers[i].playerState = CrowdPlayerManager.PlayerState.CHOOSE_LOCATION;
+                    }
+
+                    stateChange = true;
+                } 
+
+                // if(allCrowdPlayers.All(p => p.signal)) 
+                // {
+                //     gamePlayManagement = GamePlayManagement.REMOVE_LOCATIONS;
+                // }
+
+            break;
+
+            case GamePlayManagement.SOLVING_PROBLEM:
+                // If in this state
+                // Lion may pick up objects and place them 
+
+                // if(allCrowdPlayers.All(p => p.signal)) 
+                // {
+                //     gamePlayManagement = GamePlayManagement.REMOVE_LOCATIONS;
+                // }         
 
             break;
 
             case GamePlayManagement.REMOVE_LOCATIONS:
                 foreach (var player in allCrowdPlayers)
                 {
-                    player.hasSignaled = false;
+                    player.signal = false;
                 }
 
-                StartCoroutine(ResetState());
+                // StartCoroutine(ResetState());
 
             break;
         }
@@ -174,7 +144,28 @@ public class MGameManager : MonoBehaviour
         return newGameObject;
     }
 
-    private void SpawnInLocation() 
+    private IEnumerator StartRound(float spawnInTimer) 
+    {
+        yield return new WaitForSeconds(spawnInTimer);
+
+        // Spawn in the locations
+        SpawnLocation();
+
+        // Show UI something like round start
+
+
+        // Wait a few seconds
+        yield return new WaitForSeconds(5f);
+
+        gamePlayManagement = GamePlayManagement.CROWD_TURN;
+
+        // Spawn in the UI for the players
+        showLocationCards = true;
+
+        yield break;
+    }
+
+    private void SpawnLocation() 
     {
         if (locations == null || locations.Count == 0) 
         {
@@ -185,58 +176,20 @@ public class MGameManager : MonoBehaviour
         // Shuffle the list to get random locations
         List<Transform> shuffledLocations = locations.OrderBy(x => Random.value).ToList();
         
-        int spawnCount = Mathf.Min(trackableObjectAmount, shuffledLocations.Count);
+        int spawnCount = Mathf.Min(trackableAmount, shuffledLocations.Count);
 
         for (int i = 0; i < spawnCount; i++)
         {
             Transform randomLocation = shuffledLocations[i]; // Pick a random location
-            Debug.Log($"Spawning at: {randomLocation.localPosition}");
+            // Debug.Log($"Spawning at: {randomLocation.localPosition}");
 
-            GameObject obj = InstantiatePrefab(trackableObject, randomLocation.position, trackableObject.transform.rotation, null);
+            GameObject obj = InstantiatePrefab(trackableGo, randomLocation.position, trackableGo.transform.rotation, null);
 
             if (obj.TryGetComponent<ObjectToTrack>(out var objScript))
             {
                 objScript.InitializePosition(randomLocation); // Pass location for bounds check
             }
         }
-    }
-
-    private IEnumerator SpawnInLocations(float spawnInTimer) 
-    {
-        yield return new WaitForSeconds(spawnInTimer);
-
-        // Spawn in the locations
-        SpawnInLocation();
-
-        gamePlayManagement = GamePlayManagement.CROWD_TURN;
-
-        // Wait a few seconds
-        yield return new WaitForSeconds(4f);
-
-        // Spawn in the UI for the players
-        showLocationCards = true;
-        StartCoroutine(DisplayLocationCardUI());
-
-        yield break;
-    }
-
-    private IEnumerator DisplayLocationCardUI() 
-    {
-        if(showLocationCards) 
-        {
-            foreach (var player in allCrowdPlayers)
-            {
-                player.playerState = CrowdPlayerManager.PlayerState.CHOOSE_LOCATION;    
-            }
-            
-            yield return new WaitForSeconds(chooseLocationTimer);
-
-            showLocationCards = false;
-        }
-
-        gamePlayManagement = GamePlayManagement.CROWD_TURN;
-
-        yield break;
     }
 
     public IEnumerator InitializeLocation()

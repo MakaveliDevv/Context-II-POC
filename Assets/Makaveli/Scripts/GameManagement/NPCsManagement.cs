@@ -8,7 +8,7 @@ public static class NPCsManagement
 
     public static IEnumerator SpawnNPC
     (
-        List<GameObject> NPCs, 
+        List<GameObject> npcs, 
         int npcCount, 
         GameObject npc,
         Vector3 position, 
@@ -18,12 +18,10 @@ public static class NPCsManagement
         for (int i = 0; i < npcCount; i++)
         {
             GameObject newNPC = MGameManager.instance.InstantiatePrefab(npc, position, npc.transform.rotation, npcContainer);
-            NPCs.Add(newNPC);
+            npcs.Add(newNPC);
 
             yield return null;
         }
-
-        yield return null;
 
         // Debug.Log($"Trigger movements list count: {triggerMovements.Count}");
         // Debug.Log($"NPC list count: {NPCs.Count}");
@@ -48,4 +46,33 @@ public static class NPCsManagement
             triggerMovement.TriggerMovement(location);
         } 
     }
+
+    public static IEnumerator StopNPCMovement(List<GameObject> npcs) 
+    {
+        yield return new WaitForSeconds(3f);
+
+        for (int i = 0; i < npcs.Count; i++)
+        {
+            var npc = npcs[i].GetComponent<NPCManager>();
+            npc.moveable = false;
+
+        }
+
+        yield break;
+    }
+
+    public static IEnumerator ResumeNPCMovement(List<GameObject> npcs, Transform formationManag) 
+    {
+        for (int i = 0; i < npcs.Count; i++)
+        {
+            var npc = npcs[i].GetComponent<NPCManager>();
+            npc.moveable = true;
+        }
+
+        NPCFormationManager formationManager = formationManag.GetComponent<NPCFormationManager>();
+        formationManager.currentFormation = FormationType.Follow;
+
+        yield break;
+    }
+
 }

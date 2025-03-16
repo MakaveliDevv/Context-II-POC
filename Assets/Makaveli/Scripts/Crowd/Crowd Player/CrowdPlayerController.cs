@@ -1,60 +1,62 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CrowdPlayerController 
 {
-    // References
     private readonly MonoBehaviour mono;
-    private readonly TopDownMovement topDownMovement; // Top down movement class
-    // private readonly CrowdPlayerMovement movement; // FP movement class
-    public CrowdPlayerUIManager UImanagement; // UI management class
-    public ShapeSetterTest shapeSetter;
     
+    // Class References
+    private readonly TopDownMovement topDownMovement; 
+    public CrowdPlayerUIManager UImanagement;
+    public CameraManagement cameraManagement;
+    
+    // Player Management
+    public CharacterController controller;
     public Transform chosenLocation;
-    // private readonly Transform npcArea;
     private Vector2 movementInput;
     
     private bool isProcessingClick;
     public bool isAtLocation;
-    public bool isLocationChosen;
+    public bool locationChosen;
+
+    // NPC Management
+    private readonly GameObject npc;
+    private readonly int npcCount;
+    public List<GameObject> npcs = new();
+    private Vector3 npcSpawnOffset = new();
+
+    // UI Management
+    private readonly List<GameObject> cardPanels = new();
+    public List<UILocationCard> cards = new();
+
+    // Camera Management
+    private Coroutine tiltCam;
+    private Coroutine repositionCam;
 
     public CrowdPlayerController
     (
-        MonoBehaviour mono,
-        CharacterController controller,
-        // Transform player,
-        // Transform camera,
-        // Vector2 angleLimit,
-        float movementSpeed,
-        float appliedMovementSpeedPercentage,
-        // float jumpForce,
-        // float sensivity,
-        // bool invert,
-        GameObject npc,
-        int npcCount,
-        GameObject cardsUI,
-        List<GameObject> cardPanels,
-        List<UILocationCard> cards,
-        List<GameObject> NPCs,
-        LayerMask npcLayer,
-        Camera cam
+        MonoBehaviour mono,                     // Reference to the mono class
+        Camera cam,                             // Reference to the top down camera
+        Vector3 camOffset,                      // Reference to the camera offset position
+        float camSmoothSpeed,                   // Reference to the camera movement
+        float camRotationSpeed,                 // Reference to the camera rotation
+        float movementSpeed,                    // Reference to the player movement speed
+        float appliedMovementSpeedPercentage,   // Reference to the applied player movement speed
+        GameObject npc,                         // Reference to the npc prefab
+        int npcCount,                           // Reference to the amount of npcs to spawn in for the player
+        LayerMask npcLayer,                     // Reference to the npc layer
+        Vector3 npcSpawnOffset,                 // Reference to the spawn offset for the npc
+        GameObject cardsUI                      // Reference to the main panel for the UI location cards
     ) 
     {
         this.mono = mono;
+        this.npc = npc;
+        this.npcCount = npcCount;
+        this.npcSpawnOffset = npcSpawnOffset;
 
-        // movement = new
-        // (
-        //     controller,
-        //     player,
-        //     camera,
-        //     angleLimit,
-        //     movementSpeed,
-        //     appliedMovementSpeedPercentage,
-        //     jumpForce,
-        //     sensivity,
-        //     invert
-        // );
+        controller = mono.transform.GetChild(0).GetComponent<CharacterController>();
 
         topDownMovement = new
         (
@@ -66,24 +68,56 @@ public class CrowdPlayerController
 
         UImanagement = new
         (
-            controller.transform.parent, 
+            mono.transform, 
             cardsUI, 
             cardPanels, 
             cards
         );
 
-        shapeSetter = new(npcLayer, cam);
-        
-        Transform npcContainer = controller.transform.parent.transform.GetChild(3);
-        Transform npcArea = controller.transform.GetChild(1);
-        mono.StartCoroutine(NPCsManagement.SpawnNPC(NPCs, npcCount, npc, npcArea.position, npcContainer));    
+        cameraManagement = new
+        (
+            cam,
+            npcLayer,
+            controller.transform,
+            camOffset,
+            camSmoothSpeed,
+            camRotationSpeed
+        );
     }
 
     public void Start(CrowdPlayerManager playerManager) 
     {
-        UImanagement.Start(mono, playerManager);
+        Transform npcContainer = controller.transform.parent.transform.GetChild(3); // Empty game object to store the npcs
+        Transform npcArea = controller.transform.GetChild(1); // Empty game objects to spawn the npcs at
+        
+        mono.StartCoroutine(NPCsManagement.SpawnNPC(npcs, npcCount, npc, npcArea.position + npcSpawnOffset, npcContainer)); 
+        UImanagement.InitializeShapeManagement(mono, playerManager);
+        cameraManagement.Start();
+
+        // signal button
+        if(playerManager.transform.GetChild(4).GetChild(8).TryGetComponent<Button>(out var signalBtn))
+        {
+            if(signalBtn != null) 
+            {
+                signalBtn.onClick.RemoveAllListeners();
+                signalBtn.onClick.AddListener(() => 
+                {
+                    foreach (var e in npcs)
+                    {
+                        NPCManager npc = e.GetComponent<NPCManager>();
+                        mono.StartCoroutine(npc.Signal(5f));
+                    }    
+                });
+            }
+        } else { Debug.LogError("Couldn't fetch the 'signalBtn shape button' "); return; }
     }
 
+    public void Update(CrowdPlayerManager playerManager) 
+    {
+        UImanagement.Update(playerManager);
+    }
+
+    // Player movement stuff
     public void MovementInput() 
     {
         movementInput = InputActionHandler.GetMovementInput();
@@ -91,6 +125,69 @@ public class CrowdPlayerController
         topDownMovement.OverallMovement(movementInput, InputActionHandler.IsSprinting());
     }
 
+    public void CheckPlayerPosition(Transform player) 
+    {
+        if (chosenLocation == null) 
+        {
+            Debug.LogWarning("❌ chosenLocation is NULL.");
+            return;
+        }
+
+        // Debug.Log($"Player Position: {player.position}");
+        // Debug.Log($"Target Position: {chosenLocation.position}");
+
+        float distance = Vector3.Distance(
+            new Vector3(player.position.x, 0, player.position.z), 
+            new Vector3(chosenLocation.position.x, 0, chosenLocation.position.z)
+        );
+
+        // Debug.Log($"📏 Distance to target: {distance}");
+
+        if (distance <= 2.5f) 
+        {
+            isAtLocation = true;
+            // Debug.Log("✅ Player is at the chosen location!");
+        }
+    }
+
+    // Camera stuff
+    public void CameraMovement() 
+    {
+        cameraManagement.CameraMovement();
+    }
+
+    public void TitlCamera(float distanceOffset, float interpolationDuration) 
+    {
+        if(repositionCam != null) 
+        {
+            // Debug.Log("RepositionCamera coroutine is running and now set to stop");
+            mono.StopCoroutine(cameraManagement.RepositionCamera(interpolationDuration));
+            repositionCam = null;
+        }  
+    
+        tiltCam = mono.StartCoroutine(cameraManagement.TiltCamera(chosenLocation, distanceOffset, interpolationDuration));
+        
+    }
+
+    public void RepositionCamera(float distanceOffset, float interpolationDuration) 
+    {
+        if(tiltCam != null) 
+        {
+            // Debug.Log("Tilt coroutine is running and now set to stop");
+
+            mono.StopCoroutine(cameraManagement.TiltCamera(chosenLocation, distanceOffset, interpolationDuration));
+            tiltCam = null;
+        }
+
+        repositionCam = mono.StartCoroutine(cameraManagement.RepositionCamera(interpolationDuration));
+    }
+    
+    public void DragNPC() 
+    {
+        cameraManagement.DragMovement();
+    }
+
+    // Location cards UI
     public void HideCards() 
     {
         UImanagement.HideCards();
@@ -127,8 +224,8 @@ public class CrowdPlayerController
                             {
                                 isProcessingClick = true;
                                 chosenLocation = card.location;
-                                Debug.Log($"Location: {chosenLocation.name}");
-                                isLocationChosen = true;
+                                // Debug.Log($"Location: {chosenLocation.name}");
+                                locationChosen = true;
                                 
                                 // Set the formation location in the formation manager
                                 if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))
@@ -174,7 +271,7 @@ public class CrowdPlayerController
             chosenLocation = cards[randomIndex].location;
 
             Debug.Log($"Randomized Location: {chosenLocation.name}");
-            isLocationChosen = true;
+            locationChosen = true;
 
             // Set the formation location in the formation manager
             if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))
@@ -198,30 +295,6 @@ public class CrowdPlayerController
         isProcessingClick = false;
     }
 
-    public void CheckPlayerPosition(Transform player) 
-    {
-        if (chosenLocation == null) 
-        {
-            Debug.LogWarning("❌ chosenLocation is NULL.");
-            return;
-        }
-
-        // Debug.Log($"Player Position: {player.position}");
-        // Debug.Log($"Target Position: {chosenLocation.position}");
-
-        float distance = Vector3.Distance(
-            new Vector3(player.position.x, 0, player.position.z), 
-            new Vector3(chosenLocation.position.x, 0, chosenLocation.position.z)
-        );
-
-        // Debug.Log($"📏 Distance to target: {distance}");
-
-        if (distance <= 2.5f) 
-        {
-            isAtLocation = true;
-            Debug.Log("✅ Player is at the chosen location!");
-        }
-    }
 
     public void MoveTowardsChosenLocation(Transform transform) 
     {

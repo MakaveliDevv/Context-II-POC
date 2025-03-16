@@ -1,15 +1,23 @@
 using UnityEngine;
 
-public class TopDownCameraController : MonoBehaviour
+public class TopDownCameraController
 {
-    public Transform player;
-    public Vector3 offset = new(0, 10, -5);
-    public float smoothSpeed = 5f;
-    public float rotationSpeed = 100f;
-    
+    private Vector3 offset;
     private float currentRotation = 0f;
 
-    private void LateUpdate()
+    private readonly Transform player;
+    private readonly float smoothSpeed;
+    private readonly float rotationSpeed;    
+
+    public TopDownCameraController(Transform player, Vector3 offset, float smoothSpeed, float rotationSpeed) 
+    {
+        this.player = player;
+        this.offset = offset;
+        this.smoothSpeed = smoothSpeed;
+        this.rotationSpeed = rotationSpeed;
+    }
+
+    public void Movement(Transform transform)
     {
         if (player == null) return;
 

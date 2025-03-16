@@ -13,9 +13,7 @@ public class ObjectToTrack : MonoBehaviour
 
         camera.targetTexture = renderTexture;
 
-        MGameManager.instance.objectsToTrack.Add(gameObject);
-
-        // transform.position = InitializePosition();
+        MGameManager.instance.trackables.Add(gameObject);
     }
 
     private void OnDestroy()
@@ -29,12 +27,7 @@ public class ObjectToTrack : MonoBehaviour
 
     public void InitializePosition(Transform location) 
     {
-        // Vector3 randomPosition = GetRandomPositionWithinBounds(location);
-        // transform.position = randomPosition; // Set the position here
-
-        transform.position = location.position; // Set the position here
-
-
+        transform.position = location.position; 
         MiniMapTracker tracker = FindFirstObjectByType<MiniMapTracker>();
 
         if (tracker != null) 
@@ -46,20 +39,6 @@ public class ObjectToTrack : MonoBehaviour
             Debug.LogError("No minimap found!"); 
         }
     }
-
-    // private Vector3 InitializePosition(Transform location) 
-    // {
-    //     Vector3 randomPosition = GetRandomPositionWithinBounds(location);
-    //     MiniMapTracker tracker = FindFirstObjectByType<MiniMapTracker>();
-
-    //     if(tracker != null) 
-    //     {
-    //         tracker.AddTrackedObject(gameObject.transform);
-    //     }
-    //     else { Debug.LogError("No minimap found!"); }
-
-    //     return randomPosition;
-    // }
 
     private Vector3 GetRandomPositionWithinBounds(Transform location)
     {
@@ -77,13 +56,5 @@ public class ObjectToTrack : MonoBehaviour
 
         return new Vector3(randomX, spawnY, randomZ);
     }
-
-    // void OnDrawGizmos()
-    // {
-    //     Vector3 halfExtents = new(2f, 1f, 2f); 
-    //     Gizmos.color = Color.red;
-    //     Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
-    //     Gizmos.DrawWireCube(Vector3.zero, halfExtents * 2);
-    // }
 }
 

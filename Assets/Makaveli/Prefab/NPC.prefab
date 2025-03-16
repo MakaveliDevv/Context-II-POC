@@ -122,15 +122,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71d4e4a0eb23fe0489528c9a6ea7e2c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  smoothSpeed: 5
+  smoothSpeed: 10
   stoppingThreshold: 0.1
   minDistanceBehindTarget: 2
   maxDistanceBehindTarget: 6
   minNPCDistance: 1.2
   maxNPCDistance: 3
   spreadFactor: 1.5
-  fixedYPosition: 1
+  fixedYPosition: 10
   moveable: 0
+  signal: 0
 --- !u!1 &6196530288576403214
 GameObject:
   m_ObjectHideFlags: 0

@@ -6,16 +6,14 @@ using UnityEngine;
 public class MGameManager : MonoBehaviour
 {
     public static MGameManager instance;
-    public enum GamePlayManagement { SPAWN_LOCATIONS, CROWD_TURN, SOLVING_PROBLEM, REMOVE_LOCATIONS }
+    public enum GamePlayManagement { SPAWN_LOCATIONS, CROWD_TURN, SOLVING_PROBLEM, END }
     public GamePlayManagement gamePlayManagement; 
 
     [Header("Minimap Management")]
-    public List<GameObject> markers = new();
-    [HideInInspector] public List<GameObject> trackables = new();
+    // public List<GameObject> markers = new();
+    public List<GameObject> trackables = new();
     public GameObject trackableGo;
-    public Transform trackablesParent;
-    public List<Transform> locations = new();
-    public int trackableAmount;
+    // public Transform trackablesParent;
 
     [Header("Crowd Player Management")]
     public List<CrowdPlayerManager> allCrowdPlayers = new(); 
@@ -29,13 +27,23 @@ public class MGameManager : MonoBehaviour
     public List<NPCManager> allNPCs = new();
 
     [Header("Round Management")]
+    public List<Transform> taskLocations = new();
+    public List<Transform> taskLocationsDone = new();
+    // public List<GameObject> taskToBeDone = new();
+    // public List<GameObject> taskThatAreDone = new();
+    public int amountOfTasksPerRound;
     [SerializeField] private float spawnInTimer;
-    public float chooseLocationTimer;
+    // public float chooseLocationTimer;
     public bool showLocationCards = false;
-    public bool allPlayersAtLocation = false;
+    // public bool allPlayersAtLocation = false;
     private bool spawnLocations;
 
     private bool stateChange;
+
+
+    //---------------------
+    public bool lionPlacedObject;
+    public TaskLocation currentInteractableLocation;
 
     void Awake()
     {
@@ -63,6 +71,7 @@ public class MGameManager : MonoBehaviour
         switch (gamePlayManagement)
         {
             case GamePlayManagement.SPAWN_LOCATIONS:
+                stateChange = false;
                 if(!spawnLocations) 
                 {
                     StartCoroutine(StartRound(spawnInTimer));
@@ -87,53 +96,96 @@ public class MGameManager : MonoBehaviour
             break;
 
             case GamePlayManagement.SOLVING_PROBLEM:
-                // If lion placed object, then start new 'round'      
+                stateChange = false;
+                // Method that allows each fixable location to be interactable with the lion
+                
+                // If lion placed object:
+                if(lionPlacedObject) 
+                {
+                    // Temp code to fetch the selected task as current location
+                    foreach (var e in chosenLocations)
+                    {
+                        Transform chosenLocation = e.Value.transform;
+                        TaskLocation taskLocation = chosenLocation.GetComponent<TaskLocation>();
+                        currentInteractableLocation = taskLocation;
+                    }
+                    // It should be fetched through a collision code
+
+                    // Turn the location where the lion interacted with to location fixed
+                    currentInteractableLocation.locationFixed = true;
+                    currentInteractableLocation.fixable = false;
+                    
+                    // then turn state to end state
+                    gamePlayManagement = GamePlayManagement.END;
+                }
 
             break;
 
-            case GamePlayManagement.REMOVE_LOCATIONS:
-                foreach (var player in allCrowdPlayers)
+            case GamePlayManagement.END:
+                if(!stateChange) 
                 {
-                    player.signal = false;
+                    stateChange = true;
+                    ResetState();
+                    StartCoroutine(TempMethod());
                 }
-
-                StartCoroutine(ResetState());
 
             break;
         }
     }
 
-    // private IEnumerator ResetState() 
-    // {
-    //     yield return new WaitForSeconds(2f);
-    //     GameObject location = null;
-        
-    //     for (int i = 0; i < locations.Count; i++)
-    //     {
-    //         location = locations[i].gameObject;
-    //     }
-
-    //     Destroy(location);    
-    //     locations.Clear();
-    //     gamePlayManagement = GamePlayManagement.SPAWN_LOCATIONS;
-
-    //     yield break;
-    // }
-
-    private IEnumerator ResetState() 
+    private IEnumerator TempMethod() 
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(3f);
+        gamePlayManagement = GamePlayManagement.SPAWN_LOCATIONS;
+        yield break;
+    }
 
-        foreach (var location in locations)
+    private void ResetState()
+    {
+        lionPlacedObject = false;
+
+        // Set player state to end state
+        for (int i = 0; i < allCrowdPlayers.Count; i++)
         {
-            if (location != null) 
+            var player = allCrowdPlayers[i];
+            player.playerState = CrowdPlayerManager.PlayerState.END;
+        }      
+
+        // Update the task locations list
+        bool containsName = false;
+        foreach(Transform location in taskLocationsDone)
+        {
+            // Debug.Log($"Location name -> {location.gameObject.name} is the same as the task location name -> {currentInteractableLocation.gameObject.name}.");
+            if(location != null && location.gameObject.name == currentInteractableLocation.gameObject.name)
             {
-                Destroy(location.gameObject);
+                containsName = true;
+                break;
             }
         }
 
-        locations.Clear(); 
-        gamePlayManagement = GamePlayManagement.SPAWN_LOCATIONS;
+        if(!containsName)
+        {
+            taskLocationsDone.Add(currentInteractableLocation.transform);
+            taskLocations.Remove(currentInteractableLocation.transform);
+        }
+
+        chosenLocations.Clear();
+        ChosenLocations.Clear();
+
+        // Clear the trackables on the locations
+        // foreach (var item in taskLocations)
+        // {
+        //     GameObject child = item.GetChild(0).gameObject;
+        //     Destroy(child);
+        // }
+
+        foreach (var trackable in trackables)
+        {
+            Destroy(trackable);
+        }
+
+        trackables.Clear();
+
     }
 
 
@@ -155,34 +207,35 @@ public class MGameManager : MonoBehaviour
         yield return new WaitForSeconds(spawnInTimer);
 
         // Spawn in the locations
-        SpawnLocation();
+        SpawnTaskLocations();
 
         // Show UI something like round start
+        Debug.Log("round started");
 
 
         // Wait a few seconds
         yield return new WaitForSeconds(5f);
 
-        gamePlayManagement = GamePlayManagement.CROWD_TURN;
-
         // Spawn in the UI for the players
         showLocationCards = true;
+
+        gamePlayManagement = GamePlayManagement.CROWD_TURN;
 
         yield break;
     }
 
-    private void SpawnLocation() 
+    private void SpawnTaskLocations() 
     {
-        if (locations == null || locations.Count == 0) 
+        if (taskLocations == null || taskLocations.Count == 0) 
         {
             Debug.LogError("locations array is null or empty!");
             return;
         }
 
         // Shuffle the list to get random locations
-        List<Transform> shuffledLocations = locations.OrderBy(x => Random.value).ToList();
+        List<Transform> shuffledLocations = taskLocations.OrderBy(x => Random.value).ToList();
         
-        int spawnCount = Mathf.Min(trackableAmount, shuffledLocations.Count);
+        int spawnCount = Mathf.Min(amountOfTasksPerRound, shuffledLocations.Count);
 
         for (int i = 0; i < spawnCount; i++)
         {

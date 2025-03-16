@@ -8,7 +8,7 @@ public class ServerManager : NetworkBehaviour
     /*
     -Make sure the client and server can communicate with one another
     */
-    [SerializeField] private bool serverBuild;
+    [SerializeField] public bool serverBuild;
     [SerializeField] private bool runLocally;
     [SerializeField] private GameObject serverPrefab, clientPrefab;
     [SerializeField] private UnityTransport unityTransport;
@@ -51,8 +51,6 @@ public class ServerManager : NetworkBehaviour
             unityTransport.SetConnectionData("0.0.0.0", 7777);
         }
 
-        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-
         NetworkManager.Singleton.StartServer();
 
         GameObject serverInstance = Instantiate(serverPrefab);
@@ -71,15 +69,8 @@ public class ServerManager : NetworkBehaviour
         if(!runLocally) unityTransport.SetConnectionData("77.75.125.173", 7777);
         else unityTransport.SetConnectionData("127.0.0.1", 7777);
 
-        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-
         NetworkManager.Singleton.StartClient();
         //clientServerRefs.localClient = NetworkManager.Singleton.LocalClient.PlayerObject.gameObject.GetComponent<Client>();
-    }
-
-    private void OnClientConnected(ulong clientId)
-    {
-        Debug.Log($"Client {clientId} connected to the server.");
     }
 
     private string ResolveDNS(string hostname)

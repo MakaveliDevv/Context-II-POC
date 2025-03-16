@@ -6,6 +6,9 @@ public class Client : NetworkBehaviour
 {
     public Server server;
     public NetworkObject sphere, block, cylinder;
+    [SerializeField] GameObject lion, crowd;
+    NetworkObject lionInstance, crowdInstance; 
+    [SerializeField] Vector3 spawnLocation;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -26,7 +29,7 @@ public class Client : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        //if (IsOwner) RequestServerActionServerRpc();
+
     }
 
     [ServerRpc]
@@ -56,27 +59,25 @@ public class Client : NetworkBehaviour
             NetworkObject newNetworkObject = Instantiate(netObj, _hitPoint + new Vector3(0, 1, 0), Quaternion.identity);
             newNetworkObject.Spawn();
         }
-        
     }
 
-    // [ServerRpc]
-    // void PlaceObjectOnServerRpc(string _selectedObject, Vector3 _hitPoint)
-    // {
-    //     Debug.Log("Try send spawn object to client");
-    //     if (networkObjectReferences[_selectedObject].TryGet(out NetworkObject netObj))
-    //     {
-    //         NetworkObject newNetworkObject = Instantiate(netObj, _hitPoint + new Vector3(0, 1, 0), Quaternion.identity);
-    //         newNetworkObject.Spawn();
-    //     }
-    // }
+    [ServerRpc]
+    public void InstantiateLionServerRpc(ulong _clientID)
+    {
+        GameObject lionInstance = Instantiate(lion, spawnLocation, Quaternion.identity);
+        NetworkObject lionNetworkInstance = lionInstance.GetComponent<NetworkObject>();
+        lionNetworkInstance.SpawnWithOwnership(_clientID);
 
-    // public void TrySpawnObjectsOnClient(string _selectedObject, Vector3 _hitPoint)
-    // {
-    //     //if(IsServer) PlaceObjectOnClientRpc( _selectedObject, _hitPoint);
-    //     if (networkObjectReferences[_selectedObject].TryGet(out NetworkObject netObj))
-    //     {
-    //         NetworkObject newNetworkObject = Instantiate(netObj, _hitPoint + new Vector3(0, 1, 0), Quaternion.identity);
-    //         newNetworkObject.Spawn();
-    //     }
-    // }
+        lionNetworkInstance.gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
+    }
+
+    [ServerRpc]
+    public void InstantiateCrowdServerRpc(ulong _clientID)
+    {
+        // GameObject crowdInstance = Instantiate(crowd, spawnLocation, Quaternion.identity);
+        // NetworkObject crowdNetworkInstance = crowdInstance.GetComponent<NetworkObject>();
+        // crowdNetworkInstance.SpawnWithOwnership(_clientID);
+
+        // crowdNetworkInstance.gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
+    }
 }

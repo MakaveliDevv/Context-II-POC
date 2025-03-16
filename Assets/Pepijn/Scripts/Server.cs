@@ -7,10 +7,15 @@ public class Server : NetworkBehaviour
 {
     public NetworkObjectReference sphereNetRef, blockNetRef, cylinderNetRef;
     public Dictionary<string, NetworkObjectReference> networkObjectReferences;
+    public Dictionary<string, NetworkObjectReference> playerReferences = new();
     public bool instantiatedPrefabs;
+    [SerializeField] List<ulong> clientIDs;
 
     // Update is called once per frame
-
+    void Start()
+    {
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+    }
     [ClientRpc]
     void PerformActionClientRpc()
     {
@@ -43,30 +48,9 @@ public class Server : NetworkBehaviour
         Debug.Log("Instantaited network prefabs");
     }
 
-    // public void TrySpawnObjectsOnClient(string _selectedObject, Vector3 _hitPoint)
-    // {
-    //     if(IsServer)
-    //     {
-    //         if (networkObjectReferences[_selectedObject].TryGet(out NetworkObject netObj))
-    //         {
-    //             NetworkObject newNetworkObject = Instantiate(netObj, _hitPoint + new Vector3(0, 1, 0), Quaternion.identity);
-    //             newNetworkObject.Spawn();
-    //         }
-    //     }
-    // }
-    
-
-
-    // [ClientRpc]
-    // void PlaceObjectOnClientRpc(string _selectedObject, Vector3 _hitPoint)
-    // {
-    //     Debug.Log("Try spawn object on client");
-    //     if (_selectedObject.TryGet(out NetworkObject networkObject))
-    //     {
-    //         Debug.Log("Received NetworkObject: " + networkObject.gameObject.name);
-    //         // Perform actions on the object
-    //         Instantiate(networkObject, _hitPoint + new Vector3(0, 1, 0), Quaternion.identity);
-    //     }
-    // }
-    
+    private void OnClientConnected(ulong clientId)
+    {
+        Debug.Log($"Client {clientId} connected.");
+        clientIDs.Add(clientId);
+    }
 }

@@ -71,3 +71,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  server: {fileID: 0}
+  sphere: {fileID: -7192548663243725267, guid: 7330182c1b7869a40af776fad2886d75, type: 3}
+  block: {fileID: -4106586939130223354, guid: c2bb2efa50ae9ad419484298b2a45dd2, type: 3}
+  cylinder: {fileID: -4110257522106584714, guid: 0ab9351c370493c4e8133aeb9404fe18, type: 3}

@@ -71,3 +71,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  instantiatedPrefabs: 0
+  lion: {fileID: 5896509465033497493, guid: 1824edcc2cdc09a44bed9e47910a0a6b, type: 3}
+  crowd: {fileID: 0}
+  spawnLocation: {x: -3.71, y: 0.66, z: -5.74}

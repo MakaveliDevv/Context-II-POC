@@ -36,9 +36,16 @@ public class ObjectToTrack : MonoBehaviour
         {
             tracker.AddTrackedObject(gameObject.transform);
         }
+<<<<<<< Updated upstream
         else { Debug.LogError("No minimap found!"); }
 
         return randomPosition;
+=======
+        else 
+        { 
+            //Debug.LogError("No minimap found!"); 
+        }
+>>>>>>> Stashed changes
     }
 
     private Vector3 GetRandomPositionWithinBounds()

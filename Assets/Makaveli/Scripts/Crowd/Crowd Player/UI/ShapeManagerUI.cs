@@ -361,6 +361,8 @@ public class ShapeManagerUI
 
         OpenRearrangePanel();
 
+        MGameManager.instance.gamePlayManagement = MGameManager.GamePlayManagement.SOLVING_TASK;
+
         yield break;
     }
 

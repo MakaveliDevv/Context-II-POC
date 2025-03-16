@@ -2856,7 +2856,7 @@ GameObject:
   - component: {fileID: 704033271}
   m_Layer: 0
   m_Name: Task Location (4)
-  m_TagString: Untagged
+  m_TagString: TaskableLocation
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3419,7 +3419,7 @@ GameObject:
   - component: {fileID: 843654501}
   m_Layer: 0
   m_Name: Task Location (1)
-  m_TagString: Untagged
+  m_TagString: TaskableLocation
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5988,7 +5988,7 @@ GameObject:
   - component: {fileID: 1386059219}
   m_Layer: 0
   m_Name: Task Location (3)
-  m_TagString: Untagged
+  m_TagString: TaskableLocation
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -8632,7 +8632,7 @@ GameObject:
   - component: {fileID: 1717510786}
   m_Layer: 0
   m_Name: Task Location
-  m_TagString: Untagged
+  m_TagString: TaskableLocation
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -10814,7 +10814,7 @@ GameObject:
   - component: {fileID: 2123195196}
   m_Layer: 0
   m_Name: Task Location (2)
-  m_TagString: Untagged
+  m_TagString: TaskableLocation
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -13328,7 +13328,7 @@ MonoBehaviour:
   spawnLocations: 0
   stateChange: 0
   lionPlacedObject: 0
-  currentInteractableLocation: {fileID: 0}
+  currInterLoc: {fileID: 0}
 --- !u!114 &2962055177751395102
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16456,7 +16456,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8471902914714913016}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 288a9feb39644d34c8ee5e0bcf34ea55, type: 3}
   m_Name: 

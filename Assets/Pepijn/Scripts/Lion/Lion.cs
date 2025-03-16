@@ -19,6 +19,8 @@ public class Lion : NetworkBehaviour
     [SerializeField] List<GameObject> objectsToPickup = new();
     [SerializeField] GameObject carryingObject;
 
+    private bool objectPlaced;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public override void OnNetworkSpawn()
     {
@@ -81,6 +83,8 @@ public class Lion : NetworkBehaviour
     {
         if(Input.GetKeyDown(KeyCode.E))
         {
+            objectPlaced = false;
+
             if(carryingObject == null)
             {
                 if(objectsToPickup.Count > 0)
@@ -104,8 +108,9 @@ public class Lion : NetworkBehaviour
                 objectsToPickup.Insert(0, carryingObject.gameObject);
                 Transform firstChild = carryingObject.transform.GetChild(0);
                 firstChild.gameObject.GetComponent<Collider>().enabled = true;
-                carryingObject.gameObject.GetComponent<Rigidbody>().isKinematic = false;
+                carryingObject.GetComponent<Rigidbody>().isKinematic = false;
                 carryingObject = null;
+                objectPlaced = true;
             }
         }
     }
@@ -172,6 +177,17 @@ public class Lion : NetworkBehaviour
         if(collider.gameObject.CompareTag("Pickup"))
         {
             if(!objectsToPickup.Contains(collider.gameObject)) objectsToPickup.Insert(0, collider.gameObject);
+        }
+
+        // If in range of location
+        if(collider.CompareTag("TaskableLocation")) 
+        {
+            // If object placed
+            if(objectPlaced) 
+            {
+                // Lion placed the object 
+                MGameManager.instance.lionPlacedObject = true;
+            }
         }
     }
 

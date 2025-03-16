@@ -9,6 +9,7 @@ TagManager:
   - NPCArea
   - NPC
   - PlayerParent
+  - TaskableLocation
   layers:
   - Default
   - TransparentFX

@@ -6,7 +6,7 @@ using UnityEngine;
 public class MGameManager : MonoBehaviour
 {
     public static MGameManager instance;
-    public enum GamePlayManagement { SPAWN_LOCATIONS, CROWD_TURN, SOLVING_PROBLEM, END }
+    public enum GamePlayManagement { SPAWN_LOCATIONS, CROWD_TURN, SOLVING_TASK, END }
     public GamePlayManagement gamePlayManagement; 
 
     [Header("Minimap Management")]
@@ -43,7 +43,7 @@ public class MGameManager : MonoBehaviour
 
     //---------------------
     public bool lionPlacedObject;
-    public TaskLocation currentInteractableLocation;
+    public TaskLocation currInterLoc;
 
     void Awake()
     {
@@ -95,7 +95,7 @@ public class MGameManager : MonoBehaviour
 
             break;
 
-            case GamePlayManagement.SOLVING_PROBLEM:
+            case GamePlayManagement.SOLVING_TASK:
                 stateChange = false;
                 // Method that allows each fixable location to be interactable with the lion
                 
@@ -107,13 +107,13 @@ public class MGameManager : MonoBehaviour
                     {
                         Transform chosenLocation = e.Value.transform;
                         TaskLocation taskLocation = chosenLocation.GetComponent<TaskLocation>();
-                        currentInteractableLocation = taskLocation;
+                        currInterLoc = taskLocation;
                     }
                     // It should be fetched through a collision code
 
                     // Turn the location where the lion interacted with to location fixed
-                    currentInteractableLocation.locationFixed = true;
-                    currentInteractableLocation.fixable = false;
+                    currInterLoc.locationFixed = true;
+                    currInterLoc.fixable = false;
                     
                     // then turn state to end state
                     gamePlayManagement = GamePlayManagement.END;
@@ -129,6 +129,7 @@ public class MGameManager : MonoBehaviour
                     StartCoroutine(TempMethod());
                 }
 
+                lionPlacedObject = false;
             break;
         }
     }
@@ -156,7 +157,7 @@ public class MGameManager : MonoBehaviour
         foreach(Transform location in taskLocationsDone)
         {
             // Debug.Log($"Location name -> {location.gameObject.name} is the same as the task location name -> {currentInteractableLocation.gameObject.name}.");
-            if(location != null && location.gameObject.name == currentInteractableLocation.gameObject.name)
+            if(location != null && location.gameObject.name == currInterLoc.gameObject.name)
             {
                 containsName = true;
                 break;
@@ -165,8 +166,8 @@ public class MGameManager : MonoBehaviour
 
         if(!containsName)
         {
-            taskLocationsDone.Add(currentInteractableLocation.transform);
-            taskLocations.Remove(currentInteractableLocation.transform);
+            taskLocationsDone.Add(currInterLoc.transform);
+            taskLocations.Remove(currInterLoc.transform);
         }
 
         chosenLocations.Clear();

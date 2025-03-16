@@ -78,28 +78,16 @@ public class MGameManager : MonoBehaviour
                 {
                     for (int i = 0; i < allCrowdPlayers.Count; i++)
                     {
-                        // var player = allCrowdPlayers[i];
                         allCrowdPlayers[i].playerState = CrowdPlayerManager.PlayerState.CHOOSE_LOCATION;
                     }
 
                     stateChange = true;
                 } 
 
-                // if(allCrowdPlayers.All(p => p.signal)) 
-                // {
-                //     gamePlayManagement = GamePlayManagement.REMOVE_LOCATIONS;
-                // }
-
             break;
 
             case GamePlayManagement.SOLVING_PROBLEM:
-                // If in this state
-                // Lion may pick up objects and place them 
-
-                // if(allCrowdPlayers.All(p => p.signal)) 
-                // {
-                //     gamePlayManagement = GamePlayManagement.REMOVE_LOCATIONS;
-                // }         
+                // If lion placed object, then start new 'round'      
 
             break;
 
@@ -109,27 +97,45 @@ public class MGameManager : MonoBehaviour
                     player.signal = false;
                 }
 
-                // StartCoroutine(ResetState());
+                StartCoroutine(ResetState());
 
             break;
         }
     }
 
+    // private IEnumerator ResetState() 
+    // {
+    //     yield return new WaitForSeconds(2f);
+    //     GameObject location = null;
+        
+    //     for (int i = 0; i < locations.Count; i++)
+    //     {
+    //         location = locations[i].gameObject;
+    //     }
+
+    //     Destroy(location);    
+    //     locations.Clear();
+    //     gamePlayManagement = GamePlayManagement.SPAWN_LOCATIONS;
+
+    //     yield break;
+    // }
+
     private IEnumerator ResetState() 
     {
         yield return new WaitForSeconds(2f);
-        
-        for (int i = 0; i < locations.Count; i++)
+
+        foreach (var location in locations)
         {
-            GameObject location = locations[i].gameObject;
-            Destroy(location);    
+            if (location != null) 
+            {
+                Destroy(location.gameObject);
+            }
         }
 
-        locations.Clear();
+        locations.Clear(); 
         gamePlayManagement = GamePlayManagement.SPAWN_LOCATIONS;
-
-        yield break;
     }
+
 
     public GameObject InstantiatePrefab
     (
@@ -183,7 +189,7 @@ public class MGameManager : MonoBehaviour
             Transform randomLocation = shuffledLocations[i]; // Pick a random location
             // Debug.Log($"Spawning at: {randomLocation.localPosition}");
 
-            GameObject obj = InstantiatePrefab(trackableGo, randomLocation.position, trackableGo.transform.rotation, null);
+            GameObject obj = InstantiatePrefab(trackableGo, randomLocation.position, trackableGo.transform.rotation, randomLocation.transform);
 
             if (obj.TryGetComponent<ObjectToTrack>(out var objScript))
             {

@@ -59,8 +59,7 @@ public class CrowdPlayerManager : MonoBehaviour
             npcLayer,                           // Reference to the npc layer
             npcSpawnOffset,                     // Reference to the spawn offset for the npc
             cardsUI                             // Reference to the main panel for the UI location cards
-        );
-        
+        );        
     }
 
     private void Start()
@@ -176,7 +175,9 @@ public class CrowdPlayerManager : MonoBehaviour
                     playerController.MovementInput();
                 }
 
-            break;   
+                // If lion placed an object switch state to roam around
+
+            break;
 
             default:
 

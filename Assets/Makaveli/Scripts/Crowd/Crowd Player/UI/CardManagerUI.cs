@@ -117,13 +117,13 @@ public class CardManagerUI
         }
         
         // Get total objects to track
-        if (MGameManager.instance.objectsToTrack == null || MGameManager.instance.objectsToTrack.Count == 0)
+        if (MGameManager.instance.trackables == null || MGameManager.instance.trackables.Count == 0)
         {
             Debug.LogError("No objects to track in GameManager");
             yield break;
         }
         
-        totalTrackedObjects = MGameManager.instance.objectsToTrack.Count;
+        totalTrackedObjects = MGameManager.instance.trackables.Count;
         // Debug.Log($"Total objects to track: {totalTrackedObjects}");
         
         // Calculate how many panels we need to activate based on tracked objects
@@ -196,7 +196,7 @@ public class CardManagerUI
                 }
                 
                 UILocationCard card = panelCards[cardIndex];
-                GameObject objectToTrack = MGameManager.instance.objectsToTrack[objectIndex];
+                GameObject objectToTrack = MGameManager.instance.trackables[objectIndex];
                 
                 // Set up the card with the object data
                 SetupCard(card, objectToTrack);

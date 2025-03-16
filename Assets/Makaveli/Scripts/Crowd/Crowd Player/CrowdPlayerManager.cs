@@ -1,89 +1,74 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class CrowdPlayerManager : MonoBehaviour 
 {
-    public enum PlayerState { ROAM_AROUND, CHOOSE_LOCATION, TRAVELING, CHOOSE_SHAPE, SIGNAL }
+    public enum PlayerState { ROAM_AROUND, CHOOSE_LOCATION, TRAVELING, CHOOSE_SHAPE, REARRANGE_SHAPE, SIGNAL, END }
     public PlayerState playerState; 
 
-    public CrowdPlayerController playerController;
+    [HideInInspector] public CrowdPlayerController playerController; // Class reference
 
-    [SerializeField] private CharacterController controller;
-    // [SerializeField] private Transform cameraTransform;
+    [Header("Movement Management")]
     [SerializeField] private float movementSpeed = 5f;
     [SerializeField] private float aplliedMovementSpeedPercentage = .5f;
-    // [SerializeField] private float jumpForce = 5f;
-    // [SerializeField] private float sensivity = 5f;
-    // [SerializeField] private bool invert;
-    // [SerializeField] private Vector2 angleLimit = new(-70f, 70f);
 
-    // UI Stuff
-    [Header("UI Stuff")]
+
+    // UI Management
+    [Header("UI Management")]
     [SerializeField] private GameObject cardsUI;
-    [SerializeField] private List<GameObject> cardPanels = new();
-    [SerializeField] private List<UILocationCard> cards = new();
-    public bool cardButtonClicked = false;
-    public bool isProcessingClick = false;
+    private bool inUIMode = false;
+    private bool lastDisplayUIState = false; 
     private bool openShapePanelFirstTime;
 
-    public bool inUIMode = false;
-    // private bool ableToLook = true;
-    private bool lastDisplayUIState = false; 
-
-    [Header("NPC Stuff")]
-    [SerializeField] private List<GameObject> NPCs = new();
+    // NPC Management
+    [Header("NPC Management")]
     [SerializeField] private GameObject npcPrefab;
+    [SerializeField] private LayerMask npcLayer;
+    [SerializeField] private Vector3 npcSpawnOffset = new();    
     [SerializeField] private int npcCount;
 
-    float elapsedTime = 0;    
+    private float elapsedTime = 0;    
+
+    // Camera Management
+    [Header("Camera Management")]
+    public Camera cam;
+    [SerializeField] private Vector3 camOffset = new(0, 10, -5);    
+    [SerializeField] private float camSmoothSpeed = 5f;
+    [SerializeField] private float camRotationSpeed = 100f;  
+    public Quaternion og_camRot = new();
+    public float distanceOffset;
+    public float interpolationDuration;
+
+    // State management
+    public bool rearrangeFormation;
+    public bool signal;
 
     private void Awake()
     {
-        controller = transform.GetChild(0).gameObject.GetComponent<CharacterController>();
-        // playerRenderer = transform.GetChild(0).gameObject.GetComponent<Transform>();
-       
-        // playerController = new 
-        // (
-        //     this,
-        //     controller,                         // Character controller component
-        //     playerTransform,                    // Player transform
-        //     cameraTransform,                    // Camera transform object
-        //     angleLimit,                         // Look angle limits
-        //     movementSpeed,                      // Movement speed
-        //     aplliedMovementSpeedPercentage,     // Applied movement speed
-        //     jumpForce,                          // Jump force
-        //     sensivity,                          // Look sensivity
-        //     invert,                             // Invert look
-        //     npcPrefab,                          // NPC prefab
-        //     npcCount,                           // NPC count
-        //     cardsUI,
-        //     cardPanels,
-        //     cards,
-        //     NPCs
-        // );
-
         playerController = new
         (
-            this,
-            controller,
-            movementSpeed,
-            aplliedMovementSpeedPercentage,
-            npcPrefab,
-            npcCount,                           
-            cardsUI,
-            cardPanels,
-            cards,
-            NPCs
+            this,                               // Reference to the mono class
+            cam,                                // Reference to the top down camera
+            camOffset,                          // Reference to the camera offset position
+            camSmoothSpeed,                     // Reference to the camera movement
+            camRotationSpeed,                   // Reference to the camera rotation
+            movementSpeed,                      // Reference to the player movement speed
+            aplliedMovementSpeedPercentage,     // Reference to the applied player movement speed
+            npcPrefab,                          // Reference to the npc prefab
+            npcCount,                           // Reference to the amount of npcs to spawn in for the player
+            npcLayer,                           // Reference to the npc layer
+            npcSpawnOffset,                     // Reference to the spawn offset for the npc
+            cardsUI                             // Reference to the main panel for the UI location cards
         );
-
-        MGameManager.instance.allCrowdPlayers.Add(this);
+        
     }
 
     private void Start()
     {
+        MGameManager.instance.allCrowdPlayers.Add(this);
+
         playerController.Start(this);
+        og_camRot = cam.transform.rotation;
     }
 
     private void OnEnable()
@@ -95,104 +80,129 @@ public class CrowdPlayerManager : MonoBehaviour
     {
         InputActionHandler.DisableInputActions();
     }
-
+    
     private void Update()
     {
-        inUIMode = UILocationCard();  
-        // Debug.Log("Update: inUIMode = " + inUIMode); // Debugging
-
+        inUIMode = LocationCardsUIVisibility();  
         UIMode(inUIMode);
+        playerController.Update(this);
 
         switch (playerState)
         {
             case PlayerState.ROAM_AROUND:
+                playerController.chosenLocation = null;
+                StartCoroutine(NPCsManagement.ResumeNPCMovement(playerController.npcs, transform));
+
                 // Player is able to walk around
                 playerController.MovementInput();
 
             break;
 
             case PlayerState.CHOOSE_LOCATION:
-                // Show the location cards
-                // inUIMode = UILocationCard();
-                playerController.ChooseLocation(cards, inUIMode);
+                playerController.ChooseLocation(playerController.cards, inUIMode);
                 playerController.CardPanelNavigation();
 
                 // An extra method to keep track of the chosen locations
                 StartCoroutine(MGameManager.instance.InitializeLocation());
 
-                elapsedTime += Time.deltaTime; 
-
-                if(playerController.chosenLocation != null && elapsedTime >= MGameManager.instance.chooseLocationTimer) 
+                // If location selected, change state
+                if(playerController.locationChosen) 
                 {
-                    elapsedTime = 0f;
+                    MGameManager.instance.showLocationCards = false;
                     playerState = PlayerState.TRAVELING;
                 }
 
                 break;
 
             case PlayerState.TRAVELING:
-                // Should move the player automatically toward the chosen location
-                // Debug.Log("Player is traveling");
+                // Debug.Log("🚀 TRAVELING state running...");
+                playerController.MovementInput();
 
                 // Travel mechanic
-                playerController.MoveTowardsChosenLocation(transform, NPCs);
-                InputActionHandler.DisableInputActions();
+                // playerController.MoveTowardsChosenLocation(transform);
+                // InputActionHandler.DisableInputActions();
 
                 // Check if player at position
-                playerController.CheckPlayerPosition(transform);
+                playerController.CheckPlayerPosition(playerController.controller.transform);
 
                 if(playerController.isAtLocation == true) 
                 {
-                    InputActionHandler.EnableInputActions();
+                    // Debug.Log("✅ Switching to CHOOSE_SHAPE state");
                     playerState = PlayerState.CHOOSE_SHAPE;
                 }
 
             break;
 
             case PlayerState.CHOOSE_SHAPE:
-                // Stop npc movement
-                // for (int i = 0; i < NPCs.Count; i++)
-                // {
-                //     if(NPCs[i].TryGetComponent<NPCManager>(out var npc)) 
-                //     {
-                //         npc.nPCFollower.currentVelocity = Vector3.zero;
-                //         npc.nPCFollower.smoothSpeed = 0f;
-                //     }
-                //     else { Debug.LogError("Couldn't fetch the NPCManager script, something went wrong!"); return; }
-                // }
-
                 if(!openShapePanelFirstTime) 
                 {
-                    playerController.UImanagement.shapeManagerUI.closePanelButton.gameObject.SetActive(false);
-                    playerController.UImanagement.shapeManagerUI.openPanelButton.gameObject.SetActive(true);
-                    // playerController.UImanagement.shapeManagerUI.UpdatePanelButtons(true);
+                    playerController.UImanagement.shapeManagerUI.OpenShapePanel(this);
                     openShapePanelFirstTime = true;
                 }
 
-                if(!inUIMode) 
+            break;
+
+            case PlayerState.REARRANGE_SHAPE:
+                openShapePanelFirstTime = false;
+                signal = false; 
+
+                playerController.DragNPC();
+
+                if(!rearrangeFormation) 
                 {
-                    playerController.MovementInput();
+                    if (playerController.UImanagement.shapeManagerUI.shapeConfirmed) 
+                    {
+                        // Stop the movement of each npc
+                        StartCoroutine(NPCsManagement.StopNPCMovement(playerController.npcs));
+                        playerController.TitlCamera(distanceOffset, interpolationDuration);
+                        rearrangeFormation = true;
+                    }
                 }
 
             break;
 
             case PlayerState.SIGNAL:
-                openShapePanelFirstTime = false;
-                playerController.MovementInput();
+                rearrangeFormation = false;
+                if(!signal) 
+                {
+                    playerController.RepositionCamera(distanceOffset, interpolationDuration);
 
-                // When in signal mode, the player can move around
-                // The player can choose if the npcs stay at position or follow the player back
-                // The player can choose to switch from shape 
+                    signal = true;
+                }
 
-            break;
+                if(signal) 
+                {
+                    transform.GetChild(4).GetChild(8).gameObject.SetActive(true); // Display the signal button
+                    playerController.MovementInput();
+                }
+
+            break;   
 
             default:
 
             break;
         }
-    } 
+    }
 
-    private bool UILocationCard() 
+    private void LateUpdate()
+    {
+        playerController.CameraMovement();
+    }
+
+    private IEnumerator Signal() 
+    {
+        signal = true;
+        
+        // Signal stuff
+        yield return new WaitForSeconds(5f);
+
+
+        playerState = PlayerState.ROAM_AROUND;
+        yield break;
+    }
+
+    // UI stuff
+    private bool LocationCardsUIVisibility() 
     {
         bool inUIMode = MGameManager.instance.showLocationCards; 
         
@@ -239,4 +249,17 @@ public class CrowdPlayerManager : MonoBehaviour
     {
         InputActionHandler.DisableInputActions();
     }
+
+    // Helper method to visualize the boundary in the editor
+    // private void OnDrawGizmos()
+    // {
+    //     if (minBoundary == null || maxBoundary == null) return;
+
+    //     Gizmos.color = Color.yellow;
+
+    //     // Draw the boundary as a wireframe box
+    //     Vector3 size = new Vector3(maxBoundary.x - minBoundary.x, 0.1f, maxBoundary.y - minBoundary.y);
+    //     Vector3 center = new Vector3((minBoundary.x + maxBoundary.x) * 0.5f, 0, (minBoundary.y + maxBoundary.y) * 0.5f);
+    //     Gizmos.DrawWireCube(center, size);
+    // }
 }

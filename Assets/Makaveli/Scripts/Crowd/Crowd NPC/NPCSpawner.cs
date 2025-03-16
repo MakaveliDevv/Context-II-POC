@@ -29,7 +29,7 @@ public class NPCSpawner : MonoBehaviour
     {
         if(locations.Count < 3) 
         {
-            foreach (var item in MGameManager.instance.objectsToTrack)
+            foreach (var item in MGameManager.instance.trackables)
             {
                 locations.Add(item.transform);    
             }

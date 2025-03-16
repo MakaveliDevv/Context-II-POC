@@ -50,42 +50,7 @@ public class PlayerFormationController : MonoBehaviour
     
     private void Update()
     {
-        // Toggle static formation mode
-        if (Input.GetKeyDown(toggleStaticFormationKey))
-        {
-            // If turning static mode ON, update the formation origin to current position
-            if (!formationManager.staticFormations)
-            {
-                formationManager.UpdateFormationOrigin();
-            }
-
-            formationManager.staticFormations = !formationManager.staticFormations;
-            UpdateFormationText();
-        }
-
-        if(playerManager.playerController.UImanagement.shapeManagerUI.shapeSelected) 
-        {
-            // Fetch the shape name
-            string shapeName = playerManager.playerController.UImanagement.shapeManagerUI.shapeName;
-
-            // Use the chosenLocation from the player controller if available
-            if (playerManager.playerController.chosenLocation != null)
-            {
-                formationManager.SetTargetLocation(playerManager.playerController.chosenLocation);
-            }
-
-            // Convert string to enum and change formation
-            if (Enum.TryParse(shapeName, out FormationType formationType))
-            {
-                ChangeFormation(formationType);
-            }
-            else
-            {
-                Debug.LogError($"Invalid shape name: {shapeName}");
-            }
-        }
-
-
+        
         // if (Input.GetKeyDown(formationHotkeys[0]))
         // {
         //     ChangeFormation(FormationType.Follow);
@@ -110,6 +75,47 @@ public class PlayerFormationController : MonoBehaviour
         // {
         //     ChangeFormation(FormationType.Arrow);
         // }
+
+        // Toggle static formation mode
+        if (Input.GetKeyDown(toggleStaticFormationKey))
+        {
+            // If turning static mode ON, update the formation origin to current position
+            if (!formationManager.staticFormations)
+            {
+                formationManager.UpdateFormationOrigin();
+            }
+
+            formationManager.staticFormations = !formationManager.staticFormations;
+            UpdateFormationText();
+        }
+        
+        HandleFormation();
+     
+    }
+
+    private void HandleFormation() 
+    {
+        if(playerManager.playerController.UImanagement.shapeManagerUI.shapeConfirmed) 
+        {
+            // Fetch the shape name
+            string shapeName = playerManager.playerController.UImanagement.shapeManagerUI.shapeName;
+
+            // Use the chosenLocation from the player controller if available
+            if (playerManager.playerController.chosenLocation != null)
+            {
+                formationManager.SetTargetLocation(playerManager.playerController.chosenLocation);
+            }
+
+            // Convert string to enum and change formation
+            if (Enum.TryParse(shapeName, out FormationType formationType))
+            {
+                ChangeFormation(formationType);
+            }
+            else
+            {
+                Debug.LogError($"Invalid shape name: {shapeName}");
+            }
+        }
     }
     
     public void ChangeFormation(FormationType newFormation)
@@ -142,3 +148,12 @@ public class PlayerFormationController : MonoBehaviour
         }
     }
 }
+
+
+
+
+
+
+
+
+

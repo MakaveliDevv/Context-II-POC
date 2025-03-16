@@ -36,9 +36,9 @@ public class MGameManager : MonoBehaviour
     // public float chooseLocationTimer;
     public bool showLocationCards = false;
     // public bool allPlayersAtLocation = false;
-    private bool spawnLocations;
+    public bool spawnLocations;
 
-    private bool stateChange;
+    public bool stateChange;
 
 
     //---------------------

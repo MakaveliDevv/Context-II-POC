@@ -16,7 +16,7 @@ public class CrowdPlayerManager : MonoBehaviour
     // UI Management
     [Header("UI Management")]
     [SerializeField] private GameObject cardsUI;
-    private bool inUIMode = false;
+    public bool inUIMode = false;
     private bool lastDisplayUIState = false; 
     private bool openShapePanelFirstTime;
 
@@ -89,10 +89,6 @@ public class CrowdPlayerManager : MonoBehaviour
         switch (playerState)
         {
             case PlayerState.ROAM_AROUND:
-                playerController.chosenLocation = null;
-                StartCoroutine(NPCsManagement.ResumeNPCMovement(playerController.npcs, transform));
-
-                // Player is able to walk around
                 playerController.MovementInput();
 
             break;
@@ -175,7 +171,21 @@ public class CrowdPlayerManager : MonoBehaviour
                     playerController.MovementInput();
                 }
 
-                // If lion placed an object switch state to roam around
+            break;
+
+            case PlayerState.END:
+                playerController.chosenLocation = null;
+                signal = false;
+                playerController.UImanagement.shapeManagerUI.shapeConfirmed = false;
+
+                StartCoroutine(NPCsManagement.ResumeNPCMovement(playerController.npcs, transform));
+
+                playerController.MovementInput();
+
+                // Display something like new task spawning in or something like that 
+                // And then turn to roaming around state
+                StartCoroutine(TempMethod());
+              
 
             break;
 
@@ -190,14 +200,9 @@ public class CrowdPlayerManager : MonoBehaviour
         playerController.CameraMovement();
     }
 
-    private IEnumerator Signal() 
+    private IEnumerator TempMethod() 
     {
-        signal = true;
-        
-        // Signal stuff
-        yield return new WaitForSeconds(5f);
-
-
+        yield return new WaitForSeconds(3f);
         playerState = PlayerState.ROAM_AROUND;
         yield break;
     }

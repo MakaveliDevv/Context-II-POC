@@ -4,6 +4,7 @@ public class ObjectToTrack : MonoBehaviour
 {
     public RenderTexture renderTexture;
     [SerializeField] private float spawnHeightOffset;
+    private MiniMapTracker miniMapTracker;
 
     private void Start()
     {
@@ -14,6 +15,8 @@ public class ObjectToTrack : MonoBehaviour
         camera.targetTexture = renderTexture;
 
         MGameManager.instance.trackables.Add(gameObject);
+
+        miniMapTracker = FindFirstObjectByType<MiniMapTracker>();
     }
 
     private void OnDestroy()
@@ -22,6 +25,21 @@ public class ObjectToTrack : MonoBehaviour
         {
             renderTexture.Release();
             Destroy(renderTexture);
+        }
+
+        // Remove from tracker dictionary
+        if (miniMapTracker != null)
+        {
+            miniMapTracker.RemoveTrackedObject(transform);
+        }
+        else
+        {
+            // If our cached reference is null for some reason, try to find it again
+            miniMapTracker = FindFirstObjectByType<MiniMapTracker>();
+            if (miniMapTracker != null)
+            {
+                miniMapTracker.RemoveTrackedObject(transform);
+            }
         }
     }
 
@@ -56,5 +74,6 @@ public class ObjectToTrack : MonoBehaviour
 
         return new Vector3(randomX, spawnY, randomZ);
     }
+    
 }
 

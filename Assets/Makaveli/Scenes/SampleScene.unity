@@ -13233,24 +13233,29 @@ MonoBehaviour:
   gamePlayManagement: 0
   markers: []
   trackables: []
-  trackableGo: {fileID: 4926605948599544905, guid: e072003f2c140d04aa217f93d74ca147, type: 3}
+  trackableGo: {fileID: 4926605948599544905, guid: 436845b629dc18c42973f57d71ab83b5, type: 3}
   trackablesParent: {fileID: 6048701618189546902}
-  locations:
-  - {fileID: 1717510783}
-  - {fileID: 843654500}
-  - {fileID: 2123195195}
-  - {fileID: 1386059218}
-  - {fileID: 704033270}
-  trackableAmount: 8
   allCrowdPlayers: []
   ChosenLocations: []
   PlayerShapeUI: []
   walkableArea: {fileID: 881053182685900594}
   allNPCs: []
-  spawnInTimer: 0
-  chooseLocationTimer: 5
+  taskLocations:
+  - {fileID: 1717510783}
+  - {fileID: 843654500}
+  - {fileID: 2123195195}
+  - {fileID: 1386059218}
+  - {fileID: 704033270}
+  taskLocationsDone: []
+  taskToBeDone: []
+  taskThatAreDone: []
+  amountOfTasksPerRound: 4
+  spawnInTimer: 2
+  chooseLocationTimer: 0
   showLocationCards: 0
   allPlayersAtLocation: 0
+  lionPlacedObject: 0
+  currentInteractableLocation: {fileID: 0}
 --- !u!114 &2962055177751395102
 MonoBehaviour:
   m_ObjectHideFlags: 0

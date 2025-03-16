@@ -148,7 +148,7 @@ public class CrowdPlayerController
             isAtLocation = true;
             TaskLocation taskLocation = chosenLocation.gameObject.GetComponent<TaskLocation>();
             taskLocation.fixable = true;
-            // Debug.Log("✅ Player is at the chosen location!");
+            Debug.Log("✅ Player is at the chosen location!");
         }
     }
 

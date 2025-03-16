@@ -202,6 +202,8 @@ public class CrowdPlayerManager : MonoBehaviour
 
     private IEnumerator TempMethod() 
     {
+        playerController.isAtLocation = false;
+        playerController.locationChosen = false;
         yield return new WaitForSeconds(3f);
         playerState = PlayerState.ROAM_AROUND;
         yield break;

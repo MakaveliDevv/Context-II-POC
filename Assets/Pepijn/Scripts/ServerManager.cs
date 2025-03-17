@@ -57,6 +57,7 @@ public class ServerManager : NetworkBehaviour
         serverInstance.GetComponent<NetworkObject>().Spawn();
 
         clientServerRefs.server = serverInstance.GetComponent<Server>();
+        clientServerRefs.isServer = true;
     }
 
     private void StartAsClient()

@@ -9056,30 +9056,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gamePlayManagement: 0
-  markers: []
   trackables: []
   trackableGo: {fileID: 4926605948599544905, guid: 436845b629dc18c42973f57d71ab83b5, type: 3}
-  trackablesParent: {fileID: 6048701618189546902}
-  locations:
-  - {fileID: 5619153755844343101}
-  - {fileID: 1233426033}
-  - {fileID: 45660426}
-  - {fileID: 8882720581481288285}
-  - {fileID: 1234824659}
-  - {fileID: 228934231}
-  - {fileID: 7840033641819277571}
-  - {fileID: 1278277863}
-  - {fileID: 1234194272}
-  trackableAmount: 8
   allCrowdPlayers: []
   ChosenLocations: []
   PlayerShapeUI: []
   walkableArea: {fileID: 881053182685900594}
   allNPCs: []
+  taskLocations: []
+  taskLocationsDone: []
+  amountOfTasksPerRound: 0
   spawnInTimer: 0
-  chooseLocationTimer: 5
   showLocationCards: 0
-  allPlayersAtLocation: 0
+  spawnLocations: 0
+  stateChange: 0
+  lionPlacedObject: 0
+  currInterLoc: {fileID: 0}
 --- !u!4 &3071420781276761187
 Transform:
   m_ObjectHideFlags: 0

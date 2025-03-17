@@ -35,7 +35,7 @@ public class Lion : NetworkBehaviour
         if(customNetworkBehaviour.CustomIsOwner())
         {
             PlaceObject();
-            PickupObject();
+            MoveObjects();
         }
     }
 
@@ -79,7 +79,7 @@ public class Lion : NetworkBehaviour
         }
     }
 
-    void PickupObject()
+    void MoveObjects()
     {
         if(Input.GetKeyDown(KeyCode.E))
         {
@@ -89,30 +89,43 @@ public class Lion : NetworkBehaviour
             {
                 if(objectsToPickup.Count > 0)
                 {
-                    Transform objectToPickup = objectsToPickup[0].transform;
-                    objectsToPickup.Remove(objectToPickup.gameObject);
-                    objectToPickup.transform.position = transform.position;
-                    carryingObject = objectToPickup.gameObject;
-
-                    Transform firstChild = objectToPickup.transform.GetChild(0);
-                    firstChild.gameObject.GetComponent<Collider>().enabled = false;
-                    objectToPickup.gameObject.GetComponent<Rigidbody>().isKinematic = true;
-
-                    //objectToPickup.transform.SetParent(transform);
-                    RequestReparentServerRpc(objectToPickup.gameObject, gameObject, false);
+                    PickupObject();
                 }
             }
             else
             {
-                RequestReparentServerRpc(carryingObject.gameObject, gameObject, true);
-                objectsToPickup.Insert(0, carryingObject.gameObject);
-                Transform firstChild = carryingObject.transform.GetChild(0);
-                firstChild.gameObject.GetComponent<Collider>().enabled = true;
-                carryingObject.GetComponent<Rigidbody>().isKinematic = false;
-                carryingObject = null;
-                objectPlaced = true;
+                DropObject();
             }
         }
+    }
+
+    void PickupObject(Transform _objectToPickup = null)
+    {
+        Transform objectToPickup = null;
+        if(_objectToPickup == null) objectToPickup = objectsToPickup[0].transform;
+        else objectToPickup = _objectToPickup;
+
+        objectsToPickup.Remove(objectToPickup.gameObject);
+        objectToPickup.transform.position = transform.position;
+        carryingObject = objectToPickup.gameObject;
+
+        Transform firstChild = objectToPickup.transform.GetChild(0);
+        firstChild.gameObject.GetComponent<Collider>().enabled = false;
+        objectToPickup.gameObject.GetComponent<Rigidbody>().isKinematic = true;
+
+        //objectToPickup.transform.SetParent(transform);
+        RequestReparentServerRpc(objectToPickup.gameObject, gameObject, false);
+    }
+
+    void DropObject()
+    {
+        RequestReparentServerRpc(carryingObject.gameObject, gameObject, true);
+        objectsToPickup.Insert(0, carryingObject.gameObject);
+        Transform firstChild = carryingObject.transform.GetChild(0);
+        firstChild.gameObject.GetComponent<Collider>().enabled = true;
+        carryingObject.GetComponent<Rigidbody>().isKinematic = false;
+        carryingObject = null;
+        objectPlaced = true;
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -133,41 +146,59 @@ public class Lion : NetworkBehaviour
 
     void PlaceObject()
     {
-        if (selectedObject == "")
+        // if (selectedObject == "")
+        // {
+        //     Debug.Log("No object selected");
+        //     return;
+        // }
+
+        // if(selectedObject == "sphere" && spheresRemaining <= 0) return;
+        // if(selectedObject == "block" && blocksRemaining <= 0) return;
+        // if(selectedObject == "cylinder" && cylindersRemaining <= 0) return;
+
+        // if (Input.GetMouseButtonDown(0)) // Left-click
+        // {
+        //     Ray ray = lionCam.ScreenPointToRay(Input.mousePosition);
+        //     RaycastHit hit;
+
+        //     if (Physics.Raycast(ray, out hit, Mathf.Infinity, floorLayer))
+        //     {
+        //         //Instantiate(selectedObject, hit.point + new Vector3(0, 1, 0), Quaternion.identity);
+        //         ClientServerRefs.instance.localClient.SendObjectToServer(selectedObject, hit.point);
+
+        //         if(selectedObject == "block")
+        //         {
+        //             blocksRemaining--;
+        //             blocksRemainingText.text = blocksRemaining.ToString();
+        //         }
+        //         else if (selectedObject == "sphere")
+        //         {
+        //             spheresRemaining--;
+        //             spheresRemainingText.text = spheresRemaining.ToString();
+        //         }
+        //         else if(selectedObject == "cylinder")
+        //         {
+        //             cylindersRemaining--;
+        //             cylindersRemainingText.text = cylindersRemaining.ToString();
+        //         }
+        //     }
+        // }
+        if(carryingObject == null)
         {
-            Debug.Log("No object selected");
-            return;
-        }
-
-        if(selectedObject == "sphere" && spheresRemaining <= 0) return;
-        if(selectedObject == "block" && blocksRemaining <= 0) return;
-        if(selectedObject == "cylinder" && cylindersRemaining <= 0) return;
-
-        if (Input.GetMouseButtonDown(0)) // Left-click
-        {
-            Ray ray = lionCam.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity, floorLayer))
+            if(Input.GetKeyDown(KeyCode.Alpha1))
             {
-                //Instantiate(selectedObject, hit.point + new Vector3(0, 1, 0), Quaternion.identity);
-                ClientServerRefs.instance.localClient.SendObjectToServer(selectedObject, hit.point);
-
-                if(selectedObject == "block")
-                {
-                    blocksRemaining--;
-                    blocksRemainingText.text = blocksRemaining.ToString();
-                }
-                else if (selectedObject == "sphere")
-                {
-                    spheresRemaining--;
-                    spheresRemainingText.text = spheresRemaining.ToString();
-                }
-                else if(selectedObject == "cylinder")
-                {
-                    cylindersRemaining--;
-                    cylindersRemainingText.text = cylindersRemaining.ToString();
-                }
+                selectedObject = "block";
+                ClientServerRefs.instance.localClient.SendObjectToServer(selectedObject, transform.position + (transform.forward * 5));
+            }
+            if(Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                selectedObject = "sphere";
+                ClientServerRefs.instance.localClient.SendObjectToServer(selectedObject, transform.position + (transform.forward * 5));
+            }
+            if(Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                selectedObject = "cylinder"; 
+                ClientServerRefs.instance.localClient.SendObjectToServer(selectedObject, transform.position + (transform.forward * 5));
             }
         }
     }

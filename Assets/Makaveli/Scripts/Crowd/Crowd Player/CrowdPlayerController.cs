@@ -2,8 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Unity.Netcode;
+using NUnit.Framework.Constraints;
 
-public class CrowdPlayerController 
+public class CrowdPlayerController
 {
     private readonly MonoBehaviour mono;
     
@@ -11,6 +13,7 @@ public class CrowdPlayerController
     private readonly TopDownMovement topDownMovement; 
     public CrowdPlayerUIManager UImanagement;
     public CameraManagement cameraManagement;
+    CustomNetworkBehaviour customNetworkBehaviour;
     
     // Player Management
     public CharacterController controller;
@@ -58,12 +61,15 @@ public class CrowdPlayerController
 
         controller = mono.transform.GetChild(0).GetComponent<CharacterController>();
 
+        customNetworkBehaviour = mono.GetComponent<CustomNetworkBehaviour>();
+
         topDownMovement = new
         (
             controller,
             controller.transform,
             movementSpeed,
-            appliedMovementSpeedPercentage
+            appliedMovementSpeedPercentage,
+            customNetworkBehaviour
         );
 
         UImanagement = new
@@ -87,10 +93,22 @@ public class CrowdPlayerController
 
     public void Start(CrowdPlayerManager playerManager) 
     {
-        Transform npcContainer = controller.transform.parent.transform.GetChild(3); // Empty game object to store the npcs
-        Transform npcArea = controller.transform.GetChild(1); // Empty game objects to spawn the npcs at
+        //Transform npcContainer = controller.transform.parent.transform.GetChild(3); // Empty game object to store the npcs
+        //Transform npcArea = controller.transform.GetChild(1); // Empty game objects to spawn the npcs at
         
-        mono.StartCoroutine(NPCsManagement.SpawnNPC(npcs, npcCount, npc, npcArea.position + npcSpawnOffset, npcContainer)); 
+        //mono.StartCoroutine(NPCsManagement.SpawnNPC(npcs, npcCount, npc, npcArea.position + npcSpawnOffset, npcContainer)); 
+
+        //SpawnCrowdServerRpc(customNetworkBehaviour.ownerClientID);
+        CrowdRpcBehaviour crowdRpcBehaviour = mono.GetComponent<CrowdRpcBehaviour>();
+        crowdRpcBehaviour.SetCorrectReferences(controller, npcCount, npc, npcSpawnOffset, this);
+
+        if(customNetworkBehaviour.CustomIsOwner())
+        {
+            crowdRpcBehaviour.SpawnCrowdServerRpc(customNetworkBehaviour.ownerClientID);
+        }
+
+
+
         UImanagement.InitializeShapeManagement(mono, playerManager);
         cameraManagement.Start();
 
@@ -102,6 +120,7 @@ public class CrowdPlayerController
                 signalBtn.onClick.RemoveAllListeners();
                 signalBtn.onClick.AddListener(() => 
                 {
+                    Debug.Log("Pressed signal: " + npcs.Count);
                     foreach (var e in npcs)
                     {
                         NPCManager npc = e.GetComponent<NPCManager>();
@@ -111,6 +130,36 @@ public class CrowdPlayerController
             }
         } else { Debug.LogError("Couldn't fetch the 'signalBtn shape button' "); return; }
     }
+
+    // [ServerRpc(RequireOwnership = false)]
+    // void SpawnCrowdServerRpc(ulong _clientID)
+    // {
+    //     if(!ClientServerRefs.instance.isServer) return;
+    //     Transform npcContainer = controller.transform.parent.transform.GetChild(3); // Empty game object to store the npcs
+    //     Transform npcArea = controller.transform.GetChild(1);
+
+    //     for(int i = 0; i < npcCount; i++)
+    //     {
+    //         GameObject newNPC = MGameManager.instance.InstantiatePrefab(npc, npcArea.position + npcSpawnOffset, npc.transform.rotation, npcContainer);
+    //         NetworkObject newNPCInstance = newNPC.GetComponent<NetworkObject>();
+    //         newNPCInstance.Spawn();
+    //         newNPCInstance.gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
+
+    //         NotifyClientOfSpawnClientRpc(newNPCInstance.NetworkObjectId);
+    //     }
+    // }
+
+    // [ClientRpc]
+    // void NotifyClientOfSpawnClientRpc(ulong spawnedObjectId)
+    // {
+    //     Debug.Log("add object to list client rpc");
+    //     // Find the spawned object by ID
+    //     NetworkObject spawnedObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[spawnedObjectId];
+    //     Debug.Log("Spawned Object: " + spawnedObject.gameObject.name);
+
+    //     // Add it to the client's list
+    //     npcs.Add(spawnedObject.gameObject);
+    // }
 
     public void Update(CrowdPlayerManager playerManager) 
     {

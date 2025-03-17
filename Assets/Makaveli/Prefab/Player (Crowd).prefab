@@ -4461,6 +4461,8 @@ GameObject:
   - component: {fileID: 1487873336739354413}
   - component: {fileID: 6405026166382984164}
   - component: {fileID: 5453590490460724047}
+  - component: {fileID: 1765994267102985770}
+  - component: {fileID: 7961887142233837093}
   m_Layer: 8
   m_Name: Sphere
   m_TagString: Player
@@ -4584,6 +4586,33 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1765994267102985770
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7426263363325763532}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28d1de62718612147ac60f4470510c6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &7961887142233837093
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7426263363325763532}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5eb15b3fd7792645b43ebcd6a81f2c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  ownerClientID: 0
 --- !u!1 &7711804209737815444
 GameObject:
   m_ObjectHideFlags: 0
@@ -4593,6 +4622,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2638470032826935973}
+  - component: {fileID: -8299353168490890271}
   - component: {fileID: 4918312101904208805}
   - component: {fileID: 2990826295324145596}
   - component: {fileID: 3164015119296275551}
@@ -4624,6 +4654,31 @@ Transform:
   - {fileID: 8759907883828094809}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-8299353168490890271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7711804209737815444}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 2922600003
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &4918312101904208805
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4636,10 +4691,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ce3962a5c037d54bbb0796909e9a409, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   playerState: 0
   movementSpeed: 5
   aplliedMovementSpeedPercentage: 2
   cardsUI: {fileID: 4011709430667321504}
+  inUIMode: 0
   npcPrefab: {fileID: 2109699717161008390, guid: 566b78e3579e1194a9f4fb418f81b0c1, type: 3}
   npcLayer:
     serializedVersion: 2
@@ -4652,9 +4709,10 @@ MonoBehaviour:
   camRotationSpeed: 100
   og_camRot: {x: 0, y: 0, z: 0, w: 0}
   distanceOffset: 30
-  camControlEnabled: 0
+  interpolationDuration: 0
   rearrangeFormation: 0
   signal: 0
+  crowdOnlyObjects: []
 --- !u!114 &2990826295324145596
 MonoBehaviour:
   m_ObjectHideFlags: 0

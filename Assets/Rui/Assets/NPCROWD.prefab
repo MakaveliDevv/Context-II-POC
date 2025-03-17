@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 7618025752129052529}
   - component: {fileID: 8774823661323659732}
   - component: {fileID: 7084893384171317935}
-  - component: {fileID: 489189716811120899}
   - component: {fileID: 1657226471787644540}
   m_Layer: 10
   m_Name: NPCROWD
@@ -32,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -10.96, y: 0.419, z: -7}
-  m_LocalScale: {x: 0.35, y: 0.35, z: 0.35}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 8805864281494708897}
@@ -135,33 +134,6 @@ MonoBehaviour:
   fixedYPosition: 10
   moveable: 0
   signal: 0
---- !u!54 &489189716811120899
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2109699717161008390}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 0
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 32
-  m_CollisionDetection: 0
 --- !u!114 &1657226471787644540
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -174,6 +146,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 442e469dc0ed8d84d9bbe534abc9813e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  animator: {fileID: 3230376415550978267}
   speedParameter: Speed
   speed: 0
 --- !u!1 &6196530288576403214
@@ -405,6 +378,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: thecrowdanimations
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: eca3903337587e64c821bd4df5b19cf8, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 24eef8464f384744a81a0e126f1402e4, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -413,6 +390,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1813697704530484781}
   m_SourcePrefab: {fileID: 100100000, guid: eca3903337587e64c821bd4df5b19cf8, type: 3}
+--- !u!95 &3230376415550978267 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: eca3903337587e64c821bd4df5b19cf8, type: 3}
+  m_PrefabInstance: {fileID: 9060696636840707402}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &8178367890781288475 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: eca3903337587e64c821bd4df5b19cf8, type: 3}
@@ -430,6 +412,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 442e469dc0ed8d84d9bbe534abc9813e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  animator: {fileID: 3230376415550978267}
   speedParameter: Speed
   speed: 0
 --- !u!4 &8805864281494708897 stripped

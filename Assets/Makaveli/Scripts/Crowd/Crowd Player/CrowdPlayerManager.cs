@@ -1,7 +1,9 @@
 using System.Collections;
+using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class CrowdPlayerManager : MonoBehaviour 
+public class CrowdPlayerManager : NetworkBehaviour 
 {
     public enum PlayerState { ROAM_AROUND, CHOOSE_LOCATION, TRAVELING, CHOOSE_SHAPE, REARRANGE_SHAPE, SIGNAL, END }
     public PlayerState playerState; 
@@ -43,6 +45,9 @@ public class CrowdPlayerManager : MonoBehaviour
     public bool rearrangeFormation;
     public bool signal;
 
+    CustomNetworkBehaviour customNetworkBehaviour;
+    [SerializeField] List<GameObject> crowdOnlyObjects;
+
     private void Awake()
     {
         playerController = new
@@ -68,6 +73,54 @@ public class CrowdPlayerManager : MonoBehaviour
 
         playerController.Start(this);
         og_camRot = cam.transform.rotation;
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if(customNetworkBehaviour == null) customNetworkBehaviour = GetComponent<CustomNetworkBehaviour>();
+        StartCoroutine(InstantiateCorrectly());
+        Debug.Log("Crowd network spawn");
+    }
+
+    IEnumerator InstantiateCorrectly()
+    {
+        bool timeout = false;
+        float elapsedTime = 0;
+
+        while(!customNetworkBehaviour.CustomIsOwner())
+        {
+            yield return new WaitForFixedUpdate();
+            elapsedTime += 0.02f;
+            if(elapsedTime > 1) 
+            {
+                timeout = true;
+                break;
+            }
+        }
+
+        Debug.Log("Timeout: " + timeout + ", IsOwner " + customNetworkBehaviour.CustomIsOwner());
+
+        if(!timeout)
+        {
+            if(!customNetworkBehaviour.CustomIsOwner()) 
+            {
+                foreach(GameObject _go in crowdOnlyObjects)
+                {
+                    _go.SetActive(false);
+                }
+            }
+            else
+            {
+
+            }
+        }
+        else
+        {
+            foreach(GameObject _go in crowdOnlyObjects)
+            {
+                _go.SetActive(false);
+            }
+        }
     }
 
     private void OnEnable()

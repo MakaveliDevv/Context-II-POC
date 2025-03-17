@@ -1,6 +1,7 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
-public class NPCManager : MonoBehaviour
+public class NPCManager : NetworkBehaviour
 {   
     // private NPCPatrol nPCPatrol;
     // [SerializeField] private LayerMask layerMask;
@@ -77,12 +78,30 @@ public class NPCManager : MonoBehaviour
 
     public IEnumerator Signal(float signalTimer) 
     {
+        Debug.Log("Start signaling");
         // Show UI on top of the npc
-        gameObject.transform.GetChild(0).gameObject.SetActive(true);
+        //gameObject.transform.GetChild(0).gameObject.SetActive(true);
+        SignalServerRpc(true);
 
         yield return new WaitForSeconds(signalTimer);
 
-        gameObject.transform.GetChild(0).gameObject.SetActive(false);
+        SignalServerRpc(false);
+        //gameObject.transform.GetChild(0).gameObject.SetActive(false);
+    }
+
+
+    [ServerRpc(RequireOwnership = false)]
+    void SignalServerRpc(bool active)
+    {
+        Debug.Log("Signal on server");
+        gameObject.transform.GetChild(0).gameObject.SetActive(active);
+        SignalClientRpc(active);
+    }
+    [ClientRpc]
+    void SignalClientRpc(bool active)
+    {
+        Debug.Log("Signal on client");
+        gameObject.transform.GetChild(0).gameObject.SetActive(active);
     }
 
     private void Emote() 

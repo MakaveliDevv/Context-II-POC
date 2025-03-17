@@ -54,7 +54,7 @@ public class ObjectToTrack : MonoBehaviour
         }
         else 
         { 
-            Debug.LogError("No minimap found!"); 
+            //Debug.LogError("No minimap found!"); 
         }
     }
 

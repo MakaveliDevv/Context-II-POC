@@ -1290,7 +1290,7 @@ GameObject:
   - component: {fileID: 2450233628035689331}
   - component: {fileID: 3425554454912361435}
   - component: {fileID: 8384574020799686969}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Player (Lion)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1420,6 +1420,8 @@ MonoBehaviour:
   selectedObjIndicator: {fileID: 3402235097523238902}
   lionCam: {fileID: 7897318955449881513}
   lionCanvas: {fileID: 5064010461866690328}
+  objectsToPickup: []
+  carryingObject: {fileID: 0}
 --- !u!114 &3425554454912361435
 MonoBehaviour:
   m_ObjectHideFlags: 0

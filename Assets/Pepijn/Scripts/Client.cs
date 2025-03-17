@@ -56,7 +56,7 @@ public class Client : NetworkBehaviour
         }
         if (server.networkObjectReferences[_selectedObject].TryGet(out NetworkObject netObj))
         {
-            NetworkObject newNetworkObject = Instantiate(netObj, _hitPoint + new Vector3(0, 1, 0), Quaternion.identity);
+            NetworkObject newNetworkObject = Instantiate(netObj, _hitPoint, Quaternion.identity);
             newNetworkObject.Spawn();
         }
     }
@@ -74,10 +74,11 @@ public class Client : NetworkBehaviour
     [ServerRpc]
     public void InstantiateCrowdServerRpc(ulong _clientID)
     {
-        // GameObject crowdInstance = Instantiate(crowd, spawnLocation, Quaternion.identity);
-        // NetworkObject crowdNetworkInstance = crowdInstance.GetComponent<NetworkObject>();
-        // crowdNetworkInstance.SpawnWithOwnership(_clientID);
+        GameObject crowdInstance = Instantiate(crowd, spawnLocation, Quaternion.identity);
+        NetworkObject crowdNetworkInstance = crowdInstance.GetComponent<NetworkObject>();
+        crowdNetworkInstance.SpawnWithOwnership(_clientID);
 
-        // crowdNetworkInstance.gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
+        crowdNetworkInstance.gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
+        crowdNetworkInstance.transform.Find("Sphere").gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
     }
 }

@@ -14,6 +14,14 @@ public class CircularMinimap : MonoBehaviour
 
     void SetupCircularMask()
     {
+        // Get original minimap rect and size information
+        RectTransform minimapRect = minimapImage.rectTransform;
+        Vector2 originalSize = minimapRect.sizeDelta;
+        Vector2 originalPosition = minimapRect.anchoredPosition;
+        Vector2 originalAnchorMin = minimapRect.anchorMin;
+        Vector2 originalAnchorMax = minimapRect.anchorMax;
+        Vector2 originalPivot = minimapRect.pivot;
+        
         // Get or create parent container
         Transform parent = minimapImage.transform.parent;
         GameObject maskObj;
@@ -27,46 +35,38 @@ public class CircularMinimap : MonoBehaviour
         {
             // Create a new GameObject to be the mask container
             maskObj = new GameObject("CircularMask");
+            RectTransform maskRect = maskObj.AddComponent<RectTransform>();
+            
+            // Set the mask as a child of the minimap's parent
             maskObj.transform.SetParent(parent);
             
-            // Move the minimap image to be a child of the mask
-            minimapImage.transform.SetParent(maskObj.transform);
+            // Copy exact position and size properties from original minimap
+            maskRect.anchoredPosition = originalPosition;
+            maskRect.sizeDelta = originalSize;
+            maskRect.anchorMin = originalAnchorMin;
+            maskRect.anchorMax = originalAnchorMax;
+            maskRect.pivot = originalPivot;
+            maskRect.localScale = minimapRect.localScale;
             
-            // Position mask at the same position as the original image
-            RectTransform maskRect = maskObj.AddComponent<RectTransform>();
-            maskRect.anchoredPosition = Vector2.zero;
-            maskRect.sizeDelta = minimapImage.rectTransform.sizeDelta;
-            maskRect.anchorMin = minimapImage.rectTransform.anchorMin;
-            maskRect.anchorMax = minimapImage.rectTransform.anchorMax;
-            maskRect.pivot = minimapImage.rectTransform.pivot;
-            
-            // Reset minimap image position within mask
-            minimapImage.rectTransform.anchoredPosition = Vector2.zero;
-        }
-
-        // Add mask component if it doesn't exist
-        Mask mask = maskObj.GetComponent<Mask>();
-        if (mask == null)
-        {
-            mask = maskObj.AddComponent<Mask>();
+            // Add mask component
+            Mask mask = maskObj.AddComponent<Mask>();
             mask.showMaskGraphic = true;
+            
+            // Add image component for the mask
+            Image maskImage = maskObj.AddComponent<Image>();
+            maskImage.sprite = CreateCircleSprite();
+            
+            // Move the minimap image to be a child of the mask
+            minimapImage.transform.SetParent(maskRect);
+            
+            // Reset minimap position within the mask
+            minimapRect.anchoredPosition = Vector2.zero;
+            minimapRect.anchorMin = new Vector2(0, 0);
+            minimapRect.anchorMax = new Vector2(1, 1);
+            minimapRect.offsetMin = Vector2.zero;
+            minimapRect.offsetMax = Vector2.zero;
+            minimapRect.sizeDelta = Vector2.zero; // This makes it fill the parent completely
         }
-
-        // Add or get image component for the mask
-        Image maskImage = maskObj.GetComponent<Image>();
-        if (maskImage == null)
-        {
-            maskImage = maskObj.AddComponent<Image>();
-        }
-
-        // Create a circular sprite for the mask
-        maskImage.sprite = CreateCircleSprite();
-        
-        // Ensure minimap image fills the mask area
-        minimapImage.rectTransform.anchorMin = Vector2.zero;
-        minimapImage.rectTransform.anchorMax = Vector2.one;
-        minimapImage.rectTransform.offsetMin = Vector2.zero;
-        minimapImage.rectTransform.offsetMax = Vector2.zero;
     }
 
     Sprite CreateCircleSprite()
@@ -97,7 +97,7 @@ public class CircularMinimap : MonoBehaviour
         
         texture.Apply();
         
-        // Create sprite from texture
-        return Sprite.Create(texture, new Rect(0, 0, textureSize, textureSize), new Vector2(0.5f, 0.5f));
+        // Create sprite from texture with no border padding
+        return Sprite.Create(texture, new Rect(0, 0, textureSize, textureSize), new Vector2(0.5f, 0.5f), 100, 0, SpriteMeshType.FullRect);
     }
 }

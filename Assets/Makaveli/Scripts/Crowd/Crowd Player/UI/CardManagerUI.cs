@@ -68,7 +68,8 @@ public class CardManagerUI
             // Loop through all cards in this panel
             for (int j = 0; j < cardCount; j++)
             {
-                GameObject cardObject = panel.transform.GetChild(j).gameObject;
+                GameObject cardMask = panel.transform.GetChild(j).gameObject;
+                GameObject cardObject = cardMask.transform.GetChild(0).gameObject;
                 
                 if (cardObject.TryGetComponent<UILocationCard>(out var _card))
                 {
@@ -80,7 +81,7 @@ public class CardManagerUI
                 }
                 else
                 {
-                    Debug.LogWarning($"Object {cardObject.name} in {panel.name} does not have UILocationCard component");
+                    Debug.LogWarning($"Object {cardMask.name} in {panel.name} does not have UILocationCard component");
                 }
             }
             
@@ -196,6 +197,8 @@ public class CardManagerUI
                 }
                 
                 UILocationCard card = panelCards[cardIndex];
+                Debug.Log($"Card -> {card.name}");
+                
                 GameObject objectToTrack = MGameManager.instance.trackables[objectIndex];
                 
                 // Set up the card with the object data
@@ -204,7 +207,9 @@ public class CardManagerUI
                 // Prepare for animation if this is the first panel
                 if (panelIndex == 0)
                 {
-                    RectTransform cardTransform = card.gameObject.GetComponent<RectTransform>();
+                    RectTransform cardTransform = card.transform.parent.GetComponent<RectTransform>();
+                    Debug.Log($"CardTransform -> {cardTransform.gameObject.name}");
+
                     cardTransform.anchoredPosition = new Vector3(-Screen.width, cardTransform.anchoredPosition.y, 0);
                     
                     // Add animation only for up to first 3 cards
@@ -275,8 +280,7 @@ public class CardManagerUI
         if (trackComponent != null && trackComponent.renderTexture != null)
         {
             card.renderTexture = trackComponent.renderTexture;
-            RawImage image = card.gameObject.GetComponent<RawImage>();
-            if (image != null)
+            if (card.gameObject.TryGetComponent<RawImage>(out var image))
             {
                 image.texture = card.renderTexture;
                 // Debug.Log($"Set render texture for card {card.gameObject.name}");

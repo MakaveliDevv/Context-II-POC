@@ -5160,6 +5160,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6327285717572749848}
+  - component: {fileID: -2880565543461023530}
   - component: {fileID: 3985122374205647869}
   - component: {fileID: 4853498367687284277}
   - component: {fileID: 3717858260103928622}
@@ -5191,6 +5192,31 @@ Transform:
   - {fileID: 6767927759578924919}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-2880565543461023530
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6353302351211870482}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 498560492
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &3985122374205647869
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5203,6 +5229,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ce3962a5c037d54bbb0796909e9a409, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   playerState: 0
   movementSpeed: 5
   aplliedMovementSpeedPercentage: 2
@@ -5223,6 +5250,7 @@ MonoBehaviour:
   interpolationDuration: 2
   rearrangeFormation: 0
   signal: 0
+  crowdOnlyObjects: []
 --- !u!114 &4853498367687284277
 MonoBehaviour:
   m_ObjectHideFlags: 0

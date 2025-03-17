@@ -12,6 +12,7 @@ public class MiniMapTracker : MonoBehaviour
 
     void Start()
     {
+        miniMapCamera = transform.parent.parent.parent.parent.Find("MiniMap-Camera");
         miniMapCam = miniMapCamera.GetComponent<Camera>(); 
     }
 

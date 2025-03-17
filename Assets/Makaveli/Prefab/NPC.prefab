@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 9022728097965629003}
   - component: {fileID: 7618025752129052529}
   - component: {fileID: 8774823661323659732}
-  - component: {fileID: 7084893384171317935}
   - component: {fileID: 4386255105044550764}
+  - component: {fileID: 7084893384171317935}
   - component: {fileID: 1256603232677895007}
   - component: {fileID: 3450604308307548322}
   m_Layer: 10
@@ -113,28 +113,6 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &7084893384171317935
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2109699717161008390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 71d4e4a0eb23fe0489528c9a6ea7e2c7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  smoothSpeed: 10
-  stoppingThreshold: 0.1
-  minDistanceBehindTarget: 2
-  maxDistanceBehindTarget: 6
-  minNPCDistance: 1.2
-  maxNPCDistance: 3
-  spreadFactor: 1.5
-  fixedYPosition: 10
-  moveable: 0
-  signal: 0
 --- !u!114 &4386255105044550764
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -147,7 +125,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 0
+  GlobalObjectIdHash: 740599729
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -160,6 +138,29 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
+--- !u!114 &7084893384171317935
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2109699717161008390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71d4e4a0eb23fe0489528c9a6ea7e2c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  smoothSpeed: 10
+  stoppingThreshold: 0.1
+  minDistanceBehindTarget: 2
+  maxDistanceBehindTarget: 6
+  minNPCDistance: 1.2
+  maxNPCDistance: 3
+  spreadFactor: 1.5
+  fixedYPosition: 10
+  moveable: 0
+  signal: 0
 --- !u!114 &1256603232677895007
 MonoBehaviour:
   m_ObjectHideFlags: 0

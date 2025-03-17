@@ -30,10 +30,10 @@ public class ServerManager : NetworkBehaviour
 
     private void StartAsServer()
     {
-        if (unityTransport == null)
-        {
+        //if (unityTransport == null)
+        //{
             unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-        }
+        //}
 
         string resolvedIP = ResolveDNS(serverAddress);
         if (string.IsNullOrEmpty(resolvedIP))
@@ -44,7 +44,7 @@ public class ServerManager : NetworkBehaviour
 
         if(!runLocally)
         {
-            unityTransport.SetConnectionData(resolvedIP, 7777);
+            unityTransport.SetConnectionData("0.0.0.0", 7777);
         }
         else
         {

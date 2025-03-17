@@ -20,11 +20,11 @@ MonoBehaviour:
     rid: 6729732891160608845
   m_OverrideGlobalSceneList: 1
   m_Scenes:
-  - m_enabled: 1
+  - m_enabled: 0
     m_path: Assets/Pepijn/Scenes/ServerTesting.unity
-  - m_enabled: 1
+  - m_enabled: 0
     m_path: Assets/Pepijn/Scenes/P_ReLion Us.unity
-  - m_enabled: 1
+  - m_enabled: 0
     m_path: Assets/Pepijn/Scenes/P_SampleScene.unity
   - m_enabled: 1
     m_path: Assets/Makaveli/Scenes/SampleScene.unity
@@ -86,7 +86,7 @@ MonoBehaviour:
     - line: '|   mipStripping: 0'
     - line: '|   numberOfMipsStripped: 0'
     - line: '|   numberOfMipsStrippedPerMipmapLimitGroup: {}'
-    - line: '|   m_StackTraceTypes: 020000000200000002000000020000000200000001000000'
+    - line: '|   m_StackTraceTypes: 010000000100000001000000010000000100000001000000'
     - line: '|   iosShowActivityIndicatorOnLoading: -1'
     - line: '|   androidShowActivityIndicatorOnLoading: -1'
     - line: '|   iosUseCustomAppBackgroundBehavior: 0'
@@ -174,6 +174,8 @@ MonoBehaviour:
     - line: '|   bundleVersion: 0.1.0'
     - line: '|   preloadedAssets:'
     - line: '|   - {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b,
+        type: 3}'
+    - line: '|   - {fileID: -944628639613478452, guid: 52ced6d3a29228f4592df89900f1fbc0,
         type: 3}'
     - line: '|   metroInputSource: 0'
     - line: '|   wsaTransparentSwapchain: 0'
@@ -970,7 +972,7 @@ MonoBehaviour:
     - rid: 6729732891160608845
       type: {class: LinuxPlatformSettings, ns: UnityEditor.LinuxStandalone, asm: UnityEditor.LinuxStandalone.Extensions}
       data:
-        m_Development: 1
+        m_Development: 0
         m_ConnectProfiler: 0
         m_BuildWithDeepProfilingSupport: 0
         m_AllowDebugging: 0

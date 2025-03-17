@@ -125,7 +125,7 @@ public class Lion : NetworkBehaviour
         firstChild.gameObject.GetComponent<Collider>().enabled = true;
         carryingObject.GetComponent<Rigidbody>().isKinematic = false;
         carryingObject = null;
-        objectPlaced = true;
+        ChangeObjectPlacedBoolOnServerRpc(true);
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -142,6 +142,18 @@ public class Lion : NetworkBehaviour
                 obj.transform.SetParent(newParent.transform); // Set new parent
             }
         }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    void ChangeObjectPlacedBoolOnServerRpc(bool _result)
+    {
+        objectPlaced = _result;
+        ChangeObjectPlacedBoolOnClientRpc(_result);
+    }
+    [ClientRpc]
+    void ChangeObjectPlacedBoolOnClientRpc(bool _result)
+    {
+        objectPlaced = true;
     }
 
     void PlaceObject()
@@ -209,7 +221,10 @@ public class Lion : NetworkBehaviour
         {
             if(!objectsToPickup.Contains(collider.gameObject)) objectsToPickup.Insert(0, collider.gameObject);
         }
+    }
 
+    void OnTriggerStay(Collider collider)
+    {
         // If in range of location
         if(collider.CompareTag("TaskableLocation")) 
         {

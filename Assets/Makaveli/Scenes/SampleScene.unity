@@ -445,7 +445,7 @@ MonoBehaviour:
   ConnectionData:
     Address: 127.0.0.1
     Port: 7777
-    ServerListenAddress: 127.0.0.1
+    ServerListenAddress: 0.0.0.0
   DebugSimulator:
     PacketDelayMS: 0
     PacketJitterMS: 0
@@ -6880,7 +6880,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   serverBuild: 1
-  runLocally: 1
+  runLocally: 0
   serverPrefab: {fileID: 8081325417287497554, guid: faf7df9d015b85240a768f527782deaf, type: 3}
   clientPrefab: {fileID: 4588487196277226122, guid: 7cc1854464e81d34ca055b6ed8f2c3b9, type: 3}
   unityTransport: {fileID: 123867838}
@@ -8983,7 +8983,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gamePlayManagement: 0
   trackables: []
-  trackableGo: {fileID: 4926605948599544905, guid: 436845b629dc18c42973f57d71ab83b5, type: 3}
+  trackableGo: {fileID: 4926605948599544905, guid: e072003f2c140d04aa217f93d74ca147, type: 3}
   allCrowdPlayers: []
   ChosenLocations: []
   PlayerShapeUI: []

@@ -52,8 +52,8 @@ public class P_LionMovement : NetworkBehaviour
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             }
 
-            // Update animator speed parameter
-            float currentSpeed = Mathf.Abs(inputX);
+            // Calculate movement speed based on magnitude of movement vector
+            float currentSpeed = moveDirection.magnitude * maxSpeed; 
             if (animator != null)
             {
                 SetAnimatorFloatServerRpc(currentSpeed);

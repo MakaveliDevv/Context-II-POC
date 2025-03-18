@@ -82,4 +82,44 @@ public class Client : NetworkBehaviour
         crowdNetworkInstance.transform.GetChild(0).gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
         Debug.Log("Child Position = " + crowdNetworkInstance.transform.GetChild(0).position);
     }
+
+    [ServerRpc]
+    public void SpawnCrowdAtRandomPositionServerRPC(ulong _clientID)
+    {
+        // Get available spawn positions
+        List<Transform> availablePositions = new(MGameManager.instance.playersSpawnPositions);
+        
+        // Select a random position for the crowd
+        int randomIndex = Random.Range(0, availablePositions.Count);
+        Vector3 spawnLocation = availablePositions[randomIndex].localPosition;
+
+        Debug.Log($"Spawn location ->  {spawnLocation}");
+        
+        // Instantiate and spawn the crowd at the random position
+        GameObject crowdInstance = Instantiate(crowd, spawnLocation, Quaternion.identity);
+        NetworkObject crowdNetworkInstance = crowdInstance.GetComponent<NetworkObject>();
+        crowdNetworkInstance.SpawnWithOwnership(_clientID);
+        
+        // Update client IDs
+        crowdNetworkInstance.gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
+        crowdNetworkInstance.transform.GetChild(0).gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
+        
+        // Log child position
+        Debug.Log("Child Position = " + crowdNetworkInstance.transform.GetChild(0).position);
+    }
+
+    // private void PlayersSpawnPosition()
+    // {        
+    //     List<Transform> availablePositions = new(MGameManager.instance.playersSpawnPositions);
+    //     List<CrowdPlayerManager> shuffledPlayers = new(MGameManager.instance.allCrowdPlayers);        
+    //     int playersToSpawn = Mathf.Min(availablePositions.Count, shuffledPlayers.Count);
+        
+    //     for (int i = 0; i < playersToSpawn; i++)
+    //     {
+    //         int randomIndex = Random.Range(0, availablePositions.Count);            
+    //         var player = shuffledPlayers[i];            
+    //         player.transform.position = availablePositions[randomIndex].position;            
+    //         availablePositions.RemoveAt(randomIndex);
+    //     }        
+    // }
 }

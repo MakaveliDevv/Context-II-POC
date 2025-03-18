@@ -70,12 +70,12 @@ public class CrowdPlayerManager : NetworkBehaviour
             spawnPoint,
             npcContainer
         );        
+
+        MGameManager.instance.allCrowdPlayers.Add(this);
     }
 
     private void Start()
     {
-        MGameManager.instance.allCrowdPlayers.Add(this);
-
         StartCoroutine(playerController.Start(this));
         og_camRot = cam.transform.rotation;
     }

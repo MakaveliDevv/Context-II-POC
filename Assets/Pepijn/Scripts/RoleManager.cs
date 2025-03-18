@@ -54,7 +54,7 @@ public class RoleManager : NetworkBehaviour
                 }
                 else
                 {
-                    clientServerRefs.localClient.InstantiateCrowdServerRpc(NetworkManager.Singleton.LocalClientId);
+                    clientServerRefs.localClient.SpawnCrowdAtRandomPositionServerRPC(NetworkManager.Singleton.LocalClientId);
                 }
                 success = true;
             }
@@ -62,5 +62,4 @@ public class RoleManager : NetworkBehaviour
         }
         yield return null;
     }
-
 }

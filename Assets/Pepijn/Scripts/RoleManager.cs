@@ -8,9 +8,13 @@ public class RoleManager : NetworkBehaviour
     [SerializeField] public bool isLion;
     [SerializeField] ClientServerRefs clientServerRefs;
     [SerializeField] ServerManager serverManager;
+    ClientManager clientManager;
 
     void Start()
     {
+        // clientManager = FindFirstObjectByType<ClientManager>();
+        // isLion = clientManager.isLion;
+
         if(!serverManager.serverBuild)
         {
             if(isLion) 

@@ -10,6 +10,7 @@ public class ClientServerRefs : MonoBehaviour
     void Awake()
     {
         instance = this;
+        DontDestroyOnLoad(gameObject);
 
         if(server == null)
         {

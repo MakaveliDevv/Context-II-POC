@@ -7357,11 +7357,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentFormation: 0
   formationSpacing: 1.5
+  minSpacing: 1
   transitionSpeed: 2
   formationScale: 1
+  locationSize: {x: 10, y: 0, z: 10}
   playerTransform: {fileID: 8112825488235634919}
   targetLocation: {fileID: 0}
   staticFormations: 1
+  showDebugVisualization: 1
+  locationBoundsColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  formationBoundsColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!222 &3179228128340090099
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -9787,6 +9792,8 @@ MonoBehaviour:
   rearrangeFormation: 0
   signal: 0
   crowdOnlyObjects: []
+  spawnPoint: {fileID: 0}
+  npcContainer: {fileID: 0}
 --- !u!114 &4929576571120902599
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14636,6 +14643,7 @@ GameObject:
   - component: {fileID: 2990826295705046651}
   - component: {fileID: 3164015119676628376}
   - component: {fileID: 7232653540138283636}
+  - component: {fileID: 7711804210145930324}
   m_Layer: 0
   m_Name: Player (Crowd)
   m_TagString: PlayerParent
@@ -14643,6 +14651,31 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &7711804210145930324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7711804210145930323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 1074212213
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!1 &7722134497675759248
 GameObject:
   m_ObjectHideFlags: 0

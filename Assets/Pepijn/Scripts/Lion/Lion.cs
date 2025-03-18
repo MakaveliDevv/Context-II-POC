@@ -18,6 +18,10 @@ public class Lion : NetworkBehaviour
     public GameObject lionCanvas;
     [SerializeField] List<GameObject> objectsToPickup = new();
     [SerializeField] GameObject carryingObject;
+    Vector3 cameraOffset = new Vector3(0,11.7600002f,-4.61000013f);
+    Dictionary<string, GameObject> objectPrefabsDict;
+    [SerializeField] List<GameObject> objectsPrefabs;
+    [SerializeField] List<string> objectNames;
 
     private bool objectPlaced;
 
@@ -27,6 +31,14 @@ public class Lion : NetworkBehaviour
         if(customNetworkBehaviour == null) customNetworkBehaviour = GetComponent<CustomNetworkBehaviour>();
         StartCoroutine(InstantiateCorrectly());
         Debug.Log("Lion network spawn");
+
+        objectPrefabsDict = new();
+
+        for(int i = 0; i < objectsPrefabs.Count; i++)
+        {
+            objectPrefabsDict.Add(objectNames[i], objectsPrefabs[i]);
+        }
+        
     }
 
     // Update is called once per frame
@@ -34,8 +46,9 @@ public class Lion : NetworkBehaviour
     {
         if(customNetworkBehaviour.CustomIsOwner())
         {
-            PlaceObject();
             MoveObjects();
+
+            lionCam.transform.position = transform.position + cameraOffset;
         }
     }
 
@@ -87,10 +100,7 @@ public class Lion : NetworkBehaviour
 
             if(carryingObject == null)
             {
-                if(objectsToPickup.Count > 0)
-                {
-                    PickupObject();
-                }
+                
             }
             else
             {
@@ -99,31 +109,11 @@ public class Lion : NetworkBehaviour
         }
     }
 
-    void PickupObject(Transform _objectToPickup = null)
-    {
-        Transform objectToPickup = null;
-        if(_objectToPickup == null) objectToPickup = objectsToPickup[0].transform;
-        else objectToPickup = _objectToPickup;
-
-        objectsToPickup.Remove(objectToPickup.gameObject);
-        objectToPickup.transform.position = transform.position;
-        carryingObject = objectToPickup.gameObject;
-
-        Transform firstChild = objectToPickup.transform.GetChild(0);
-        firstChild.gameObject.GetComponent<Collider>().enabled = false;
-        objectToPickup.gameObject.GetComponent<Rigidbody>().isKinematic = true;
-
-        //objectToPickup.transform.SetParent(transform);
-        RequestReparentServerRpc(objectToPickup.gameObject, gameObject, false);
-    }
-
     void DropObject()
     {
         RequestReparentServerRpc(carryingObject.gameObject, gameObject, true);
         objectsToPickup.Insert(0, carryingObject.gameObject);
-        Transform firstChild = carryingObject.transform.GetChild(0);
-        firstChild.gameObject.GetComponent<Collider>().enabled = true;
-        carryingObject.GetComponent<Rigidbody>().isKinematic = false;
+        carryingObject.gameObject.GetComponent<Collider>().enabled = true;
         carryingObject = null;
         ChangeObjectPlacedBoolOnServerRpc(true);
     }
@@ -154,65 +144,6 @@ public class Lion : NetworkBehaviour
     void ChangeObjectPlacedBoolOnClientRpc(bool _result)
     {
         objectPlaced = true;
-    }
-
-    void PlaceObject()
-    {
-        // if (selectedObject == "")
-        // {
-        //     Debug.Log("No object selected");
-        //     return;
-        // }
-
-        // if(selectedObject == "sphere" && spheresRemaining <= 0) return;
-        // if(selectedObject == "block" && blocksRemaining <= 0) return;
-        // if(selectedObject == "cylinder" && cylindersRemaining <= 0) return;
-
-        // if (Input.GetMouseButtonDown(0)) // Left-click
-        // {
-        //     Ray ray = lionCam.ScreenPointToRay(Input.mousePosition);
-        //     RaycastHit hit;
-
-        //     if (Physics.Raycast(ray, out hit, Mathf.Infinity, floorLayer))
-        //     {
-        //         //Instantiate(selectedObject, hit.point + new Vector3(0, 1, 0), Quaternion.identity);
-        //         ClientServerRefs.instance.localClient.SendObjectToServer(selectedObject, hit.point);
-
-        //         if(selectedObject == "block")
-        //         {
-        //             blocksRemaining--;
-        //             blocksRemainingText.text = blocksRemaining.ToString();
-        //         }
-        //         else if (selectedObject == "sphere")
-        //         {
-        //             spheresRemaining--;
-        //             spheresRemainingText.text = spheresRemaining.ToString();
-        //         }
-        //         else if(selectedObject == "cylinder")
-        //         {
-        //             cylindersRemaining--;
-        //             cylindersRemainingText.text = cylindersRemaining.ToString();
-        //         }
-        //     }
-        // }
-        if(carryingObject == null)
-        {
-            if(Input.GetKeyDown(KeyCode.Alpha1))
-            {
-                selectedObject = "block";
-                ClientServerRefs.instance.localClient.SendObjectToServer(selectedObject, transform.position + (transform.forward * 5));
-            }
-            if(Input.GetKeyDown(KeyCode.Alpha2))
-            {
-                selectedObject = "sphere";
-                ClientServerRefs.instance.localClient.SendObjectToServer(selectedObject, transform.position + (transform.forward * 5));
-            }
-            if(Input.GetKeyDown(KeyCode.Alpha3))
-            {
-                selectedObject = "cylinder"; 
-                ClientServerRefs.instance.localClient.SendObjectToServer(selectedObject, transform.position + (transform.forward * 5));
-            }
-        }
     }
 
     void OnTriggerEnter(Collider collider)
@@ -258,21 +189,30 @@ public class Lion : NetworkBehaviour
         }
     }
 
-    public void SelectBlock()
+    public void SpawnObject(string _objName)
     {
-        selectedObject = "block";
-        selectedObjIndicator.sprite = blockSprite;
+        SpawnObjectOnServerRpc(_objName, transform.position + (transform.forward * 4));
     }
 
-    public void SelectSphere()
+    [ServerRpc(RequireOwnership = false)]
+    void SpawnObjectOnServerRpc(string _objName, Vector3 _position)
     {
-        selectedObject = "sphere";
-        selectedObjIndicator.sprite = sphereSprite;
+        GameObject _newObj = Instantiate(objectPrefabsDict[_objName], _position, Quaternion.identity);
+        NetworkObject _newObjInstance = _newObj.GetComponent<NetworkObject>();
+        _newObjInstance.Spawn();
+        _newObjInstance.transform.SetParent(transform);
+
+        NotifyClientOfSpawnClientRpc(_newObjInstance.NetworkObjectId);
     }
 
-    public void SelectCylinder()
+    [ClientRpc]
+    void NotifyClientOfSpawnClientRpc(ulong spawnedObjectId)
     {
-        selectedObject = "cylinder";
-        selectedObjIndicator.sprite = cylinderSprite;
+        // Find the spawned object by ID
+        NetworkObject spawnedObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[spawnedObjectId];
+        GameObject _objectToPickup = spawnedObject.gameObject;
+        // Add it to the client's list
+        carryingObject = _objectToPickup.gameObject;
     }
+
 }

@@ -5911,7 +5911,7 @@ GameObject:
   - component: {fileID: 6625259039729828174}
   - component: {fileID: 4552201060702655238}
   - component: {fileID: 4257948028702071593}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: CrowdPlayer
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -5973,7 +5973,7 @@ CharacterController:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5652959812251472535}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 441cda7f007c14245b77eda1a6992d36, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -9811,7 +9811,7 @@ GameObject:
   - component: {fileID: 4602007785653865280}
   - component: {fileID: 7098150273792766580}
   - component: {fileID: 3179910992428367868}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Player
   m_TagString: PlayerParent
   m_Icon: {fileID: 0}
@@ -9929,7 +9929,10 @@ MonoBehaviour:
   interpolationDuration: 2
   rearrangeFormation: 0
   signal: 0
-  crowdOnlyObjects: []
+  crowdOnlyObjects:
+  - {fileID: 3904333190603064986}
+  - {fileID: 7299559155175878446}
+  - {fileID: 6860018076007539823}
   spawnPoint: {fileID: 6731837674566760598}
   npcContainer: {fileID: 123801637706076897}
 --- !u!114 &4602007785653865280
@@ -9953,6 +9956,9 @@ MonoBehaviour:
   playerTransform: {fileID: 0}
   targetLocation: {fileID: 0}
   staticFormations: 1
+  showDebugVisualization: 1
+  locationBoundsColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  formationBoundsColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!114 &7098150273792766580
 MonoBehaviour:
   m_ObjectHideFlags: 0

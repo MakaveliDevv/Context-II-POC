@@ -77,4 +77,4 @@ MonoBehaviour:
   cylinder: {fileID: 7035834081696368958, guid: 2591a479a628ba64dacb9908524c1cdd, type: 3}
   lion: {fileID: 5896509465033497493, guid: 1824edcc2cdc09a44bed9e47910a0a6b, type: 3}
   crowd: {fileID: 8700886604109861100, guid: f26e256b3d4f9fb4a95aacaf048aa11f, type: 3}
-  spawnLocation: {x: -3.71, y: 0.66, z: -5.74}
+  spawnLocation: {x: -12.29, y: -0.17, z: -33.41}

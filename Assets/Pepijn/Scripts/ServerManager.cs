@@ -18,6 +18,7 @@ public class ServerManager : NetworkBehaviour
 
     private void Start()
     {
+        DontDestroyOnLoad(gameObject);
         if (serverBuild)
         {
             StartAsServer();

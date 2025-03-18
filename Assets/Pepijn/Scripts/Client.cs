@@ -80,5 +80,6 @@ public class Client : NetworkBehaviour
 
         crowdNetworkInstance.gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
         crowdNetworkInstance.transform.GetChild(0).gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
+        Debug.Log("Child Position = " + crowdNetworkInstance.transform.GetChild(0).position);
     }
 }

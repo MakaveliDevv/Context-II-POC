@@ -43,12 +43,12 @@ public class CustomNetworkBehaviour : NetworkBehaviour
     public void UpdateClientIDClientRpc(ulong _clientID)
     {
         ownerClientID = _clientID;
-        Debug.Log("Updated Client ID on client: " + ownerClientID);
+        // Debug.Log("Updated Client ID on client: " + ownerClientID);
     }
 
     public bool CustomIsOwner()
     {
-        Debug.Log("owner ID: " + ownerClientID + ", local ID: " + NetworkManager.Singleton.LocalClientId);
+        // Debug.Log("owner ID: " + ownerClientID + ", local ID: " + NetworkManager.Singleton.LocalClientId);
         if(ownerClientID == NetworkManager.Singleton.LocalClientId) return true;
         else return false;
     }

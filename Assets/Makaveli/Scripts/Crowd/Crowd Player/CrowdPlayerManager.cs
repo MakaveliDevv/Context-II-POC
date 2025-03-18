@@ -48,6 +48,9 @@ public class CrowdPlayerManager : NetworkBehaviour
     CustomNetworkBehaviour customNetworkBehaviour;
     [SerializeField] List<GameObject> crowdOnlyObjects;
 
+    public Transform spawnPoint;
+    public Transform npcContainer;
+
     private void Awake()
     {
         playerController = new
@@ -63,7 +66,9 @@ public class CrowdPlayerManager : NetworkBehaviour
             npcCount,                           // Reference to the amount of npcs to spawn in for the player
             npcLayer,                           // Reference to the npc layer
             npcSpawnOffset,                     // Reference to the spawn offset for the npc
-            cardsUI                             // Reference to the main panel for the UI location cards
+            cardsUI,                             // Reference to the main panel for the UI location cards
+            spawnPoint,
+            npcContainer
         );        
     }
 
@@ -71,7 +76,7 @@ public class CrowdPlayerManager : NetworkBehaviour
     {
         MGameManager.instance.allCrowdPlayers.Add(this);
 
-        playerController.Start(this);
+        StartCoroutine(playerController.Start(this));
         og_camRot = cam.transform.rotation;
     }
 
@@ -108,10 +113,6 @@ public class CrowdPlayerManager : NetworkBehaviour
                 {
                     _go.SetActive(false);
                 }
-            }
-            else
-            {
-
             }
         }
         else
@@ -306,8 +307,9 @@ public class CrowdPlayerManager : NetworkBehaviour
         return inUIMode;
     }
 
-    private void OnDestroy()
+    public override void OnDestroy()
     {
+        base.OnDestroy();
         InputActionHandler.DisableInputActions();
     }
 

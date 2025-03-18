@@ -64,7 +64,8 @@ public class NPCManager : NetworkBehaviour
 
     void Start()
     {
-        nPCFollower.Start(this);
+        // nPCFollower.Start(this);
+        StartCoroutine(nPCFollower.FindPlayer(this));
     }
 
     void Update()
@@ -94,14 +95,14 @@ public class NPCManager : NetworkBehaviour
     void SignalServerRpc(bool active)
     {
         Debug.Log("Signal on server");
-        gameObject.transform.GetChild(0).gameObject.SetActive(active);
+        gameObject.transform.GetChild(1).gameObject.SetActive(active);
         SignalClientRpc(active);
     }
     [ClientRpc]
     void SignalClientRpc(bool active)
     {
         Debug.Log("Signal on client");
-        gameObject.transform.GetChild(0).gameObject.SetActive(active);
+        gameObject.transform.GetChild(1).gameObject.SetActive(active);
     }
 
     private void Emote() 
@@ -109,8 +110,10 @@ public class NPCManager : NetworkBehaviour
 
     }
     
-    private void OnDestroy()
+    public override void OnDestroy()
     {
+        base.OnDestroy();
+        
         if (MGameManager.instance != null && MGameManager.instance.allNPCs.Contains(this))
         {
             MGameManager.instance.allNPCs.Remove(this);

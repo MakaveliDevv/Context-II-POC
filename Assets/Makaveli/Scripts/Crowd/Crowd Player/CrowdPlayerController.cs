@@ -13,7 +13,7 @@ public class CrowdPlayerController
     private readonly TopDownMovement topDownMovement; 
     public CrowdPlayerUIManager UImanagement;
     public CameraManagement cameraManagement;
-    CustomNetworkBehaviour customNetworkBehaviour;
+    private readonly CustomNetworkBehaviour customNetworkBehaviour;
     
     // Player Management
     public CharacterController controller;
@@ -38,6 +38,11 @@ public class CrowdPlayerController
     private Coroutine tiltCam;
     private Coroutine repositionCam;
 
+
+    // Temp stuff
+    private Transform spawnPoint;
+    private Transform npcContainer;
+
     public CrowdPlayerController
     (
         MonoBehaviour mono,                     // Reference to the mono class
@@ -51,17 +56,32 @@ public class CrowdPlayerController
         int npcCount,                           // Reference to the amount of npcs to spawn in for the player
         LayerMask npcLayer,                     // Reference to the npc layer
         Vector3 npcSpawnOffset,                 // Reference to the spawn offset for the npc
-        GameObject cardsUI                      // Reference to the main panel for the UI location cards
+        GameObject cardsUI,                      // Reference to the main panel for the UI location cards
+        Transform spawnPoint,
+        Transform npcContainer
     ) 
     {
         this.mono = mono;
         this.npc = npc;
         this.npcCount = npcCount;
         this.npcSpawnOffset = npcSpawnOffset;
+        this.spawnPoint = spawnPoint;
+        this.npcContainer = npcContainer;
 
         controller = mono.transform.GetChild(0).GetComponent<CharacterController>();
-
         customNetworkBehaviour = mono.GetComponent<CustomNetworkBehaviour>();
+
+        if(controller == null) 
+        {
+            Debug.LogError("No charactercontroller found");
+            return;
+        }
+
+        if(customNetworkBehaviour == null) 
+        {
+            Debug.LogError("No custom network behaviour found!");
+            return;
+        }
 
         topDownMovement = new
         (
@@ -91,7 +111,7 @@ public class CrowdPlayerController
         );
     }
 
-    public void Start(CrowdPlayerManager playerManager) 
+    public IEnumerator Start(CrowdPlayerManager playerManager) 
     {
         //Transform npcContainer = controller.transform.parent.transform.GetChild(3); // Empty game object to store the npcs
         //Transform npcArea = controller.transform.GetChild(1); // Empty game objects to spawn the npcs at
@@ -99,15 +119,16 @@ public class CrowdPlayerController
         //mono.StartCoroutine(NPCsManagement.SpawnNPC(npcs, npcCount, npc, npcArea.position + npcSpawnOffset, npcContainer)); 
 
         //SpawnCrowdServerRpc(customNetworkBehaviour.ownerClientID);
-        CrowdRpcBehaviour crowdRpcBehaviour = mono.GetComponent<CrowdRpcBehaviour>();
-        crowdRpcBehaviour.SetCorrectReferences(controller, npcCount, npc, npcSpawnOffset, this);
+        // CrowdRpcBehaviour crowdRpcBehaviour = mono.GetComponent<CrowdRpcBehaviour>();
+        // crowdRpcBehaviour.SetCorrectReferences(controller, npcCount, npc, npcSpawnOffset, this /*, spawnPoint, npcContainer*/);
 
-        if(customNetworkBehaviour.CustomIsOwner())
-        {
-            crowdRpcBehaviour.SpawnCrowdServerRpc(customNetworkBehaviour.ownerClientID);
-        }
+        // yield return new WaitForSeconds(2f);
+        // if(customNetworkBehaviour.CustomIsOwner())
+        // {
+        //     crowdRpcBehaviour.SpawnCrowdServerRpc(customNetworkBehaviour.ownerClientID);
+        // }
 
-
+        mono.StartCoroutine(SpawnCrowdWithDelay());
 
         UImanagement.InitializeShapeManagement(mono, playerManager);
         cameraManagement.Start();
@@ -128,7 +149,22 @@ public class CrowdPlayerController
                     }    
                 });
             }
-        } else { Debug.LogError("Couldn't fetch the 'signalBtn shape button' "); return; }
+        } else { Debug.LogError("Couldn't fetch the 'signalBtn shape button' "); yield break; }
+
+        yield break;
+    }
+
+    IEnumerator SpawnCrowdWithDelay()
+    {
+        yield return new WaitForSeconds(0.1f);
+        CrowdRpcBehaviour crowdRpcBehaviour = mono.GetComponent<CrowdRpcBehaviour>();
+        crowdRpcBehaviour.SetCorrectReferences(controller, npcCount, npc, npcSpawnOffset, this);
+
+        if(customNetworkBehaviour.CustomIsOwner())
+        {
+            crowdRpcBehaviour.SpawnCrowdServerRpc(customNetworkBehaviour.ownerClientID);
+        }
+
     }
 
     // [ServerRpc(RequireOwnership = false)]

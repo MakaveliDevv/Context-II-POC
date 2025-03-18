@@ -9,7 +9,12 @@ public class MiniMapCamera : MonoBehaviour
 
     void LateUpdate()
     {
-        if (player == null) return;
+        if (player == null) 
+        {
+            player = transform.parent.GetChild(0);
+            return;
+        }
+        
         
         transform.SetPositionAndRotation(new Vector3(player.position.x, player.position.y + height, player.position.z), Quaternion.Euler(90f, 0f, 0f));
 

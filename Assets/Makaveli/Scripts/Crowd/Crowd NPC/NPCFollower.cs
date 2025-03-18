@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class NPCFollower
@@ -56,21 +57,32 @@ public class NPCFollower
         this.fixedYPosition = fixedYPosition;
     }
 
-    public void Start(NPCManager npc)
+    public IEnumerator FindPlayer(NPCManager npc) 
     {
+        yield return new WaitForSeconds(.5f);
+
         // Ensure target is set
         if (target == null)
         {
-            target = GameObject.FindGameObjectWithTag("Player")?.transform;
+            if(npc != null) 
+            {
+                target = npc.transform.parent.GetChild(0).transform;
+            }
+            else 
+            {
+                Debug.LogError("No npc found!");
+            }
         }
 
         formationManager = target.parent.GetComponent<NPCFormationManager>();
 
         // Get index in NPC list for unique positioning
-        if (MGameManager.instance.allNPCs != null)
+        CrowdPlayerManager player = target.parent.GetComponent<CrowdPlayerManager>();
+        if(player.playerController.npcs != null) 
         {
-            npcIndex = MGameManager.instance.allNPCs.IndexOf(npc);
+            npcIndex = player.playerController.npcs.IndexOf(npc.gameObject);
         }
+
     }
 
     public void Update(NPCManager npc)
@@ -89,18 +101,23 @@ public class NPCFollower
         else
         {
             useFormation = false;
-            
-            // Use original flocking behavior
-            if (target.position.magnitude > 0.2f)
+
+            float distance = Vector3.Distance(previousPlayerPos, transform.parent.GetChild(0).position);
+
+            Debug.Log($"distance -> {distance}");
+            if( distance <= .01f)
             {
-                // Moving phase - tight formation
+                Debug.Log("Setting npc velocity at zero");
+                UpdateStoppedTargetPosition();
+
+                currentVelocity = Vector3.zero; // Stop movement once in position
+            }
+            else 
+            {
                 UpdateMovingTargetPosition(npc);
             }
-            else
-            {
-                // Just stopped - initiate spreading
-                UpdateStoppedTargetPosition();
-            }
+
+            previousPlayerPos = target.position;
         }
 
         // Smooth movement
@@ -119,6 +136,8 @@ public class NPCFollower
 
     void UpdateFormationTargetPosition(Transform target)
     {
+        CrowdPlayerManager playerManager = target.parent.GetComponent<CrowdPlayerManager>();
+        
         // Get the desired position in the formation
         int totalNPCs = MGameManager.instance.allNPCs.Count;
         Vector3 formationPos = formationManager.GetFormationPosition(npcIndex, totalNPCs);
@@ -134,7 +153,7 @@ public class NPCFollower
                 // Add minimal avoidance to prevent exact overlap if NPCs are crowded
                 Vector3 avoidanceVector = Vector3.zero;
                 
-                foreach (NPCManager otherNPC in MGameManager.instance.allNPCs)
+                foreach (var otherNPC in playerManager.playerController.npcs)
                 {
                     if (otherNPC == null || otherNPC.transform == transform) continue;
                     
@@ -149,18 +168,19 @@ public class NPCFollower
                     }
                 }
                 
+                // 
+
                 // Apply reduced avoidance
                 targetPosition += avoidanceVector * 0.2f;
                 // Debug.Log($"Formation Mode: {(formationManager.staticFormations ? "Static" : "Following")}, Player Pos: {target.position}, Target Pos: {targetPosition}");
                 
-                // Optional: Add debug information
                 Debug.DrawLine(transform.position, targetPosition, Color.green);
                 
                 // If we've reached the formation position, stop movement completely (optional)
                 if (formationManager.staticFormations && 
                     Vector3.Distance(transform.position, targetPosition) < 0.1f)
                 {
-                    currentVelocity = Vector3.zero; // Stop movement once in position
+                    currentVelocity = Vector3.zero; 
                 }
             }
         }
@@ -187,6 +207,7 @@ public class NPCFollower
         }
     }
 
+    Vector3 previousPlayerPos = Vector3.zero;
     public void UpdateMovingTargetPosition(NPCManager npc)
     {
         Vector3 targetForward = target.forward;
@@ -216,10 +237,23 @@ public class NPCFollower
         // Gravitate towards center of mass while maintaining relative positions
         Vector3 centerOffset = (centerOfMass - transform.position) * 0.1f;
         targetPosition += centerOffset;
+        
+        // Might change this later
         targetPosition.y = fixedYPosition;
 
         // Apply avoidance
         targetPosition += CalculateAvoidanceVector(npc);
+        npc.transform.LookAt(target);
+
+        // float distance = Vector3.Distance(previousPlayerPos, transform.parent.GetChild(0).position);
+        // Debug.Log($"distance -> {distance}");
+        // if( distance <= .01f)
+        // {
+        //     Debug.Log("Setting npc velocity at zero");
+        //     currentVelocity = Vector3.zero; // Stop movement once in position
+        // }
+
+        // previousPlayerPos = target.position;
     }
 
     private void UpdateStoppedTargetPosition()

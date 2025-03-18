@@ -79,6 +79,6 @@ public class Client : NetworkBehaviour
         crowdNetworkInstance.SpawnWithOwnership(_clientID);
 
         crowdNetworkInstance.gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
-        crowdNetworkInstance.transform.Find("Sphere").gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
+        crowdNetworkInstance.transform.GetChild(0).gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
     }
 }

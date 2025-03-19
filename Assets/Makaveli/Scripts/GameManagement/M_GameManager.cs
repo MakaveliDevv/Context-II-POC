@@ -21,6 +21,7 @@ public class MGameManager : MonoBehaviour
     [SerializeField] private List<DictionaryEntry<CrowdPlayerManager, Transform>> ChosenLocations = new();
     public Dictionary<CrowdPlayerManager, GameObject> playerShapeUI = new();
     public List<DictionaryEntry<CrowdPlayerManager, GameObject>> PlayerShapeUI = new();
+    public List<Transform> playersSpawnPositions = new();
 
     [Header("NPC Management")]
     public Transform walkableArea;
@@ -60,11 +61,31 @@ public class MGameManager : MonoBehaviour
 
     void Start()
     {
+        // StartCoroutine(PlayersSpawnPosition());
         gamePlayManagement = GamePlayManagement.SPAWN_LOCATIONS;
 
         chosenLocations.Clear();
         ChosenLocations.Clear();
     }
+
+    // private IEnumerator PlayersSpawnPosition()
+    // {
+    //     yield return new WaitForSeconds(10f);
+        
+    //     List<Transform> availablePositions = new List<Transform>(playersSpawnPositions);
+    //     List<CrowdPlayerManager> shuffledPlayers = new List<CrowdPlayerManager>(allCrowdPlayers);        
+    //     int playersToSpawn = Mathf.Min(availablePositions.Count, shuffledPlayers.Count);
+        
+    //     for (int i = 0; i < playersToSpawn; i++)
+    //     {
+    //         int randomIndex = Random.Range(0, availablePositions.Count);            
+    //         var player = shuffledPlayers[i];            
+    //         player.transform.position = availablePositions[randomIndex].position;            
+    //         availablePositions.RemoveAt(randomIndex);
+    //     }
+        
+    //     yield break;
+    // }
 
     void Update()
     {
@@ -74,7 +95,7 @@ public class MGameManager : MonoBehaviour
                 stateChange = false;
                 if(!spawnLocations) 
                 {
-                    StartCoroutine(StartRound(spawnInTimer));
+                    // StartCoroutine(StartRound(spawnInTimer));
                     spawnLocations = true;
                 }
 

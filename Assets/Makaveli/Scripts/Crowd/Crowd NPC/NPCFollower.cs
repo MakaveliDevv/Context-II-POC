@@ -104,10 +104,10 @@ public class NPCFollower
 
             float distance = Vector3.Distance(previousPlayerPos, transform.parent.GetChild(0).position);
 
-            Debug.Log($"distance -> {distance}");
+            // Debug.Log($"distance -> {distance}");
             if( distance <= .01f)
             {
-                Debug.Log("Setting npc velocity at zero");
+                // Debug.Log("Setting npc velocity at zero");
                 UpdateStoppedTargetPosition();
 
                 currentVelocity = Vector3.zero; // Stop movement once in position

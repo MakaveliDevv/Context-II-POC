@@ -17,7 +17,7 @@ public class Lion : NetworkBehaviour
     public Camera lionCam;
     public GameObject lionCanvas;
     [SerializeField] List<GameObject> objectsToPickup = new();
-    [SerializeField] GameObject carryingObject;
+    [SerializeField] public PlacableObjects carryingObject;
     Vector3 cameraOffset = new Vector3(0,11.7600002f,-4.61000013f);
     Dictionary<string, GameObject> objectPrefabsDict;
     [SerializeField] List<GameObject> objectsPrefabs;
@@ -107,32 +107,44 @@ public class Lion : NetworkBehaviour
                 DropObject();
             }
         }
+
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            if(carryingObject != null)
+            {
+                Destroy(carryingObject.gameObject);
+                carryingObject = null;
+            }
+        }
     }
 
     void DropObject()
     {
-        RequestReparentServerRpc(carryingObject.gameObject, gameObject, true);
-        objectsToPickup.Insert(0, carryingObject.gameObject);
-        carryingObject.gameObject.GetComponent<Collider>().enabled = true;
-        carryingObject = null;
+        if(!carryingObject.placable) return;
+
+        //RequestReparentServerRpc(carryingObject.gameObject, gameObject, true);
+        //objectsToPickup.Insert(0, carryingObject.gameObject);
+        SpawnObjectOnServerRpc(carryingObject.objName, carryingObject.transform.position, carryingObject.transform.rotation);
         ChangeObjectPlacedBoolOnServerRpc(true);
+        Destroy(carryingObject.gameObject);
+        carryingObject = null;
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    void RequestReparentServerRpc(NetworkObjectReference objectRef, NetworkObjectReference newParentRef, bool unparent)
-    {
-        if (objectRef.TryGet(out NetworkObject obj))
-        {
-            if (unparent)
-            {
-                obj.transform.SetParent(null); // Remove parent
-            }
-            else if (newParentRef.TryGet(out NetworkObject newParent))
-            {
-                obj.transform.SetParent(newParent.transform); // Set new parent
-            }
-        }
-    }
+    // [ServerRpc(RequireOwnership = false)]
+    // void RequestReparentServerRpc(NetworkObjectReference objectRef, NetworkObjectReference newParentRef, bool unparent)
+    // {
+    //     if (objectRef.TryGet(out NetworkObject obj))
+    //     {
+    //         if (unparent)
+    //         {
+    //             obj.transform.SetParent(null); // Remove parent
+    //         }
+    //         else if (newParentRef.TryGet(out NetworkObject newParent))
+    //         {
+    //             obj.transform.SetParent(newParent.transform); // Set new parent
+    //         }
+    //     }
+    // }
 
     [ServerRpc(RequireOwnership = false)]
     void ChangeObjectPlacedBoolOnServerRpc(bool _result)
@@ -143,7 +155,7 @@ public class Lion : NetworkBehaviour
     [ClientRpc]
     void ChangeObjectPlacedBoolOnClientRpc(bool _result)
     {
-        objectPlaced = true;
+        objectPlaced = _result;
     }
 
     void OnTriggerEnter(Collider collider)
@@ -191,16 +203,29 @@ public class Lion : NetworkBehaviour
 
     public void SpawnObject(string _objName)
     {
-        SpawnObjectOnServerRpc(_objName, transform.position + (transform.forward * 4));
+        if(carryingObject != null)
+        {
+            Destroy(carryingObject.gameObject);
+            carryingObject = null;
+        }
+        GameObject _newObj = Instantiate(objectPrefabsDict[_objName], transform.position + (transform.forward * 4), Quaternion.identity, transform);
+        carryingObject = _newObj.gameObject.GetComponent<PlacableObjects>();
+        carryingObject.transform.position += carryingObject.spawnOffset;
+        carryingObject.CheckIfPlacable();
+        //SpawnObjectOnServerRpc(_objName, transform.position + (transform.forward * 4));
     }
 
     [ServerRpc(RequireOwnership = false)]
-    void SpawnObjectOnServerRpc(string _objName, Vector3 _position)
-    {
-        GameObject _newObj = Instantiate(objectPrefabsDict[_objName], _position, Quaternion.identity);
+    void SpawnObjectOnServerRpc(string _objName, Vector3 _position, Quaternion _rotation)
+    {   
+        Debug.Log($"Trying to spawn {_objName}");
+        GameObject _newObj = Instantiate(objectPrefabsDict[_objName], _position, _rotation);
         NetworkObject _newObjInstance = _newObj.GetComponent<NetworkObject>();
+
+        PlacableObjects placedObject = _newObjInstance.gameObject.GetComponent<PlacableObjects>();
+        placedObject.PlaceObject();
+
         _newObjInstance.Spawn();
-        _newObjInstance.transform.SetParent(transform);
 
         NotifyClientOfSpawnClientRpc(_newObjInstance.NetworkObjectId);
     }
@@ -210,9 +235,10 @@ public class Lion : NetworkBehaviour
     {
         // Find the spawned object by ID
         NetworkObject spawnedObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[spawnedObjectId];
-        GameObject _objectToPickup = spawnedObject.gameObject;
+        PlacableObjects placedObject = spawnedObject.gameObject.GetComponent<PlacableObjects>();
+        placedObject.PlaceObject();
         // Add it to the client's list
-        carryingObject = _objectToPickup.gameObject;
+        //carryingObject = _objectToPickup.gameObject.GetComponent<PlacableObjects>();
     }
 
 }

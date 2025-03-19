@@ -1,0 +1,139 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &7771490227901976683
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 4.869818
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.8953009
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+      propertyPath: m_Name
+      value: ClockTower
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4112095132206967776}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3488672436700447943}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -4614947862636453464}
+  m_SourcePrefab: {fileID: 100100000, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+--- !u!1 &7428838210077814074 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+  m_PrefabInstance: {fileID: 7771490227901976683}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4112095132206967776
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7428838210077814074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 3502031827
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!64 &3488672436700447943
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7428838210077814074}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -2576363772566617629, guid: 419499f90363e1248a826e70d04ffb25, type: 3}
+--- !u!114 &-4614947862636453464
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7428838210077814074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5acd4f9d45c66094da85642c0b23af11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objName: ClockTower
+  placable: 0
+  placed: 0
+  unplacableMaterial: {fileID: 2100000, guid: 01bb444ef2d2ba2428578d9b8da916c4, type: 2}
+  placableMaterial: {fileID: 2100000, guid: d1c694d07cda7f548b78c83474cb2f3f, type: 2}
+  originalMaterial: {fileID: 6138011156554045791, guid: 8d2248c53e8c69d43b72de52955c5d14, type: 3}
+  spawnOffset: {x: 0, y: 4.97, z: 0}

@@ -18,20 +18,14 @@ public class CrowdRpcBehaviour : NetworkBehaviour
         npc = _npc;
         npcSpawnOffset = _npcSpawnOffset;
         crowdPlayerController = _crowdPlayerController;
-        // this.spawnPoint = spawnPoint;
-        // this.npcContainer = npcContainer;
-
-        // npc.transform.SetParent(npcContainer);
     }
 
     [ServerRpc(RequireOwnership = false)]
     public void SpawnCrowdServerRpc(ulong _clientID)
     {
         if(!ClientServerRefs.instance.isServer) return;
-        // Transform npcContainer = controller.transform.parent.transform.GetChild(3); // Empty game object to store the npcs
         Transform npcContainer = transform;
         Transform spawnPoint = transform.GetChild(0).GetChild(5);
-        // Transform spawnPoint = transform.Find("NPC Spawnpoint");
 
         if(npcContainer == null) 
         {
@@ -87,27 +81,4 @@ public class CrowdRpcBehaviour : NetworkBehaviour
         // Add it to the client's list
         crowdPlayerController.npcs.Add(spawnedObject.gameObject);
     }
-
-
-    // [ServerRpc(RequireOwnership = false)]
-    // public void SpawnCrowdServerRpc(ulong _clientID)
-    // {
-    //     if(!ClientServerRefs.instance.isServer) return;
-    //     Transform npcContainer = controller.transform.parent; // Empty game object to store the npcs
-    //     Transform npcArea = controller.transform.Find("NPC Spawnpoint");
-
-    //     Debug.Log("npc container found: " + npcContainer.name);
-    //     Debug.Log("npc area found: " + npcArea.name);
-
-    //     for(int i = 0; i < npcCount; i++)
-    //     {
-    //         GameObject newNPC = MGameManager.instance.InstantiatePrefab(npc, npcArea.position + npcSpawnOffset, npc.transform.rotation, npcContainer);
-    //         NetworkObject newNPCInstance = newNPC.GetComponent<NetworkObject>();
-    //         newNPCInstance.Spawn();
-    //         newNPCInstance.gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
-    //         newNPCInstance.transform.SetParent(npcContainer);
-
-    //         NotifyClientOfSpawnClientRpc(newNPCInstance.NetworkObjectId);
-    //     }
-    // }
 }

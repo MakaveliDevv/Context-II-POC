@@ -113,21 +113,6 @@ public class CrowdPlayerController
 
     public IEnumerator Start(CrowdPlayerManager playerManager) 
     {
-        //Transform npcContainer = controller.transform.parent.transform.GetChild(3); // Empty game object to store the npcs
-        //Transform npcArea = controller.transform.GetChild(1); // Empty game objects to spawn the npcs at
-        
-        //mono.StartCoroutine(NPCsManagement.SpawnNPC(npcs, npcCount, npc, npcArea.position + npcSpawnOffset, npcContainer)); 
-
-        //SpawnCrowdServerRpc(customNetworkBehaviour.ownerClientID);
-        // CrowdRpcBehaviour crowdRpcBehaviour = mono.GetComponent<CrowdRpcBehaviour>();
-        // crowdRpcBehaviour.SetCorrectReferences(controller, npcCount, npc, npcSpawnOffset, this /*, spawnPoint, npcContainer*/);
-
-        // yield return new WaitForSeconds(2f);
-        // if(customNetworkBehaviour.CustomIsOwner())
-        // {
-        //     crowdRpcBehaviour.SpawnCrowdServerRpc(customNetworkBehaviour.ownerClientID);
-        // }
-
         mono.StartCoroutine(SpawnCrowdWithDelay());
 
         UImanagement.InitializeShapeManagement(mono, playerManager);
@@ -166,36 +151,6 @@ public class CrowdPlayerController
         }
 
     }
-
-    // [ServerRpc(RequireOwnership = false)]
-    // void SpawnCrowdServerRpc(ulong _clientID)
-    // {
-    //     if(!ClientServerRefs.instance.isServer) return;
-    //     Transform npcContainer = controller.transform.parent.transform.GetChild(3); // Empty game object to store the npcs
-    //     Transform npcArea = controller.transform.GetChild(1);
-
-    //     for(int i = 0; i < npcCount; i++)
-    //     {
-    //         GameObject newNPC = MGameManager.instance.InstantiatePrefab(npc, npcArea.position + npcSpawnOffset, npc.transform.rotation, npcContainer);
-    //         NetworkObject newNPCInstance = newNPC.GetComponent<NetworkObject>();
-    //         newNPCInstance.Spawn();
-    //         newNPCInstance.gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
-
-    //         NotifyClientOfSpawnClientRpc(newNPCInstance.NetworkObjectId);
-    //     }
-    // }
-
-    // [ClientRpc]
-    // void NotifyClientOfSpawnClientRpc(ulong spawnedObjectId)
-    // {
-    //     Debug.Log("add object to list client rpc");
-    //     // Find the spawned object by ID
-    //     NetworkObject spawnedObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[spawnedObjectId];
-    //     Debug.Log("Spawned Object: " + spawnedObject.gameObject.name);
-
-    //     // Add it to the client's list
-    //     npcs.Add(spawnedObject.gameObject);
-    // }
 
     public void Update(CrowdPlayerManager playerManager) 
     {

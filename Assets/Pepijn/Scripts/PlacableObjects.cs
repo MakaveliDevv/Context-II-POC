@@ -10,6 +10,10 @@ public class PlacableObjects : MonoBehaviour
     [SerializeField] Material originalMaterial;
     MeshRenderer meshRenderer;
     [SerializeField] public Vector3 spawnOffset;
+
+    // -------------------------------------
+    public Task task;
+
     void OnTriggerEnter(Collider collider)
     {
         if(collider.gameObject.layer != 12 && !placed)

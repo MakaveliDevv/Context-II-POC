@@ -1,12 +1,14 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UILocationCard : MonoBehaviour
+public class LocationCardUI : MonoBehaviour
 {
     public Transform location;
     public Vector3 objectPosition;
     public Button btn;    
     public RenderTexture renderTexture; 
+    public List<Task> tasks = new();
 
     void Start()
     {

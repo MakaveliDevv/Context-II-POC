@@ -17,8 +17,8 @@ public class Lion : NetworkBehaviour
     public Camera lionCam;
     public GameObject lionCanvas;
     [SerializeField] List<GameObject> objectsToPickup = new();
-    [SerializeField] public PlacableObjects carryingObject;
-    Vector3 cameraOffset = new Vector3(0,11.7600002f,-4.61000013f);
+    public PlacableObjects carryingObject;
+    Vector3 cameraOffset = new(0,11.7600002f,-4.61000013f);
     Dictionary<string, GameObject> objectPrefabsDict;
     [SerializeField] List<GameObject> objectsPrefabs;
     [SerializeField] List<string> objectNames;
@@ -38,7 +38,8 @@ public class Lion : NetworkBehaviour
         {
             objectPrefabsDict.Add(objectNames[i], objectsPrefabs[i]);
         }
-        
+
+        MGameManager.instance.lion = this;
     }
 
     // Update is called once per frame
@@ -118,6 +119,8 @@ public class Lion : NetworkBehaviour
         }
     }
 
+    public Task lastObjectTask = null;
+
     void DropObject()
     {
         if(!carryingObject.placable) return;
@@ -126,6 +129,8 @@ public class Lion : NetworkBehaviour
         //objectsToPickup.Insert(0, carryingObject.gameObject);
         SpawnObjectOnServerRpc(carryingObject.objName, carryingObject.transform.position, carryingObject.transform.rotation);
         ChangeObjectPlacedBoolOnServerRpc(true);
+
+        lastObjectTask = carryingObject.task;
         Destroy(carryingObject.gameObject);
         carryingObject = null;
     }
@@ -176,6 +181,7 @@ public class Lion : NetworkBehaviour
             {
                 // Lion placed the object 
                 MGameManager.instance.lionPlacedObject = true;
+                MGameManager.instance.taskComplete = true;
             }
         }
     }
@@ -209,7 +215,7 @@ public class Lion : NetworkBehaviour
             carryingObject = null;
         }
         GameObject _newObj = Instantiate(objectPrefabsDict[_objName], transform.position + (transform.forward * 4), Quaternion.identity, transform);
-        carryingObject = _newObj.gameObject.GetComponent<PlacableObjects>();
+        carryingObject = _newObj.GetComponent<PlacableObjects>();
         carryingObject.transform.position += carryingObject.spawnOffset;
         carryingObject.CheckIfPlacable();
         //SpawnObjectOnServerRpc(_objName, transform.position + (transform.forward * 4));

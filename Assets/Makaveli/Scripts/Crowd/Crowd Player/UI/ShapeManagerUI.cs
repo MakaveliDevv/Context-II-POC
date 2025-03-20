@@ -95,7 +95,7 @@ public class ShapeManagerUI
     private void InitializeButtons(CrowdPlayerManager playerManager) 
     {
         // open shape panel button
-        if(UIShapePanel.transform.parent.GetChild(4).TryGetComponent<Button>(out var openPanelBtn)) 
+        if(UIShapePanel.transform.parent.GetChild(5).TryGetComponent<Button>(out var openPanelBtn)) 
         {
             // Debug.Log($"Button open panel button: {openPanelBtn.name}");
 
@@ -324,7 +324,7 @@ public class ShapeManagerUI
         GameObject currentShapeCard = panelObjects[currentIndex];
         
         // Fetch the UIShapeCard script on that GameObject
-        UIShapeCard shapeCard = currentShapeCard.GetComponent<UIShapeCard>();
+        ShapeCardUI shapeCard = currentShapeCard.GetComponent<ShapeCardUI>();
         
         if (shapeCard == null)
         {

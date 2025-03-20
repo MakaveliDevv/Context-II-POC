@@ -66,11 +66,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: -3029858970823070098}
   m_SourcePrefab: {fileID: 100100000, guid: ef78c0442eb19b441bdf58fc10636342, type: 3}
---- !u!23 &4807105436000207418 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: ef78c0442eb19b441bdf58fc10636342, type: 3}
-  m_PrefabInstance: {fileID: 6158621144431124158}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &6464557299318645743 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: ef78c0442eb19b441bdf58fc10636342, type: 3}
@@ -141,4 +136,5 @@ MonoBehaviour:
   unplacableMaterial: {fileID: 2100000, guid: 01bb444ef2d2ba2428578d9b8da916c4, type: 2}
   placableMaterial: {fileID: 2100000, guid: d1c694d07cda7f548b78c83474cb2f3f, type: 2}
   originalMaterial: {fileID: 2825462251689752293, guid: 86ce70c76529a95419ad05d390ef10ec, type: 3}
-  meshRenderer: {fileID: 4807105436000207418}
+  spawnOffset: {x: 0, y: 0, z: 0}
+  task: {fileID: 11400000, guid: fa4ee4b4ec3bb43499c20e2f978a30fe, type: 2}

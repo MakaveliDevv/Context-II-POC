@@ -1,60 +1,61 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class CrowdPlayerUIManager 
+public class UIManagement 
 {
-    private readonly CardManagerUI cardManagerUI;
-    public readonly ShapeManagerUI shapeManagerUI;
-
-    private Button signalBtn;
-    
-    public CrowdPlayerUIManager
-    (
-        Transform player,
-        GameObject cardsUI,
-        List<GameObject> cardPanels,
-        List<UILocationCard> cards
-    ) 
+    public ShapeManagerUI shapeManagerUI;
+    private readonly LocationManagerUI locationManagerUI;
+    private readonly TaskManagerUI taskManagerUI;
+    public UIManagement(Transform player, GameObject cardsUI, List<GameObject> cardPanels, List<LocationCardUI> cards) 
     {
-        cardManagerUI = new
-        (
-            cardsUI,
-            cardPanels,
-            cards
-        );
-
-        shapeManagerUI = new
-        (
-            player
-        ); 
+        locationManagerUI = new (cardsUI ,cardPanels ,cards);
+        shapeManagerUI = new (player); 
+        taskManagerUI = new (player);
     }
 
-    public void InitializeShapeManagement(MonoBehaviour mono, CrowdPlayerManager playerManager) 
+    public void Start(MonoBehaviour mono, CrowdPlayerManager playerManager) 
     {
         mono.StartCoroutine(shapeManagerUI.Start(playerManager));
+        taskManagerUI.Start();
     }
 
     public void DisplayCards(MonoBehaviour monoBehaviour) 
     {
-        monoBehaviour.StartCoroutine(cardManagerUI.DisplayCards(monoBehaviour));
+        monoBehaviour.StartCoroutine(locationManagerUI.DisplayCards(monoBehaviour));
     }
 
     public void HideCards() 
     {
-        cardManagerUI.HideCards();
+        locationManagerUI.HideCards();
     }
     
     public void CardPanelNavigation() 
     {
-        cardManagerUI.ButtonHandler();
+        locationManagerUI.ButtonHandler();
     }
 
+    public bool taskCreated;
     public void Update(CrowdPlayerManager playerManager) 
     {
         if(!playerManager.signal) 
         {
             playerManager.transform.GetChild(4).GetChild(8).gameObject.SetActive(false);
+        }
+        
+        taskManagerUI.DisplayTaskBtn(playerManager);
+
+        if(playerManager.playerState == CrowdPlayerManager.PlayerState.TRAVELING) 
+        {
+            if(!taskCreated) 
+            {
+                taskManagerUI.CreateTaskCard(playerManager);
+                taskCreated = true;
+            }
+        }
+
+        if(MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.END) 
+        {
+            taskCreated = false;
         }
     }
 

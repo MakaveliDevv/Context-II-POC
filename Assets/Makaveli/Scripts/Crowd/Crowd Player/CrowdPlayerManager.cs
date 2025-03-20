@@ -14,13 +14,13 @@ public class CrowdPlayerManager : NetworkBehaviour
     [SerializeField] private float movementSpeed = 5f;
     [SerializeField] private float aplliedMovementSpeedPercentage = .5f;
 
-
     // UI Management
     [Header("UI Management")]
     [SerializeField] private GameObject cardsUI;
     public bool inUIMode = false;
     private bool lastDisplayUIState = false; 
     private bool openShapePanelFirstTime;
+    public bool signal;
 
     // NPC Management
     [Header("NPC Management")]
@@ -28,8 +28,9 @@ public class CrowdPlayerManager : NetworkBehaviour
     [SerializeField] private LayerMask npcLayer;
     [SerializeField] private Vector3 npcSpawnOffset = new();    
     [SerializeField] private int npcCount;
-
-    private float elapsedTime = 0;    
+    private bool rearrangeFormation;
+    public Transform spawnPoint;
+    public Transform npcContainer;
 
     // Camera Management
     [Header("Camera Management")]
@@ -41,15 +42,12 @@ public class CrowdPlayerManager : NetworkBehaviour
     public float distanceOffset;
     public float interpolationDuration;
 
-    // State management
-    public bool rearrangeFormation;
-    public bool signal;
-
-    CustomNetworkBehaviour customNetworkBehaviour;
+    [Header("Network Management")]
+    private CustomNetworkBehaviour customNetworkBehaviour;
     [SerializeField] List<GameObject> crowdOnlyObjects;
 
-    public Transform spawnPoint;
-    public Transform npcContainer;
+    [Header("Tasks")]
+    public List<Task> tasks = new();
 
     private void Awake()
     {
@@ -68,7 +66,8 @@ public class CrowdPlayerManager : NetworkBehaviour
             npcSpawnOffset,                     // Reference to the spawn offset for the npc
             cardsUI,                             // Reference to the main panel for the UI location cards
             spawnPoint,
-            npcContainer
+            npcContainer,
+            tasks
         );        
 
         MGameManager.instance.allCrowdPlayers.Add(this);
@@ -133,7 +132,7 @@ public class CrowdPlayerManager : NetworkBehaviour
     {
         InputActionHandler.DisableInputActions();
     }
-    
+
     private void Update()
     {
         inUIMode = LocationCardsUIVisibility();  
@@ -252,6 +251,7 @@ public class CrowdPlayerManager : NetworkBehaviour
     private void LateUpdate()
     {
         playerController.CameraMovement();
+        // Debug.Log($"[Parent Transform] World Pos: {transform.position}, Local Pos: {transform.localPosition}");
     }
 
     private IEnumerator TempMethod() 

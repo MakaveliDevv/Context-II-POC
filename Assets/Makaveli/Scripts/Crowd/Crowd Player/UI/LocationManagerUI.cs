@@ -3,21 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CardManagerUI
+public class LocationManagerUI
 {
     private readonly GameObject cardsUI;
-    private Dictionary<GameObject, List<UILocationCard>> panelCardMap = new();
-    private readonly List<UILocationCard> cards;
+    private Dictionary<GameObject, List<LocationCardUI>> panelCardMap = new();
+    private readonly List<LocationCardUI> cards;
     private readonly List<GameObject> cardPanels;
     private int currentIndex = 0;
     private int totalTrackedObjects = 0;
     private int totalActivePanels = 0;
     
-    public CardManagerUI
+    public LocationManagerUI
     (
         GameObject cardsUI,
         List<GameObject> cardPanels,
-        List<UILocationCard> cards
+        List<LocationCardUI> cards
     ) 
     {
         this.cardsUI = cardsUI;
@@ -33,7 +33,7 @@ public class CardManagerUI
         cards?.Clear();
         
         if (panelCardMap == null)
-            panelCardMap = new Dictionary<GameObject, List<UILocationCard>>();
+            panelCardMap = new Dictionary<GameObject, List<LocationCardUI>>();
         else
             panelCardMap.Clear();
         
@@ -60,7 +60,7 @@ public class CardManagerUI
             // Debug.Log($"Added panel: {panel.name}");
             
             // Create a new list for this panel's cards
-            List<UILocationCard> panelCards = new();
+            List<LocationCardUI> panelCards = new();
             
             int cardCount = panel.transform.childCount;
             // Debug.Log($"Card count in {panel.name}: {cardCount}");
@@ -71,7 +71,7 @@ public class CardManagerUI
                 GameObject cardMask = panel.transform.GetChild(j).gameObject;
                 GameObject cardObject = cardMask.transform.GetChild(0).gameObject;
                 
-                if (cardObject.TryGetComponent<UILocationCard>(out var _card))
+                if (cardObject.TryGetComponent<LocationCardUI>(out var _card))
                 {
                     // Add to the panel-specific list
                     panelCards.Add(_card);
@@ -184,7 +184,7 @@ public class CardManagerUI
         for (int panelIndex = 0; panelIndex < totalActivePanels; panelIndex++)
         {
             GameObject panel = cardPanels[panelIndex];
-            List<UILocationCard> panelCards = panelCardMap[panel];
+            List<LocationCardUI> panelCards = panelCardMap[panel];
             
             // Loop through each card in the panel
             for (int cardIndex = 0; cardIndex < panelCards.Count; cardIndex++)
@@ -196,7 +196,7 @@ public class CardManagerUI
                     continue;
                 }
                 
-                UILocationCard card = panelCards[cardIndex];
+                LocationCardUI card = panelCards[cardIndex];
                 Debug.Log($"Card -> {card.name}");
                 
                 GameObject objectToTrack = MGameManager.instance.trackables[objectIndex];
@@ -260,7 +260,7 @@ public class CardManagerUI
         for (int panelIndex = totalActivePanels; panelIndex < cardPanels.Count; panelIndex++)
         {
             GameObject panel = cardPanels[panelIndex];
-            List<UILocationCard> panelCards = panelCardMap[panel];
+            List<LocationCardUI> panelCards = panelCardMap[panel];
             
             foreach (var card in panelCards)
             {
@@ -269,11 +269,21 @@ public class CardManagerUI
         }
     }
 
-    private void SetupCard(UILocationCard card, GameObject objectToTrack)
+    private void SetupCard(LocationCardUI card, GameObject objectToTrack)
     {
         // Initialize the card data
         card.objectPosition = objectToTrack.transform.position;
         card.location = objectToTrack.transform.parent.transform;
+
+        // Assign the tasks to the card for that location
+        if(objectToTrack.transform.parent.TryGetComponent<TaskLocation>(out var taskLocation)) 
+        {
+            card.tasks = taskLocation.tasks;
+        }
+        else 
+        {
+            Debug.LogError("Couldn't fetch the 'TaskLocation' component!");
+        }
         
         // Get the render texture from the object to track
         ObjectToTrack trackComponent = objectToTrack.GetComponent<ObjectToTrack>();
@@ -301,7 +311,7 @@ public class CardManagerUI
         // Hide all cards in all panels
         foreach (var panel in cardPanels)
         {
-            List<UILocationCard> panelCards = panelCardMap[panel];
+            List<LocationCardUI> panelCards = panelCardMap[panel];
             foreach (var card in panelCards)
             {
                 card.gameObject.SetActive(false);
@@ -385,7 +395,7 @@ public class CardManagerUI
         panel.SetActive(true);
         
         // Activate all cards in this panel that have data
-        List<UILocationCard> panelCards = panelCardMap[panel];
+        List<LocationCardUI> panelCards = panelCardMap[panel];
         int startIndex = 0;
         
         // Calculate the starting index for objects to track based on previous panels

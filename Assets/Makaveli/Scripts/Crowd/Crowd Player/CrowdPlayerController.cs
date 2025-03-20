@@ -2,8 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Unity.Netcode;
-using NUnit.Framework.Constraints;
+
 
 public class CrowdPlayerController
 {
@@ -11,7 +10,7 @@ public class CrowdPlayerController
     
     // Class References
     private readonly TopDownMovement topDownMovement; 
-    public CrowdPlayerUIManager UImanagement;
+    public UIManagement UImanagement;
     public CameraManagement cameraManagement;
     private readonly CustomNetworkBehaviour customNetworkBehaviour;
     
@@ -32,12 +31,14 @@ public class CrowdPlayerController
 
     // UI Management
     private readonly List<GameObject> cardPanels = new();
-    public List<UILocationCard> cards = new();
+    public List<LocationCardUI> cards = new();
 
     // Camera Management
     private Coroutine tiltCam;
     private Coroutine repositionCam;
 
+    // Tasks
+    public List<Task> tasks;
 
     // Temp stuff
     private Transform spawnPoint;
@@ -58,7 +59,8 @@ public class CrowdPlayerController
         Vector3 npcSpawnOffset,                 // Reference to the spawn offset for the npc
         GameObject cardsUI,                      // Reference to the main panel for the UI location cards
         Transform spawnPoint,
-        Transform npcContainer
+        Transform npcContainer,
+        List<Task> tasks
     ) 
     {
         this.mono = mono;
@@ -67,6 +69,7 @@ public class CrowdPlayerController
         this.npcSpawnOffset = npcSpawnOffset;
         this.spawnPoint = spawnPoint;
         this.npcContainer = npcContainer;
+        this.tasks = tasks;
 
         controller = mono.transform.GetChild(0).GetComponent<CharacterController>();
         customNetworkBehaviour = mono.GetComponent<CustomNetworkBehaviour>();
@@ -115,11 +118,11 @@ public class CrowdPlayerController
     {
         mono.StartCoroutine(SpawnCrowdWithDelay());
 
-        UImanagement.InitializeShapeManagement(mono, playerManager);
+        UImanagement.Start(mono, playerManager);
         cameraManagement.Start();
 
         // signal button
-        if(playerManager.transform.GetChild(4).GetChild(8).TryGetComponent<Button>(out var signalBtn))
+        if(playerManager.transform.GetChild(4).GetChild(9).TryGetComponent<Button>(out var signalBtn))
         {
             if(signalBtn != null) 
             {
@@ -139,7 +142,7 @@ public class CrowdPlayerController
         yield break;
     }
 
-    IEnumerator SpawnCrowdWithDelay()
+    private IEnumerator SpawnCrowdWithDelay()
     {
         yield return new WaitForSeconds(0.1f);
         CrowdRpcBehaviour crowdRpcBehaviour = mono.GetComponent<CrowdRpcBehaviour>();
@@ -245,7 +248,7 @@ public class CrowdPlayerController
         UImanagement.CardPanelNavigation();
     }
 
-    public void ChooseLocation(List<UILocationCard> cards, bool inUIMode)
+    public void ChooseLocation(List<LocationCardUI> cards, bool inUIMode)
     {
         // If in UI mode and not already processing a click
         if (inUIMode)
@@ -266,6 +269,25 @@ public class CrowdPlayerController
                             {
                                 isProcessingClick = true;
                                 chosenLocation = card.location;
+
+                                // Assign the tasks form the card
+                                tasks = card.tasks;
+
+                                // foreach (var task in tasks)
+                                // {
+                                //     if(MGameManager.instance.tasksPerRound != null) 
+                                //     {
+                                //         foreach (var item in MGameManager.instance.tasksPerRound)
+                                //         {
+                                //             if(task.taskName != item.taskName) 
+                                //             {
+                                //                 MGameManager.instance.tasksPerRound.Add(task);
+                                //             }
+                                //         }
+
+                                //     } else { MGameManager.instance.tasksPerRound.Add(task); }
+                                // }
+        
                                 Debug.Log($"Location: {chosenLocation.gameObject.name}");
                                 locationChosen = true;
                                 
@@ -304,7 +326,7 @@ public class CrowdPlayerController
         // }
     }
 
-    private void RandomizeLocation(List<UILocationCard> cards)
+    private void RandomizeLocation(List<LocationCardUI> cards)
     {
         // Check if we have any cards to randomize from
         if (cards.Count > 0)

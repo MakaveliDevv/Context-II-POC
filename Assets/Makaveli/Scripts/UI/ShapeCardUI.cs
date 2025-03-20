@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class UIShapeCard : MonoBehaviour
+public class ShapeCardUI : MonoBehaviour
 {
     public string shape;
 }

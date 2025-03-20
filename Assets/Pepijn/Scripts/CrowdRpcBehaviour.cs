@@ -50,7 +50,6 @@ public class CrowdRpcBehaviour : NetworkBehaviour
         for(int i = 0; i < npcCount; i++)
         {
             GameObject newNPC = MGameManager.instance.InstantiatePrefab(npc, spawnPoint.position + npcSpawnOffset, npc.transform.rotation, npcContainer);
-            newNPC.transform.SetParent(npcContainer, true);
             NetworkObject newNPCInstance = newNPC.GetComponent<NetworkObject>();
 
             newNPCInstance.Spawn();

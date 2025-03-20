@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Client : NetworkBehaviour
 {
@@ -9,11 +10,15 @@ public class Client : NetworkBehaviour
     [SerializeField] GameObject lion, crowd;
     NetworkObject lionInstance, crowdInstance; 
     [SerializeField] Vector3 spawnLocation;
+    ClientManager clientManager;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        if(clientManager == null) clientManager = FindFirstObjectByType<ClientManager>();
+        NetworkManager.Singleton.SceneManager.OnLoadComplete += OnClientLoadedScene;
         server = GameObject.Find("Server(Clone)").GetComponent<Server>();
+        DontDestroyOnLoad(gameObject);
     }
 
     public override void OnNetworkSpawn()
@@ -30,6 +35,15 @@ public class Client : NetworkBehaviour
     void Update()
     {
 
+    }
+
+    private void OnClientLoadedScene(ulong clientId, string sceneName, LoadSceneMode loadSceneMode)
+    {
+        if(IsOwner) 
+        {
+            Debug.Log($"Client {clientId} has finished loading scene: {sceneName}");
+            clientManager.AddClientToLoadedListServerRpc(NetworkManager.Singleton.LocalClientId);
+        }
     }
 
     [ServerRpc]

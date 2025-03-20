@@ -50,7 +50,7 @@ public class MGameManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(transform.parent.gameObject); 
+            //DontDestroyOnLoad(transform.parent.gameObject); 
         }
         else
         {

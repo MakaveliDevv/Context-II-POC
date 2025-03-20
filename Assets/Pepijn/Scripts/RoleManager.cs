@@ -12,11 +12,16 @@ public class RoleManager : NetworkBehaviour
 
     void Start()
     {
-        // clientManager = FindFirstObjectByType<ClientManager>();
-        // isLion = clientManager.isLion;
+        Debug.Log("Rolemanager Start");
+        clientManager = FindFirstObjectByType<ClientManager>();
+        serverManager = FindFirstObjectByType<ServerManager>();
+        clientServerRefs = FindFirstObjectByType<ClientServerRefs>();
+        
+        isLion = clientManager.isLion;
 
         if(!serverManager.serverBuild)
         {
+            Debug.Log("Not a server build");
             if(isLion) 
             {
                 InstantiateLion();
@@ -28,16 +33,22 @@ public class RoleManager : NetworkBehaviour
                 clientServerRefs.isCrowd = true;
             }
         }
+        else
+        {
+            Debug.Log("server build");
+        }
     }
 
 
     void InstantiateLion()
     {
+        Debug.Log("Starting coroutine");
         StartCoroutine(TrySpawnPlayers(true));
     }
 
     void InstantiateCrowd()
     {
+        Debug.Log("Starting coroutine");
         StartCoroutine(TrySpawnPlayers(false));
     }
 
@@ -46,6 +57,7 @@ public class RoleManager : NetworkBehaviour
         bool success = false;
         while(!success)
         {
+            Debug.Log("Trying to spawn as lion: " + asLion);
             if(clientServerRefs.localClient != null)
             {
                 if(asLion)
@@ -56,6 +68,7 @@ public class RoleManager : NetworkBehaviour
                 {
                     clientServerRefs.localClient.InstantiateCrowdServerRpc(NetworkManager.Singleton.LocalClientId);
                 }
+                Debug.Log("Spawned as lion: " + asLion);
                 success = true;
             }
             yield return null;

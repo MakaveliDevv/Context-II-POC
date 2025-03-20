@@ -15,6 +15,7 @@ public class Server : NetworkBehaviour
     void Start()
     {
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        DontDestroyOnLoad(gameObject);
     }
     [ClientRpc]
     void PerformActionClientRpc()

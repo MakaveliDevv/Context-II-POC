@@ -2,6 +2,7 @@ using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using System.Net;
+using UnityEngine.SceneManagement;
 
 public class ServerManager : NetworkBehaviour
 {
@@ -14,10 +15,13 @@ public class ServerManager : NetworkBehaviour
     [SerializeField] private UnityTransport unityTransport;
     Server server;
     [SerializeField] private ClientServerRefs clientServerRefs;
+    [SerializeField] ClientManager clientManager;
     private string serverAddress = "context2server.atlas-technologies.co.uk";
 
     private void Start()
     {
+        if(SceneManager.GetActiveScene().name != "Lobby") return;
+
         DontDestroyOnLoad(gameObject);
         if (serverBuild)
         {
@@ -25,7 +29,22 @@ public class ServerManager : NetworkBehaviour
         }
         else
         {
+            //StartAsClient();
+        }
+    }
+
+    public void JoinServer()
+    {
+        if (serverBuild)
+        {
+           
+        }
+        else
+        {
             StartAsClient();
+            clientManager.startButton.SetActive(false);
+            clientManager.readyButton.SetActive(true);
+            clientManager.clientConnectedTexts.SetActive(true);
         }
     }
 

@@ -16,7 +16,7 @@ public class PlacableObjects : MonoBehaviour
 
     void OnTriggerEnter(Collider collider)
     {
-        if(collider.gameObject.layer != 12 && !placed)
+        if(collider.gameObject.layer != 12 && !placed && collider.gameObject.layer != 9)
         {
             collidingObjects.Add(collider.gameObject);
             CheckIfPlacable();
@@ -25,7 +25,7 @@ public class PlacableObjects : MonoBehaviour
 
     void OnTriggerExit(Collider collider)
     {
-        if(collider.gameObject.layer != 12 && !placed)
+        if(collider.gameObject.layer != 12 && !placed && collider.gameObject.layer != 9)
         {
             collidingObjects.Remove(collider.gameObject);
             CheckIfPlacable();

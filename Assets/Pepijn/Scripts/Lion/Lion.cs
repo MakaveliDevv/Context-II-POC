@@ -217,6 +217,7 @@ public class Lion : NetworkBehaviour
         GameObject _newObj = Instantiate(objectPrefabsDict[_objName], transform.position + (transform.forward * 4), Quaternion.identity, transform);
         carryingObject = _newObj.GetComponent<PlacableObjects>();
         carryingObject.transform.position += carryingObject.spawnOffset;
+        //carryingObject.transform.position = new Vector3(carryingObject.transform.position.x, (transform.position + carryingObject.spawnOffset).y, carryingObject.transform.position.z);
         carryingObject.CheckIfPlacable();
         //SpawnObjectOnServerRpc(_objName, transform.position + (transform.forward * 4));
     }
@@ -246,5 +247,4 @@ public class Lion : NetworkBehaviour
         // Add it to the client's list
         //carryingObject = _objectToPickup.gameObject.GetComponent<PlacableObjects>();
     }
-
 }

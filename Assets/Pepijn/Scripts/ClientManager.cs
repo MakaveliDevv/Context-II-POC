@@ -15,7 +15,7 @@ public class ClientManager : NetworkBehaviour
     public List<ulong> readiedClients = new();
     [SerializeField] List<TextMeshProUGUI> lobbyClientTexts;
     [SerializeField] TextMeshProUGUI clientsConnectedText;
-    [HideInInspector] public bool isLion;
+    public bool isLion;
     [SerializeField] public GameObject startButton, readyButton, clientConnectedTexts;
     public Image readyButtonImg;
     public Sprite readySprite, unreadySprite;
@@ -131,6 +131,7 @@ public class ClientManager : NetworkBehaviour
         Debug.Log($"Client {clientId} connected to the server.");
         connectedClients.Add(clientId);
         if(SceneManager.GetActiveScene().name == "Lobby") UpdateLobbyTextServerRpc();
+        Debug.Log($"Method: OnClientConnectedClientRpc -> Client id -> {clientId}");
     }
 
     [ClientRpc]
@@ -144,7 +145,7 @@ public class ClientManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void AddClientToReadyListServerRpc(ulong _clientID, bool _add)
     {
-        if(_add) readiedClients.Add(_clientID);    
+        if(_add) { readiedClients.Add(_clientID); Debug.Log($"Method: AddClientToReadyListServerRpc -> Client id -> {_clientID}"); }    
         else readiedClients.Remove(_clientID); 
 
         if(readiedClients.Count == connectedClients.Count)
@@ -165,8 +166,8 @@ public class ClientManager : NetworkBehaviour
                 Debug.Log("All clients loaded");
                 //DecideLionServerRpc();
                 //ActivateSceneClientRpc();
-                ulong lionID = 0;
-                if(lionClientId == 0) 
+                ulong lionID;
+                if (lionClientId == 0) 
                 {
                     lionID = connectedClients[Random.Range(0, connectedClients.Count)];
                 }

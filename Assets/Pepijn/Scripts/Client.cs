@@ -37,14 +37,10 @@ public class Client : NetworkBehaviour
         if(IsOwner)
         {
             GameObject.Find("ClientServerRefs").GetComponent<ClientServerRefs>().localClient = this;
+            Debug.Log(NetworkManager.Singleton.LocalClientId);
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 
     private void OnClientLoadedScene(ulong clientId, string sceneName, LoadSceneMode loadSceneMode)
     {

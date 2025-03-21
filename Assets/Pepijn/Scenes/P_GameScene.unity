@@ -10992,7 +10992,13 @@ MonoBehaviour:
   - {fileID: 2123195195}
   - {fileID: 1386059218}
   - {fileID: 704033270}
-  possibleTasks: []
+  possibleTasks:
+  - {fileID: 11400000, guid: be4806b2d62ad8047bbb372f9a8b9b8a, type: 2}
+  - {fileID: 11400000, guid: e8c09deeb70e0a24b94f67b315ef8b76, type: 2}
+  - {fileID: 11400000, guid: 3cf1940b3fd6fd641b7db9e50ccd1dd8, type: 2}
+  - {fileID: 11400000, guid: fa4ee4b4ec3bb43499c20e2f978a30fe, type: 2}
+  - {fileID: 11400000, guid: 00fc708ef42cae14c8eae47abbc7f865, type: 2}
+  - {fileID: 11400000, guid: 7a405b262e4764b4f8ace7365c82199e, type: 2}
   tasksPerRound: []
   completeTasks: []
   amountOfTasksPerRound: 4
@@ -11002,8 +11008,11 @@ MonoBehaviour:
   stateChange: 0
   spawnInTimer: 2
   lionPlacedObject: 0
+  currInterLoc: {fileID: 0}
   currentInteractableLocation: {fileID: 0}
   lion: {fileID: 0}
+  currentPoint: 0
+  maxPoints: 0
 --- !u!4 &3071420781276761187
 Transform:
   m_ObjectHideFlags: 0

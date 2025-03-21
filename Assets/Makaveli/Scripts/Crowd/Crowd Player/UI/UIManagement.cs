@@ -17,6 +17,7 @@ public class UIManagement
     {
         mono.StartCoroutine(shapeManagerUI.Start(playerManager));
         taskManagerUI.Start();
+        locationManagerUI.Start();
     }
 
     public void DisplayCards(MonoBehaviour monoBehaviour) 
@@ -41,7 +42,7 @@ public class UIManagement
         {
             playerManager.transform.GetChild(4).GetChild(8).gameObject.SetActive(false);
         }
-        
+
         taskManagerUI.DisplayTaskBtn(playerManager);
 
         if(playerManager.playerState == CrowdPlayerManager.PlayerState.TRAVELING) 

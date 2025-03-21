@@ -49,14 +49,7 @@ public class CrowdPlayerManager : NetworkBehaviour
 
     [Header("Tasks")]
     public List<Task> tasks = new();
-    
-    // State management
-    public bool rearrangeFormation;
-    public bool signal;
 
-    
-    public Transform spawnPoint;
-    public Transform npcContainer;
 
     private void Awake()
     {
@@ -75,12 +68,9 @@ public class CrowdPlayerManager : NetworkBehaviour
             npcSpawnOffset,                     // Reference to the spawn offset for the npc
             cardsUI,                             // Reference to the main panel for the UI location cards
             spawnPoint,
-            npcContainer
-=======
             npcContainer,
             tasks,
             this
->>>>>>> Stashed changes
         );        
 
         MGameManager.instance.allCrowdPlayers.Add(this);
@@ -145,9 +135,6 @@ public class CrowdPlayerManager : NetworkBehaviour
     {
         InputActionHandler.DisableInputActions();
     }
-<<<<<<< Updated upstream
-    
-=======
 
     [ServerRpc(RequireOwnership =  false)]
     public void ConfirmShapeServerRpc()
@@ -166,6 +153,7 @@ public class CrowdPlayerManager : NetworkBehaviour
     {
         ChooseLocationClientRpc(i);
     }
+    
     [ClientRpc]
     void ChooseLocationClientRpc(int i)
     {
@@ -174,7 +162,6 @@ public class CrowdPlayerManager : NetworkBehaviour
         playerController.SecondHalfOfChooseLocation(chosenCards[i]);
     }
 
->>>>>>> Stashed changes
     private void Update()
     {
         inUIMode = LocationCardsUIVisibility();  

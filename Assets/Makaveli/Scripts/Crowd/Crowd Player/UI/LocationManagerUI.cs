@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,6 +25,10 @@ public class LocationManagerUI
         this.cardPanels = cardPanels;
         this.cards = cards;
 
+    }
+
+    public void Start() 
+    {
         InitializeCardElements();
     }
 

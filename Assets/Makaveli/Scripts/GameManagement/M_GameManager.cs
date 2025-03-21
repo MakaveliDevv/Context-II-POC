@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 
 public class MGameManager : NetworkBehaviour
@@ -46,11 +47,9 @@ public class MGameManager : NetworkBehaviour
     // Lion stuff
     public bool lionPlacedObject;
     public TaskLocation currInterLoc;
-=======
     public TaskLocation currentInteractableLocation;
     public Lion lion;
     GameManagerRpcBehaviour gameManagerRpcBehaviour;
->>>>>>> Stashed changes
 
     [Header("Point System Management")]
     public float currentPoint = 0;
@@ -83,75 +82,25 @@ public class MGameManager : NetworkBehaviour
     {
         switch (gamePlayManagement)
         {
-            case GamePlayManagement.SPAWN_LOCATIONS:
-                stateChange = false;
-                if(!spawnLocations) 
-                {
-                    StartCoroutine(StartRound(spawnInTimer));
-                    spawnLocations = true;
-                }
+            case GamePlayManagement.START:
+                gameManagerRpcBehaviour.GameStateManagement("START");
+            break;
 
->>>>>>> Stashed changes
             case GamePlayManagement.SPAWN_LOCATIONS:
                 gameManagerRpcBehaviour.GameStateManagement("SPAWN_LOCATIONS");
-                break;
+            break;
 
             case GamePlayManagement.CROWD_TURN:
                 gameManagerRpcBehaviour.GameStateManagement("CROWD_TURN");
-                break;
+            break;
 
             case GamePlayManagement.SOLVING_TASK:
-<<<<<<< Updated upstream
-                stateChange = false;
-                
-                if(taskComplete) 
-                {
-                    // Temp code to fetch the selected task as current location
-                    foreach (var e in chosenLocations)
-                    {
-                        Transform chosenLocation = e.Value.transform;
-                        TaskLocation taskLocation = chosenLocation.GetComponent<TaskLocation>();
-                        currentInteractableLocation = taskLocation;
-                    }
-                
-                    // Turn the location where the lion interacted with to location fixed
-                    currentInteractableLocation.locationFixed = true;
-                    currentInteractableLocation.fixable = false;
-
-                    // Iterate through the possibleTasksList
-                    foreach (var task in possibleTasks)
-                    {
-                        // If the object the lion placed has the same task as one of th task on the location
-                        if(lion.lastObjectTask.taskName == task.taskName) 
-                        {
-                            completeTasks.Add(task);
-                        }
-                    }
-                    
-                    // then turn state to end state
-                    gamePlayManagement = GamePlayManagement.END;
-                }
-
-            break;
-
-            case GamePlayManagement.END:
-                if(!stateChange) 
-                {
-                    stateChange = true;
-                    StartCoroutine(ResetState());
-                    // StartCoroutine(TempMethod());
-                }
-
-                lionPlacedObject = false;
-            break;
-=======
                 gameManagerRpcBehaviour.GameStateManagement("SOLVING_TASK");
-                break;
+            break;
 
             case GamePlayManagement.END:
                 gameManagerRpcBehaviour.GameStateManagement("END");
-                break;
->>>>>>> Stashed changes
+            break;
         }
     }
 

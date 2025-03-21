@@ -44,7 +44,7 @@ public class CrowdPlayerController
     // Temp stuff
     private Transform spawnPoint;
     private Transform npcContainer;
-    private CrowdPlayerManager crowdPlayerManager;
+    private CrowdPlayerManager playerManager;
 
     public CrowdPlayerController
     (
@@ -61,12 +61,10 @@ public class CrowdPlayerController
         Vector3 npcSpawnOffset,                 // Reference to the spawn offset for the npc
         GameObject cardsUI,                      // Reference to the main panel for the UI location cards
         Transform spawnPoint,
-        Transform npcContainer
-=======
         Transform npcContainer,
         List<Task> tasks,
-        CrowdPlayerManager crowdPlayerManager
->>>>>>> Stashed changes
+        CrowdPlayerManager playerManager
+
     ) 
     {
         this.mono = mono;
@@ -75,11 +73,8 @@ public class CrowdPlayerController
         this.npcSpawnOffset = npcSpawnOffset;
         this.spawnPoint = spawnPoint;
         this.npcContainer = npcContainer;
-<<<<<<< Updated upstream
-=======
         this.tasks = tasks;
-        this.crowdPlayerManager = crowdPlayerManager;
->>>>>>> Stashed changes
+        this.playerManager = playerManager;
 
         controller = mono.transform.GetChild(0).GetComponent<CharacterController>();
         customNetworkBehaviour = mono.GetComponent<CustomNetworkBehaviour>();
@@ -126,23 +121,7 @@ public class CrowdPlayerController
 
     public IEnumerator Start(CrowdPlayerManager playerManager) 
     {
-        //Transform npcContainer = controller.transform.parent.transform.GetChild(3); // Empty game object to store the npcs
-        //Transform npcArea = controller.transform.GetChild(1); // Empty game objects to spawn the npcs at
-        
-        //mono.StartCoroutine(NPCsManagement.SpawnNPC(npcs, npcCount, npc, npcArea.position + npcSpawnOffset, npcContainer)); 
-
-        //SpawnCrowdServerRpc(customNetworkBehaviour.ownerClientID);
-        // CrowdRpcBehaviour crowdRpcBehaviour = mono.GetComponent<CrowdRpcBehaviour>();
-        // crowdRpcBehaviour.SetCorrectReferences(controller, npcCount, npc, npcSpawnOffset, this /*, spawnPoint, npcContainer*/);
-
-        // yield return new WaitForSeconds(2f);
-        // if(customNetworkBehaviour.CustomIsOwner())
-        // {
-        //     crowdRpcBehaviour.SpawnCrowdServerRpc(customNetworkBehaviour.ownerClientID);
-        // }
-
         mono.StartCoroutine(SpawnCrowdWithDelay());
-
         UImanagement.Start(mono, playerManager);
         cameraManagement.Start();
 
@@ -180,36 +159,6 @@ public class CrowdPlayerController
 
     }
 
-    // [ServerRpc(RequireOwnership = false)]
-    // void SpawnCrowdServerRpc(ulong _clientID)
-    // {
-    //     if(!ClientServerRefs.instance.isServer) return;
-    //     Transform npcContainer = controller.transform.parent.transform.GetChild(3); // Empty game object to store the npcs
-    //     Transform npcArea = controller.transform.GetChild(1);
-
-    //     for(int i = 0; i < npcCount; i++)
-    //     {
-    //         GameObject newNPC = MGameManager.instance.InstantiatePrefab(npc, npcArea.position + npcSpawnOffset, npc.transform.rotation, npcContainer);
-    //         NetworkObject newNPCInstance = newNPC.GetComponent<NetworkObject>();
-    //         newNPCInstance.Spawn();
-    //         newNPCInstance.gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
-
-    //         NotifyClientOfSpawnClientRpc(newNPCInstance.NetworkObjectId);
-    //     }
-    // }
-
-    // [ClientRpc]
-    // void NotifyClientOfSpawnClientRpc(ulong spawnedObjectId)
-    // {
-    //     Debug.Log("add object to list client rpc");
-    //     // Find the spawned object by ID
-    //     NetworkObject spawnedObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[spawnedObjectId];
-    //     Debug.Log("Spawned Object: " + spawnedObject.gameObject.name);
-
-    //     // Add it to the client's list
-    //     npcs.Add(spawnedObject.gameObject);
-    // }
-
     public void Update(CrowdPlayerManager playerManager) 
     {
         UImanagement.Update(playerManager);
@@ -243,7 +192,6 @@ public class CrowdPlayerController
 
         if (distance <= 2.5f) 
         {
-            isAtLocation = true;
             TaskLocation taskLocation = chosenLocation.gameObject.GetComponent<TaskLocation>();
             taskLocation.fixable = true;
             Debug.Log("✅ Player is at the chosen location!");
@@ -321,10 +269,10 @@ public class CrowdPlayerController
         UImanagement.CardPanelNavigation();
     }
 
-    public void ChooseLocation(List<UILocationCard> cards, bool inUIMode)
-=======
     public void SecondHalfOfChooseLocation(LocationCardUI card)
     {
+        // if(MGameManager.instance.tasksPerRound.Count <= 0) return;
+
         // Assign the tasks form the card
         tasks = card.tasks;
 
@@ -364,7 +312,6 @@ public class CrowdPlayerController
     }
 
     public void ChooseLocation(List<LocationCardUI> cards, bool inUIMode)
->>>>>>> Stashed changes
     {
         // If in UI mode and not already processing a click
         if (inUIMode)
@@ -384,11 +331,12 @@ public class CrowdPlayerController
                             if (!isProcessingClick)
                             {
                                 isProcessingClick = true;
-<<<<<<< Updated upstream
-                                chosenLocation = card.location;
+                                playerManager.ChooseLocationServerRpc(cards.IndexOf(card));
+
+                                // chosenLocation = card.location;
 
                                 // Assign the tasks form the card
-                                tasks = card.tasks;
+                                // tasks = card.tasks;
 
                                 // foreach (var task in tasks)
                                 // {
@@ -405,33 +353,8 @@ public class CrowdPlayerController
                                 //     } else { MGameManager.instance.tasksPerRound.Add(task); }
                                 // }
         
-                                Debug.Log($"Location: {chosenLocation.gameObject.name}");
-                                locationChosen = true;
-=======
-                                crowdPlayerManager.ChooseLocationServerRpc(cards.IndexOf(card));
-                                //chosenLocation = card.location;
-
-                                // // Assign the tasks form the card
-                                // tasks = card.tasks;
-
-                                // // foreach (var task in tasks)
-                                // // {
-                                // //     if(MGameManager.instance.tasksPerRound != null) 
-                                // //     {
-                                // //         foreach (var item in MGameManager.instance.tasksPerRound)
-                                // //         {
-                                // //             if(task.taskName != item.taskName) 
-                                // //             {
-                                // //                 MGameManager.instance.tasksPerRound.Add(task);
-                                // //             }
-                                // //         }
-
-                                // //     } else { MGameManager.instance.tasksPerRound.Add(task); }
-                                // // }
-        
                                 // Debug.Log($"Location: {chosenLocation.gameObject.name}");
                                 // locationChosen = true;
->>>>>>> Stashed changes
                                 
                                 // // Set the formation location in the formation manager
                                 // if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))

@@ -21,7 +21,7 @@ public class TaskManagerUI
             openPanelBtn.onClick.RemoveAllListeners();
             openPanelBtn.onClick.AddListener(TogglePanel);
         }
-        else { Debug.LogError("The panel couldn't be fetched"); return; }
+        else { Debug.LogError("The button couldn't be fetched"); return; }
     }
 
     public void CreateTaskCard(CrowdPlayerManager playerManager) 
@@ -43,11 +43,6 @@ public class TaskManagerUI
                 else { Debug.LogError("Couldn't fetch the 'TaskCardUI' component"); return; }
             }
         }
-    }
-
-    public void TaskDone() 
-    {
-        
     }
 
     private void TogglePanel() 
@@ -74,11 +69,13 @@ public class TaskManagerUI
 
     public void DisplayTaskBtn(CrowdPlayerManager playerManager) 
     {
+        Debug.Log($"PlayerManager -> {playerManager.gameObject.name}");
+
         // If player has task
-        if(playerManager.playerController.tasks.Count > 0) 
+        if(playerManager.playerController.tasks.Count <= 0) 
         {
-            openPanelBtn.gameObject.SetActive(true);   
+            openPanelBtn.gameObject.SetActive(false);   
         }
-        else { openPanelBtn.gameObject.SetActive(false); }
+        else { openPanelBtn.gameObject.SetActive(true); }
     }
 }

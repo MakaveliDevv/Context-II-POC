@@ -28,10 +28,12 @@ public class GameManagerRpcBehaviour : NetworkBehaviour
     {
         if(mGameManager == null) mGameManager = FindFirstObjectByType<MGameManager>();
 
+        Debug.Log($"GameManager -> {mGameManager.gameObject.name}");
+
         switch (_state)
         {
             case "START":
-               mGameManager.StartState();
+                mGameManager.StartState();
                 break;
 
             case "SPAWN_LOCATIONS":

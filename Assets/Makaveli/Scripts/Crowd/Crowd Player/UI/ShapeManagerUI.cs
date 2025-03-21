@@ -361,7 +361,7 @@ public class ShapeManagerUI
 
         OpenRearrangePanel();
 
-        MGameManager.instance.gamePlayManagement = MGameManager.GamePlayManagement.SOLVING_TASK;
+        //MGameManager.instance.gamePlayManagement = MGameManager.GamePlayManagement.SOLVING_TASK;
 
         yield break;
     }
@@ -369,6 +369,7 @@ public class ShapeManagerUI
     private void ConfirmRearrangedShape(CrowdPlayerManager playerManager) 
     {
         CloseRearrangePanel();
+        playerManager.ConfirmShapeServerRpc();
         playerManager.playerState = CrowdPlayerManager.PlayerState.SIGNAL;
     }
 

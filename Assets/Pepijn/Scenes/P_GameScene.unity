@@ -3109,6 +3109,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8f0e31e20420f74c8a71fb469d796eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tasks: []
   fixable: 0
   locationFixed: 0
 --- !u!114 &704033272
@@ -3918,6 +3919,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8f0e31e20420f74c8a71fb469d796eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tasks: []
   fixable: 0
   locationFixed: 0
 --- !u!114 &843654502
@@ -6224,6 +6226,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8f0e31e20420f74c8a71fb469d796eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tasks: []
   fixable: 0
   locationFixed: 0
 --- !u!114 &1386059220
@@ -8391,6 +8394,7 @@ MonoBehaviour:
   clientPrefab: {fileID: 4588487196277226122, guid: 7cc1854464e81d34ca055b6ed8f2c3b9, type: 3}
   unityTransport: {fileID: 123867838}
   clientServerRefs: {fileID: 1964313845}
+  clientManager: {fileID: 0}
 --- !u!114 &1708656601
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8512,6 +8516,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8f0e31e20420f74c8a71fb469d796eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tasks: []
   fixable: 0
   locationFixed: 0
 --- !u!1 &1730784788
@@ -10656,6 +10661,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8f0e31e20420f74c8a71fb469d796eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tasks: []
   fixable: 0
   locationFixed: 0
 --- !u!114 &2123195197
@@ -10895,6 +10901,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4996214044997093470}
+  - component: {fileID: 4996214044997093471}
   - component: {fileID: 2914063936282337976}
   m_Layer: 0
   m_Name: M_GameManager
@@ -10968,12 +10975,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0232c9058607d104d8d75c9b64ba95f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   gamePlayManagement: 0
-  trackables: []
   trackableGo: {fileID: 4926605948599544905, guid: e072003f2c140d04aa217f93d74ca147, type: 3}
+  taskCard: {fileID: 9205310764627734649, guid: 5eea58d5d7b493c44a14cb46f11f7324, type: 3}
+  trackables: []
   allCrowdPlayers: []
   ChosenLocations: []
   PlayerShapeUI: []
+  playersSpawnPositions: []
   walkableArea: {fileID: 881053182685900594}
   allNPCs: []
   taskLocations:
@@ -10982,14 +10992,18 @@ MonoBehaviour:
   - {fileID: 2123195195}
   - {fileID: 1386059218}
   - {fileID: 704033270}
-  taskLocationsDone: []
+  possibleTasks: []
+  tasksPerRound: []
+  completeTasks: []
   amountOfTasksPerRound: 4
-  spawnInTimer: 2
+  taskComplete: 0
   showLocationCards: 0
   spawnLocations: 0
   stateChange: 0
+  spawnInTimer: 2
   lionPlacedObject: 0
-  currInterLoc: {fileID: 0}
+  currentInteractableLocation: {fileID: 0}
+  lion: {fileID: 0}
 --- !u!4 &3071420781276761187
 Transform:
   m_ObjectHideFlags: 0
@@ -11093,6 +11107,31 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4133126976804368985}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4996214044997093471
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1963065322419538437}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 1664747090
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &5516369209049781824
 MonoBehaviour:
   m_ObjectHideFlags: 0

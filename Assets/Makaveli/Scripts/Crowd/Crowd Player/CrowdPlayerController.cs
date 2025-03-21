@@ -42,6 +42,7 @@ public class CrowdPlayerController
     // Temp stuff
     private Transform spawnPoint;
     private Transform npcContainer;
+    private CrowdPlayerManager crowdPlayerManager;
 
     public CrowdPlayerController
     (
@@ -58,7 +59,13 @@ public class CrowdPlayerController
         Vector3 npcSpawnOffset,                 // Reference to the spawn offset for the npc
         GameObject cardsUI,                      // Reference to the main panel for the UI location cards
         Transform spawnPoint,
+<<<<<<< Updated upstream
         Transform npcContainer
+=======
+        Transform npcContainer,
+        List<Task> tasks,
+        CrowdPlayerManager crowdPlayerManager
+>>>>>>> Stashed changes
     ) 
     {
         this.mono = mono;
@@ -67,6 +74,11 @@ public class CrowdPlayerController
         this.npcSpawnOffset = npcSpawnOffset;
         this.spawnPoint = spawnPoint;
         this.npcContainer = npcContainer;
+<<<<<<< Updated upstream
+=======
+        this.tasks = tasks;
+        this.crowdPlayerManager = crowdPlayerManager;
+>>>>>>> Stashed changes
 
         controller = mono.transform.GetChild(0).GetComponent<CharacterController>();
         customNetworkBehaviour = mono.GetComponent<CustomNetworkBehaviour>();
@@ -290,7 +302,51 @@ public class CrowdPlayerController
         UImanagement.CardPanelNavigation();
     }
 
+<<<<<<< Updated upstream
     public void ChooseLocation(List<UILocationCard> cards, bool inUIMode)
+=======
+    public void SecondHalfOfChooseLocation(LocationCardUI card)
+    {
+        // Assign the tasks form the card
+        tasks = card.tasks;
+
+        // foreach (var task in tasks)
+        // {
+        //     if(MGameManager.instance.tasksPerRound != null) 
+        //     {
+        //         foreach (var item in MGameManager.instance.tasksPerRound)
+        //         {
+        //             if(task.taskName != item.taskName) 
+        //             {
+        //                 MGameManager.instance.tasksPerRound.Add(task);
+        //             }
+        //         }
+
+        //     } else { MGameManager.instance.tasksPerRound.Add(task); }
+        // }
+
+        Debug.Log($"Location: {chosenLocation.gameObject.name}");
+        locationChosen = true;
+        
+        // Set the formation location in the formation manager
+        if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))
+        {
+            formationController.SetFormationLocation(chosenLocation);
+            
+            // If already in a formation, update it to use the new location
+            NPCFormationManager formManager = formationController.formationManager;
+            if (formManager != null && formManager.currentFormation != FormationType.Follow)
+            {
+                // Re-apply current formation to update positions
+                formationController.ChangeFormation(formManager.currentFormation);
+            }
+        }
+        
+        mono.StartCoroutine(ResetClickState(1.0f)); // 1 second delay
+    }
+
+    public void ChooseLocation(List<LocationCardUI> cards, bool inUIMode)
+>>>>>>> Stashed changes
     {
         // If in UI mode and not already processing a click
         if (inUIMode)
@@ -310,25 +366,51 @@ public class CrowdPlayerController
                             if (!isProcessingClick)
                             {
                                 isProcessingClick = true;
+<<<<<<< Updated upstream
                                 chosenLocation = card.location;
                                 Debug.Log($"Location: {chosenLocation.gameObject.name}");
                                 locationChosen = true;
+=======
+                                crowdPlayerManager.ChooseLocationServerRpc(cards.IndexOf(card));
+                                //chosenLocation = card.location;
+
+                                // // Assign the tasks form the card
+                                // tasks = card.tasks;
+
+                                // // foreach (var task in tasks)
+                                // // {
+                                // //     if(MGameManager.instance.tasksPerRound != null) 
+                                // //     {
+                                // //         foreach (var item in MGameManager.instance.tasksPerRound)
+                                // //         {
+                                // //             if(task.taskName != item.taskName) 
+                                // //             {
+                                // //                 MGameManager.instance.tasksPerRound.Add(task);
+                                // //             }
+                                // //         }
+
+                                // //     } else { MGameManager.instance.tasksPerRound.Add(task); }
+                                // // }
+        
+                                // Debug.Log($"Location: {chosenLocation.gameObject.name}");
+                                // locationChosen = true;
+>>>>>>> Stashed changes
                                 
-                                // Set the formation location in the formation manager
-                                if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))
-                                {
-                                    formationController.SetFormationLocation(chosenLocation);
+                                // // Set the formation location in the formation manager
+                                // if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))
+                                // {
+                                //     formationController.SetFormationLocation(chosenLocation);
                                     
-                                    // If already in a formation, update it to use the new location
-                                    NPCFormationManager formManager = formationController.formationManager;
-                                    if (formManager != null && formManager.currentFormation != FormationType.Follow)
-                                    {
-                                        // Re-apply current formation to update positions
-                                        formationController.ChangeFormation(formManager.currentFormation);
-                                    }
-                                }
+                                //     // If already in a formation, update it to use the new location
+                                //     NPCFormationManager formManager = formationController.formationManager;
+                                //     if (formManager != null && formManager.currentFormation != FormationType.Follow)
+                                //     {
+                                //         // Re-apply current formation to update positions
+                                //         formationController.ChangeFormation(formManager.currentFormation);
+                                //     }
+                                // }
                                 
-                                mono.StartCoroutine(ResetClickState(1.0f)); // 1 second delay
+                                // mono.StartCoroutine(ResetClickState(1.0f)); // 1 second delay
 
                             }
                         });

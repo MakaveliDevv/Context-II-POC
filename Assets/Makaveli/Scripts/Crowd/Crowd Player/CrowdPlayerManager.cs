@@ -37,6 +37,7 @@ public class CrowdPlayerManager : NetworkBehaviour
     [SerializeField] private Vector3 camOffset = new(0, 10, -5);    
     [SerializeField] private float camSmoothSpeed = 5f;
     [SerializeField] private float camRotationSpeed = 100f;  
+    public List<LocationCardUI> chosenCards = new();
     public Quaternion og_camRot = new();
     public float distanceOffset;
     public float interpolationDuration;
@@ -68,7 +69,13 @@ public class CrowdPlayerManager : NetworkBehaviour
             npcSpawnOffset,                     // Reference to the spawn offset for the npc
             cardsUI,                             // Reference to the main panel for the UI location cards
             spawnPoint,
+<<<<<<< Updated upstream
             npcContainer
+=======
+            npcContainer,
+            tasks,
+            this
+>>>>>>> Stashed changes
         );        
     }
 
@@ -133,7 +140,36 @@ public class CrowdPlayerManager : NetworkBehaviour
     {
         InputActionHandler.DisableInputActions();
     }
+<<<<<<< Updated upstream
     
+=======
+
+    [ServerRpc(RequireOwnership =  false)]
+    public void ConfirmShapeServerRpc()
+    {
+        ConfirmShapeClientRpc();
+    }
+
+    [ClientRpc]
+    void ConfirmShapeClientRpc()
+    {
+        MGameManager.instance.gamePlayManagement = MGameManager.GamePlayManagement.SOLVING_TASK;
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void ChooseLocationServerRpc(int i)
+    {
+        ChooseLocationClientRpc(i);
+    }
+    [ClientRpc]
+    void ChooseLocationClientRpc(int i)
+    {
+        Debug.Log("123 i is: " + i);
+        playerController.chosenLocation = chosenCards[i].location;
+        playerController.SecondHalfOfChooseLocation(chosenCards[i]);
+    }
+
+>>>>>>> Stashed changes
     private void Update()
     {
         inUIMode = LocationCardsUIVisibility();  
@@ -148,7 +184,8 @@ public class CrowdPlayerManager : NetworkBehaviour
             break;
 
             case PlayerState.CHOOSE_LOCATION:
-                playerController.ChooseLocation(playerController.cards, inUIMode);
+                chosenCards = playerController.cards;
+                playerController.ChooseLocation(chosenCards, inUIMode);
                 playerController.CardPanelNavigation();
 
                 // An extra method to keep track of the chosen locations

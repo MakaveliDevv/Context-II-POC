@@ -208,6 +208,7 @@ public class ClientManager : NetworkBehaviour
         }
         DecideLionClientRpc(lionID);
     }
+
     [ClientRpc]
     void DecideLionClientRpc(ulong _lionID)
     {

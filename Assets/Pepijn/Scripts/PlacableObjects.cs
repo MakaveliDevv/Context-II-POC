@@ -68,5 +68,6 @@ public class PlacableObjects : MonoBehaviour
         meshRenderer.material = originalMaterial;
         placed = true;
         GetComponent<Collider>().isTrigger = false;
+        MGameManager.instance.currentPoint -= 1;
     }
 }

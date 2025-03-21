@@ -106,7 +106,7 @@ public class Client : NetworkBehaviour
         // Debug.Log($"Spawning at: {spawnLocation}");
         
         // Instantiate and spawn the crowd at the random position
-        GameObject crowdInstance = Instantiate(crowd, /*spawnLocation*/new Vector3(-9.28299999f, 12.9219999f, -31.0100002f), Quaternion.identity);
+        GameObject crowdInstance = Instantiate(crowd, /*spawnLocation*/new Vector3(-9.28299999f, 1.9219999f, -31.0100002f), Quaternion.identity);
         NetworkObject crowdNetworkInstance = crowdInstance.GetComponent<NetworkObject>();
         crowdNetworkInstance.SpawnWithOwnership(_clientID);
         

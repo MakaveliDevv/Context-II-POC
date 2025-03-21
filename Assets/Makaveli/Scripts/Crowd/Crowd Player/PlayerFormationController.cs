@@ -103,7 +103,11 @@ public class PlayerFormationController : MonoBehaviour
             // Use the chosenLocation from the player controller if available
             if (playerManager.playerController.chosenLocation != null)
             {
-                formationManager.SetTargetLocation(playerManager.playerController.chosenLocation);
+                // formationManager.SetTargetLocation(playerManager.playerController.chosenLocation);
+
+                // Fetch the parent object of the playerPosition at the task location
+                Transform position = playerManager.playerController.targetPosition.parent;
+                formationManager.SetTargetLocation(position);
             }
 
             // Convert string to enum and change formation

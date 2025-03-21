@@ -49,6 +49,10 @@ public class MGameManager : MonoBehaviour
     public TaskLocation currentInteractableLocation;
     public Lion lion;
 
+    [Header("Point System Management")]
+    public float currentPoint = 0;
+    public float maxPoints;
+
     void Awake()
     {
         if (instance == null)

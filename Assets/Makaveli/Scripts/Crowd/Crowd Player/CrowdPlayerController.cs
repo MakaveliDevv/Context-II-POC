@@ -18,6 +18,7 @@ public class CrowdPlayerController
     public CharacterController controller;
     public Transform chosenLocation;
     private Vector2 movementInput;
+    public Transform targetPosition;
     
     private bool isProcessingClick;
     public bool isAtLocation;
@@ -165,7 +166,7 @@ public class CrowdPlayerController
     {
         movementInput = InputActionHandler.GetMovementInput();
         // movement.OverallMovement(movementInput, InputActionHandler.IsSprinting(), InputActionHandler.IsJumping(), ableToLook);
-        topDownMovement.OverallMovement(movementInput, InputActionHandler.IsSprinting());
+        topDownMovement.OverallMovement(movementInput, InputActionHandler.IsSprinting(), InputActionHandler.IsJumping());
     }
 
     public void CheckPlayerPosition(Transform player) 
@@ -188,10 +189,27 @@ public class CrowdPlayerController
 
         if (distance <= 2.5f) 
         {
-            isAtLocation = true;
             TaskLocation taskLocation = chosenLocation.gameObject.GetComponent<TaskLocation>();
             taskLocation.fixable = true;
             Debug.Log("✅ Player is at the chosen location!");
+
+            // Move the player towards one of the player positions
+            for (int i = 0; i < chosenLocation.childCount; i++)
+            {
+                targetPosition = chosenLocation.GetChild(i).GetChild(0);    
+                float elapsedTime = 0;
+                float duration = 2f;
+
+                while(elapsedTime < duration) 
+                {
+                    elapsedTime += Time.deltaTime;
+                    float t = elapsedTime / duration;
+                    player.position = Vector3.Lerp(player.position, targetPosition.position, t);
+                } 
+
+                player.position = targetPosition.position;
+                isAtLocation = true;
+            } 
         }
     }
 

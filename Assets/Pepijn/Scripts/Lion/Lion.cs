@@ -23,6 +23,7 @@ public class Lion : NetworkBehaviour
     [SerializeField] List<GameObject> objectsPrefabs;
     [SerializeField] List<string> objectNames;
 
+    public Task lastObjectTask = null;
     private bool objectPlaced;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -119,8 +120,6 @@ public class Lion : NetworkBehaviour
         }
     }
 
-    public Task lastObjectTask = null;
-
     void DropObject()
     {
         if(!carryingObject.placable) return;
@@ -182,6 +181,22 @@ public class Lion : NetworkBehaviour
                 // Lion placed the object 
                 MGameManager.instance.lionPlacedObject = true;
                 MGameManager.instance.taskComplete = true;
+
+                // If the object placed has the same task as one of the tasks in the location
+                TaskLocation taskLocation = collider.gameObject.GetComponent<TaskLocation>();
+                List<Task> tasksInLocation = taskLocation.tasks;
+
+                foreach (var task in tasksInLocation)
+                {
+                    if(lastObjectTask.taskName == task.taskName) 
+                    {
+                        MGameManager.instance.currentPoint += 1;
+                    }
+                    else 
+                    {
+                        MGameManager.instance.currentPoint += 0;
+                    }
+                }
             }
         }
     }

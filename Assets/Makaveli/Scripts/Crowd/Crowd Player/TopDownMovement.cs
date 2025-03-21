@@ -11,6 +11,9 @@ public class TopDownMovement
     private readonly float appliedMovementSpeedPercentage;
     private float currentMovementSpeed;
     private readonly float rotationSpeed = 10f;
+    private readonly float jumpForce;
+    private readonly float gravity = 9.81f;
+    private Vector3 velocity;
 
     public TopDownMovement
     (
@@ -30,7 +33,7 @@ public class TopDownMovement
         currentMovementSpeed = movementSpeed;
     }
 
-    public void OverallMovement(Vector2 movementInput, bool isSprinting)
+    public void OverallMovement(Vector2 movementInput, bool isSprinting, bool isJumping)
     {
         if(customNetworkBehaviour.CustomIsOwner())
         {
@@ -40,7 +43,8 @@ public class TopDownMovement
 
             // Apply movement
             controller.Move(currentMovementSpeed * Time.deltaTime * moveDirection);
-
+            ApplyGravity(isJumping);
+            
             // Rotate the player to face movement direction only when moving
             if (moveDirection != Vector3.zero)
             {
@@ -66,6 +70,16 @@ public class TopDownMovement
         currentMovementSpeed = newMovementSpeed;
 
         Debug.Log($"New movement speed: {newMovementSpeed}");
+    }
+
+    private void ApplyGravity(bool isJumping) 
+    {
+        // If controller not grounded
+        if(!controller.isGrounded) velocity.y -= gravity * Time.deltaTime;
+        else if(isJumping) velocity.y = jumpForce;
+        	
+        // Move controller
+        controller.Move(velocity * Time.deltaTime);
     }
 }
 

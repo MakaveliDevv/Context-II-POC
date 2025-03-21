@@ -42,7 +42,7 @@ public class PlayerTest : MonoBehaviour
     void Update()
     {
         movementInput = InputActionHandler.GetMovementInput();
-        topDownMovement.OverallMovement(movementInput, InputActionHandler.IsSprinting());
+        // topDownMovement.OverallMovement(movementInput, InputActionHandler.IsSprinting());
         topDownCameraController.Movement(transform);
     }
 }

@@ -25,6 +25,7 @@ public class Lion : NetworkBehaviour
 
     public Task lastObjectTask = null;
     private bool objectPlaced;
+    public bool correctTask;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public override void OnNetworkSpawn()
@@ -191,10 +192,12 @@ public class Lion : NetworkBehaviour
                     if(lastObjectTask.taskName == task.taskName) 
                     {
                         MGameManager.instance.currentPoint += 1;
+                        correctTask = true;
                     }
                     else 
                     {
                         MGameManager.instance.currentPoint += 0;
+                        correctTask = false;
                     }
                 }
             }

@@ -105,7 +105,7 @@ public class PlayerFormationController : MonoBehaviour
             {
                 // formationManager.SetTargetLocation(playerManager.playerController.chosenLocation);
 
-                // Fetch the parent object of the playerPosition at the task location
+                // Fetch the shape position
                 Transform position = playerManager.playerController.targetPosition.parent;
                 formationManager.SetTargetLocation(position);
             }

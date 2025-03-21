@@ -165,9 +165,27 @@ public class MGameManager : NetworkBehaviour
                 }
             }
             
-            // then turn state to end state
-            gamePlayManagement = GamePlayManagement.END;
+            StartCoroutine(DisplayEndRound(lion));
         }
+    }
+
+    private IEnumerator DisplayEndRound(Lion lion) 
+    {
+        Debug.Log("End Round Started...");
+
+        if(lion.correctTask) 
+        {
+            Debug.Log("Correct task objet");
+        }
+        else 
+        {
+            Debug.Log("Incorrect task objet");
+        }
+
+        yield return new WaitForSeconds(5f);
+
+        // then turn state to end state
+        gamePlayManagement = GamePlayManagement.END;
     }
 
     public void EndState()

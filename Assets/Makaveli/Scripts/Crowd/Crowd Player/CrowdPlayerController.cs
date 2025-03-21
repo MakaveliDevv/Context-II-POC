@@ -199,7 +199,7 @@ public class CrowdPlayerController
             // Move the player towards one of the player positions
             for (int i = 0; i < chosenLocation.childCount; i++)
             {
-                targetPosition = chosenLocation.GetChild(i).GetChild(0);    
+                targetPosition = chosenLocation.GetChild(0).GetChild(i).GetChild(0);    
                 float elapsedTime = 0;
                 float duration = 2f;
 

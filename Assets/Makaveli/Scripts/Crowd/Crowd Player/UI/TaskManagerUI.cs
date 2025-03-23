@@ -69,7 +69,7 @@ public class TaskManagerUI
 
     public void DisplayTaskBtn(CrowdPlayerManager playerManager) 
     {
-        Debug.Log($"PlayerManager -> {playerManager.gameObject.name}");
+        // Debug.Log($"PlayerManager -> {playerManager.gameObject.name}");
 
         // If player has task
         if(playerManager.playerController.tasks.Count <= 0) 

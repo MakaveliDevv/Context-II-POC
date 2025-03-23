@@ -73,8 +73,7 @@ public class NPCFormationManager : MonoBehaviour
             useCustomLocation = true;
             
             // Get the location's bounds if it has a collider
-            Collider locationCollider = location.GetComponent<Collider>();
-            if (locationCollider != null)
+            if (location.TryGetComponent<Collider>(out var locationCollider))
             {
                 // Get actual size from the collider
                 locationSize = locationCollider.bounds.size;
@@ -280,8 +279,7 @@ public class NPCFormationManager : MonoBehaviour
             
             if (useCustomLocation && targetLocation != null)
             {
-                basePosition = targetLocation.position;
-                baseRotation = targetLocation.rotation;
+                targetLocation.GetPositionAndRotation(out basePosition, out baseRotation);
             }
             else
             {

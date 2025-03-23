@@ -10,6 +10,7 @@ public class NPCFollower
     [Header("Movement Parameters")]
     public float smoothSpeed;
     public float stoppingThreshold;
+    Vector3 previousPlayerPos = Vector3.zero;
     
     [Header("Positioning Parameters")]
     public float minDistanceBehindTarget;
@@ -207,7 +208,6 @@ public class NPCFollower
         }
     }
 
-    Vector3 previousPlayerPos = Vector3.zero;
     public void UpdateMovingTargetPosition(NPCManager npc)
     {
         Vector3 targetForward = target.forward;

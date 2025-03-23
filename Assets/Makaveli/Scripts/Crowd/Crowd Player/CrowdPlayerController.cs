@@ -18,7 +18,7 @@ public class CrowdPlayerController
     public CharacterController controller;
     public Transform chosenLocation;
     private Vector2 movementInput;
-    public Transform targetPosition;
+    public Transform playerPositionInsideTaskLocation;
     
     private bool isProcessingClick;
     public bool isAtLocation;
@@ -181,36 +181,36 @@ public class CrowdPlayerController
         }
 
         // Debug.Log($"Player Position: {player.position}");
-        // Debug.Log($"Target Position: {chosenLocation.position}");
 
         float distance = Vector3.Distance(
             new Vector3(player.position.x, 0, player.position.z), 
             new Vector3(chosenLocation.position.x, 0, chosenLocation.position.z)
         );
 
+        // Debug.Log($"Target Position: {chosenLocation.position}");
         // Debug.Log($"📏 Distance to target: {distance}");
 
-        if (distance <= 2.5f) 
+        if (distance <= 5f) 
         {
             TaskLocation taskLocation = chosenLocation.gameObject.GetComponent<TaskLocation>();
             taskLocation.fixable = true;
-            Debug.Log("✅ Player is at the chosen location!");
+            // Debug.Log("✅ Player is at the chosen location!");
 
             // Move the player towards one of the player positions
             for (int i = 0; i < chosenLocation.childCount; i++)
             {
-                targetPosition = chosenLocation.GetChild(0).GetChild(i).GetChild(0);    
+                playerPositionInsideTaskLocation = chosenLocation.GetChild(0).GetChild(i).GetChild(0);    
                 float elapsedTime = 0;
-                float duration = 2f;
+                float duration = 4f;
 
                 while(elapsedTime < duration) 
                 {
                     elapsedTime += Time.deltaTime;
                     float t = elapsedTime / duration;
-                    player.position = Vector3.Lerp(player.position, targetPosition.position, t);
+                    player.position = Vector3.Lerp(player.position, playerPositionInsideTaskLocation.position, t);
                 } 
 
-                player.position = targetPosition.position;
+                // player.position = targetPosition.position;
                 isAtLocation = true;
             } 
         }
@@ -231,8 +231,7 @@ public class CrowdPlayerController
             repositionCam = null;
         }  
     
-        tiltCam = mono.StartCoroutine(cameraManagement.TiltCamera(chosenLocation, distanceOffset, interpolationDuration));
-        
+        tiltCam = mono.StartCoroutine(cameraManagement.TiltCamera(playerPositionInsideTaskLocation.parent, distanceOffset, interpolationDuration));
     }
 
     public void RepositionCamera(float distanceOffset, float interpolationDuration) 
@@ -241,7 +240,7 @@ public class CrowdPlayerController
         {
             // Debug.Log("Tilt coroutine is running and now set to stop");
 
-            mono.StopCoroutine(cameraManagement.TiltCamera(chosenLocation, distanceOffset, interpolationDuration));
+            mono.StopCoroutine(cameraManagement.TiltCamera(playerPositionInsideTaskLocation.parent, distanceOffset, interpolationDuration));
             tiltCam = null;
         }
 
@@ -297,7 +296,15 @@ public class CrowdPlayerController
         // Set the formation location in the formation manager
         if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))
         {
-            formationController.SetFormationLocation(chosenLocation);
+            Transform npcsLocation = null;
+
+            for (int i = 0; i < chosenLocation.childCount; i++)
+            {
+                npcsLocation = chosenLocation.GetChild(0).GetChild(i);    
+
+            } 
+
+            formationController.SetFormationLocation(npcsLocation);
             
             // If already in a formation, update it to use the new location
             NPCFormationManager formManager = formationController.formationManager;

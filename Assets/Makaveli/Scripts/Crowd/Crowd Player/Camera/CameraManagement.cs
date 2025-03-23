@@ -76,6 +76,8 @@ public class CameraManagement
     {
         // yield return new WaitForSeconds(2f);
         shapeRearrangement.Start(location);
+
+        Debug.Log($"location position -> {location.position}");
         
         // Store original camera position and rotation
         originalCameraPosition = camera.transform.position;

@@ -78,6 +78,7 @@ public class MGameManager : NetworkBehaviour
         ChosenLocations.Clear();
     }
 
+    private bool spawnLocation;
     void Update()
     {
         switch (gamePlayManagement)
@@ -87,10 +88,16 @@ public class MGameManager : NetworkBehaviour
             break;
 
             case GamePlayManagement.SPAWN_LOCATIONS:
-                gameManagerRpcBehaviour.GameStateManagement("SPAWN_LOCATIONS");
+                if(!spawnLocation) 
+                {
+                    gameManagerRpcBehaviour.GameStateManagement("SPAWN_LOCATIONS");
+                    spawnLocation = true;
+                }
+
             break;
 
             case GamePlayManagement.CROWD_TURN:
+                spawnLocation = false;
                 gameManagerRpcBehaviour.GameStateManagement("CROWD_TURN");
             break;
 
@@ -194,107 +201,9 @@ public class MGameManager : NetworkBehaviour
         {
             stateChange = true;
             StartCoroutine(ResetState());
-            // StartCoroutine(TempMethod());
         }
 
         lionPlacedObject = false;
-    }
-
-    // [ServerRpc(RequireOwnership = false)]
-    // void GameStateManagementServerRpc(GamePlayManagement _state)
-    // {
-    //     GameStateManagementClientRpc(_state);
-    // }
-    
-    // [ClientRpc]
-    // void GameStateManagementClientRpc(GamePlayManagement _state)
-    // {
-    //     switch (_state)
-    //     {
-    //         case GamePlayManagement.START:
-    //            if(allCrowdPlayers.Count > 0) 
-    //            {
-    //                 gamePlayManagement = GamePlayManagement.SPAWN_LOCATIONS;
-    //            }
-
-    //         break;
-
-    //         case GamePlayManagement.SPAWN_LOCATIONS:
-    //             stateChange = false;
-    //             if(!spawnLocations) 
-    //             {
-    //                 StartCoroutine(StartRound(spawnInTimer));
-    //                 spawnLocations = true;
-    //             }
-
-    //         break;
-
-    //         case GamePlayManagement.CROWD_TURN:
-    //             spawnLocations = false;
-                
-    //             if(!stateChange) 
-    //             {
-    //                 for (int i = 0; i < allCrowdPlayers.Count; i++)
-    //                 {
-    //                     allCrowdPlayers[i].playerState = CrowdPlayerManager.PlayerState.CHOOSE_LOCATION;
-    //                 }
-
-    //                 stateChange = true;
-    //             } 
-
-    //         break;
-
-    //         case GamePlayManagement.SOLVING_TASK:
-    //             stateChange = false;
-                
-    //             if(taskComplete) 
-    //             {
-    //                 // Temp code to fetch the selected task as current location
-    //                 foreach (var e in chosenLocations)
-    //                 {
-    //                     Transform chosenLocation = e.Value.transform;
-    //                     TaskLocation taskLocation = chosenLocation.GetComponent<TaskLocation>();
-    //                     currentInteractableLocation = taskLocation;
-    //                 }
-                
-    //                 // Turn the location where the lion interacted with to location fixed
-    //                 currentInteractableLocation.locationFixed = true;
-    //                 currentInteractableLocation.fixable = false;
-
-    //                 // Iterate through the possibleTasksList
-    //                 foreach (var task in possibleTasks)
-    //                 {
-    //                     // If the object the lion placed has the same task as one of th task on the location
-    //                     if(lion.lastObjectTask.taskName == task.taskName) 
-    //                     {
-    //                         completeTasks.Add(task);
-    //                     }
-    //                 }
-                    
-    //                 // then turn state to end state
-    //                 gamePlayManagement = GamePlayManagement.END;
-    //             }
-
-    //         break;
-
-    //         case GamePlayManagement.END:
-    //             if(!stateChange) 
-    //             {
-    //                 stateChange = true;
-    //                 StartCoroutine(ResetState());
-    //                 // StartCoroutine(TempMethod());
-    //             }
-
-    //             lionPlacedObject = false;
-    //         break;
-    //     }
-    // }
-
-    private IEnumerator TempMethod() 
-    {
-        yield return new WaitForSeconds(3f);
-        gamePlayManagement = GamePlayManagement.SPAWN_LOCATIONS;
-        yield break;
     }
 
     private IEnumerator ResetState()
@@ -424,33 +333,6 @@ public class MGameManager : NetworkBehaviour
 
     public IEnumerator InitializeLocation()
     {
-        // if (allCrowdPlayers == null || allCrowdPlayers.Count == 0)
-        // {
-        //     Debug.Log("No players found!");
-        //     yield break;
-        // }
-
-        // // Populate chosenLocations dictionary
-        // foreach (var player in allCrowdPlayers)
-        // {
-        //     if (player.playerController.chosenLocation != null && !chosenLocations.ContainsKey(player))
-        //     {
-        //         chosenLocations[player] = player.playerController.chosenLocation;
-        //     }
-        // }
-
-        // foreach (var element in chosenLocations)
-        // {
-        //     if (!ChosenLocations.Any(e => e.Key == element.Key)) // Check by player reference
-        //     {
-        //         ChosenLocations.Add(new DictionaryEntry<CrowdPlayerManager, Transform>
-        //         {
-        //             Key = element.Key,
-        //             Value = element.Value
-        //         });
-        //     }
-        // }
-
         gameManagerRpcBehaviour.InitiliazeLocationServerRpc();
         yield break;
     }

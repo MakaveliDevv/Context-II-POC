@@ -13,7 +13,7 @@ public class PlayerFormationController : MonoBehaviour
     public TextMeshProUGUI currentFormationText;
 
     private CrowdPlayerManager playerManager;
-    public Transform position;
+    public Transform formShapePosition;
 
     private void Awake()
     {
@@ -107,8 +107,9 @@ public class PlayerFormationController : MonoBehaviour
                 // formationManager.SetTargetLocation(playerManager.playerController.chosenLocation);
 
                 // Fetch the shape position
-                position = playerManager.playerController.playerPositionInsideTaskLocation.parent;
-                formationManager.SetTargetLocation(position);
+                // formShapePosition = playerManager.playerController.playerPositionInsideTaskLocation.parent;
+                Debug.Log($"form shape position: {formShapePosition.gameObject.name}");
+                formationManager.SetTargetLocation(formShapePosition);
             }
 
             // Convert string to enum and change formation
@@ -130,12 +131,14 @@ public class PlayerFormationController : MonoBehaviour
     }
     
     // New method to set formation location
-    public void SetFormationLocation(Transform location)
+    public Transform SetFormationLocation(Transform location)
     {
         if (formationManager != null)
         {
             formationManager.SetTargetLocation(location);
         }
+
+        return formShapePosition = location;
     }
     
     private void UpdateFormationText()

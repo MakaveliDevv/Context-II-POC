@@ -79,7 +79,7 @@ public class NPCFollower
 
     public void Start() 
     {
-        Debug.Log($"child transform: {transform.GetChild(0)}");
+        // Debug.Log($"child transform: {transform.GetChild(0)}");
         controller = transform.GetChild(0).GetComponent<CharacterController>();
         
         // Initialize with a random offset to prevent bunching at startup

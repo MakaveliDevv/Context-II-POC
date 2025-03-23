@@ -190,30 +190,31 @@ public class CrowdPlayerController
         // Debug.Log($"Target Position: {chosenLocation.position}");
         // Debug.Log($"📏 Distance to target: {distance}");
 
-        if (distance <= 5f) 
+        if (distance <= 10f) 
         {
             TaskLocation taskLocation = chosenLocation.gameObject.GetComponent<TaskLocation>();
             taskLocation.fixable = true;
             // Debug.Log("✅ Player is at the chosen location!");
 
+            float elapsedTime = 0;
+            float duration = 4f;
+
             // Move the player towards one of the player positions
             for (int i = 0; i < chosenLocation.childCount; i++)
             {
                 playerPositionInsideTaskLocation = chosenLocation.GetChild(0).GetChild(i).GetChild(0);    
-                Debug.Log($"playerPositionInsideTaskLocation -> {playerPositionInsideTaskLocation.name}");
-                float elapsedTime = 0;
-                float duration = 4f;
-
-                while(elapsedTime < duration) 
-                {
-                    elapsedTime += Time.deltaTime;
-                    float t = elapsedTime / duration;
-                    player.position = Vector3.Lerp(player.position, playerPositionInsideTaskLocation.position, t);
-                } 
-
+                Debug.Log($"playerPositionInsideTaskLocation -> {playerPositionInsideTaskLocation.gameObject.name}");
                 // player.position = targetPosition.position;
-                isAtLocation = true;
+            }
+
+            while(elapsedTime < duration) 
+            {
+                elapsedTime += Time.deltaTime;
+                float t = elapsedTime / duration;
+                player.position = Vector3.Lerp(player.position, playerPositionInsideTaskLocation.position, t);
             } 
+
+            isAtLocation = true;
         }
     }
 
@@ -232,9 +233,9 @@ public class CrowdPlayerController
             repositionCam = null;
         }  
 
-        Debug.Log($"camera tilt position: {playerFormationController.position.gameObject.name}");
+        Debug.Log($"camera tilt position: {playerFormationController.formShapePosition.gameObject.name}");
     
-        tiltCam = mono.StartCoroutine(cameraManagement.TiltCamera(playerFormationController.position, distanceOffset, interpolationDuration));
+        tiltCam = mono.StartCoroutine(cameraManagement.TiltCamera(playerFormationController.formShapePosition, distanceOffset, interpolationDuration));
     }
 
     public void RepositionCamera(float distanceOffset, float interpolationDuration, PlayerFormationController playerFormationController) 
@@ -243,7 +244,7 @@ public class CrowdPlayerController
         {
             // Debug.Log("Tilt coroutine is running and now set to stop");
 
-            mono.StopCoroutine(cameraManagement.TiltCamera(playerFormationController.position, distanceOffset, interpolationDuration));
+            mono.StopCoroutine(cameraManagement.TiltCamera(playerFormationController.formShapePosition, distanceOffset, interpolationDuration));
             tiltCam = null;
         }
 
@@ -304,18 +305,18 @@ public class CrowdPlayerController
             for (int i = 0; i < chosenLocation.childCount; i++)
             {
                 npcsLocation = chosenLocation.GetChild(0).GetChild(i);    
-
             } 
 
+            Debug.Log($"NPC location: {npcsLocation.gameObject.name}");
             formationController.SetFormationLocation(npcsLocation);
             
             // If already in a formation, update it to use the new location
-            NPCFormationManager formManager = formationController.formationManager;
-            if (formManager != null && formManager.currentFormation != FormationType.Follow)
-            {
-                // Re-apply current formation to update positions
-                formationController.ChangeFormation(formManager.currentFormation);
-            }
+            // NPCFormationManager formManager = formationController.formationManager;
+            // if (formManager != null && formManager.currentFormation != FormationType.Follow)
+            // {
+            //     // Re-apply current formation to update positions
+            //     formationController.ChangeFormation(formManager.currentFormation);
+            // }
         }
         
         mono.StartCoroutine(ResetClickState(1.0f)); // 1 second delay

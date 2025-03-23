@@ -202,7 +202,7 @@ public class LocationManagerUI
                 }
                 
                 LocationCardUI card = panelCards[cardIndex];
-                Debug.Log($"Card -> {card.name}");
+                // Debug.Log($"Card -> {card.name}");
                 
                 GameObject objectToTrack = MGameManager.instance.trackables[objectIndex];
                 
@@ -213,7 +213,7 @@ public class LocationManagerUI
                 if (panelIndex == 0)
                 {
                     RectTransform cardTransform = card.transform.parent.GetComponent<RectTransform>();
-                    Debug.Log($"CardTransform -> {cardTransform.gameObject.name}");
+                    // Debug.Log($"CardTransform -> {cardTransform.gameObject.name}");
 
                     cardTransform.anchoredPosition = new Vector3(-Screen.width, cardTransform.anchoredPosition.y, 0);
                     

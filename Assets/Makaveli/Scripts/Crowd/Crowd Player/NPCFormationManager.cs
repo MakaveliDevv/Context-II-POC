@@ -77,7 +77,7 @@ public class NPCFormationManager : MonoBehaviour
             {
                 // Get actual size from the collider
                 locationSize = locationCollider.bounds.size;
-                Debug.Log($"Location size detected: {locationSize}");
+                // Debug.Log($"Location size detected: {locationSize}");
             }
         }
         else

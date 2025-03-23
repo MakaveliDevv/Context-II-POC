@@ -24,7 +24,7 @@ public class Lion : NetworkBehaviour
     [SerializeField] List<string> objectNames;
 
     public Task lastObjectTask = null;
-    private bool objectPlaced;
+    public bool objectPlaced;
     public bool correctTask;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -64,7 +64,7 @@ public class Lion : NetworkBehaviour
         {
             yield return new WaitForFixedUpdate();
             elapsedTime += 0.02f;
-            if(elapsedTime > 1) 
+            if(elapsedTime > 1f) 
             {
                 timeout = true;
                 break;
@@ -171,33 +171,26 @@ public class Lion : NetworkBehaviour
         }
     }
 
+    public bool encounter;
+    public Transform taskLocation;
+
     void OnTriggerStay(Collider collider)
     {
         // If in range of location
         if(collider.CompareTag("TaskableLocation")) 
         {
-            // If object placed
-            if(objectPlaced) 
+            if(MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.SOLVING_TASK) 
             {
-                // Lion placed the object 
-                MGameManager.instance.lionPlacedObject = true;
-                MGameManager.instance.taskComplete = true;
-
-                // If the object placed has the same task as one of the tasks in the location
-                TaskLocation taskLocation = collider.gameObject.GetComponent<TaskLocation>();
-                List<Task> tasksInLocation = taskLocation.tasks;
-
-                foreach (var task in tasksInLocation)
+                taskLocation = collider.transform;
+                if(!encounter) 
                 {
-                    if(lastObjectTask.taskName == task.taskName) 
+                    encounter = true;
+
+                    // If object placed
+                    if(objectPlaced) 
                     {
-                        MGameManager.instance.currentPoint += 1;
-                        correctTask = true;
-                    }
-                    else 
-                    {
-                        MGameManager.instance.currentPoint += 0;
-                        correctTask = false;
+                        // Lion placed the object 
+                        MGameManager.instance.lionPlacedObject = true;
                     }
                 }
             }
@@ -209,6 +202,11 @@ public class Lion : NetworkBehaviour
         if(collider.gameObject.CompareTag("Pickup"))
         {
             if(objectsToPickup.Contains(collider.gameObject)) objectsToPickup.Remove(collider.gameObject);
+        }
+
+        if(collider.CompareTag("TaskableLocation"))
+        {
+            encounter = false;
         }
     }
 

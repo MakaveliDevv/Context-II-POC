@@ -45,11 +45,12 @@ public class MGameManager : NetworkBehaviour
     public float spawnInTimer;
 
     // Lion stuff
-    public bool lionPlacedObject;
-    public TaskLocation currInterLoc;
-    public TaskLocation currentInteractableLocation;
     public Lion lion;
-    GameManagerRpcBehaviour gameManagerRpcBehaviour;
+    public bool lionPlacedObject;
+    public TaskLocation currentInteractableLocation;
+    private GameManagerRpcBehaviour gameManagerRpcBehaviour;
+    private bool taskStarted = false; 
+    private bool penaltyApplied = false; 
 
     [Header("Point System Management")]
     public float currentPoint = 0;
@@ -146,41 +147,74 @@ public class MGameManager : NetworkBehaviour
 
     public void SolvingTaskState()
     {
+        if (taskStarted || penaltyApplied) return; // Prevents multiple executions
+
         stateChange = false;
                 
-        if(taskComplete) 
+        if(lionPlacedObject && !taskStarted) 
         {
-            // Temp code to fetch the selected task as current location
-            foreach (var e in chosenLocations)
-            {
-                Transform chosenLocation = e.Value.transform;
-                TaskLocation taskLocation = chosenLocation.GetComponent<TaskLocation>();
-                currentInteractableLocation = taskLocation;
-            }
-        
-            // Turn the location where the lion interacted with to location fixed
-            currentInteractableLocation.locationFixed = true;
-            currentInteractableLocation.fixable = false;
+            taskStarted = true;
+            
+            // Fetch the location
+            Transform taskLocation = lion.taskLocation;
 
-            // Iterate through the possibleTasksList
-            foreach (var task in possibleTasks)
+            // Try to fetch the TaskLocation component
+            if(taskLocation.gameObject.TryGetComponent<TaskLocation>(out var _taskLocation)) 
             {
-                // If the object the lion placed has the same task as one of th task on the location
+                currentInteractableLocation = _taskLocation; // Assign the task location 
+                Debug.Log($"current interactable location: {currentInteractableLocation.gameObject.name}");
+            }
+            else { Debug.LogError("Couldn't fetch the TaskLocation component, something went wrong!"); return; }
+
+            // Check if the object placed is the same task as one of the tasks on the location
+            foreach (var task in currentInteractableLocation.tasks)
+            {
+                Debug.Log("last object task:" + lion.lastObjectTask.name);
+                Debug.Log("Task:" + task.name);
                 if(lion.lastObjectTask.taskName == task.taskName) 
                 {
-                    completeTasks.Add(task);
+                    currentInteractableLocation.locationFixed = true;
+                    currentInteractableLocation.fixable = false;
+
+                    // Add the task to complete task
+                    for (int i = 0; i < possibleTasks.Count; i++)
+                    {
+                        if (possibleTasks[i].taskName == task.taskName) 
+                        {
+                            completeTasks.Add(possibleTasks[i]);
+                            possibleTasks.RemoveAt(i); 
+                            break;
+                        }
+                    }
+
+                    taskComplete = true;
+                    currentPoint += 1f;
+                    Debug.Log($"Adding +1 point to {currentPoint}");
+                }    
+                else 
+                {
+                    currentPoint += 0;
+                    Debug.Log($"Adding +0 point to {currentPoint}");
                 }
             }
             
-            StartCoroutine(DisplayEndRound(lion));
+            // StartCoroutine(DisplayEndRound(lion));
+            StartCoroutine(DisplayEndRound());
         }
+        // else if (lion.objectPlaced && !penaltyApplied)  
+        // {
+        //     penaltyApplied = true; 
+        //     currentPoint -= 1f;
+        //     Debug.Log($"Adding -1 point to {currentPoint}");
+        //     StartCoroutine(DisplayEndRound());
+        // }
     }
 
-    private IEnumerator DisplayEndRound(Lion lion) 
+    private IEnumerator DisplayEndRound() 
     {
         Debug.Log("End Round Started...");
 
-        if(lion.correctTask) 
+        if(taskComplete) 
         {
             Debug.Log("Correct task objet");
         }
@@ -195,6 +229,25 @@ public class MGameManager : NetworkBehaviour
         gamePlayManagement = GamePlayManagement.END;
     }
 
+    // private IEnumerator DisplayEndRound(Lion lion) 
+    // {
+    //     Debug.Log("End Round Started...");
+
+    //     if(lion.correctTask) 
+    //     {
+    //         Debug.Log("Correct task objet");
+    //     }
+    //     else 
+    //     {
+    //         Debug.Log("Incorrect task objet");
+    //     }
+
+    //     yield return new WaitForSeconds(5f);
+
+    //     // then turn state to end state
+    //     gamePlayManagement = GamePlayManagement.END;
+    // }
+
     public void EndState()
     {
         if(!stateChange) 
@@ -202,8 +255,6 @@ public class MGameManager : NetworkBehaviour
             stateChange = true;
             StartCoroutine(ResetState());
         }
-
-        lionPlacedObject = false;
     }
 
     private IEnumerator ResetState()
@@ -221,6 +272,8 @@ public class MGameManager : NetworkBehaviour
 
         // Update the task locations list
         bool containsName = false;
+
+        // Check if the task already exist in the task location done list
         foreach(Transform location in taskLocationsDone)
         {
             // Debug.Log($"Location name -> {location.gameObject.name} is the same as the task location name -> {currentInteractableLocation.gameObject.name}.");
@@ -233,6 +286,7 @@ public class MGameManager : NetworkBehaviour
 
         yield return null;
 
+        // If not continue
         if(!containsName)
         {
             taskLocationsDone.Add(currentInteractableLocation.transform);
@@ -250,10 +304,12 @@ public class MGameManager : NetworkBehaviour
         ChosenLocations.Clear();
         tasksPerRound.Clear();
         trackables.Clear();
-        tasksPerRound.Clear();
 
+        taskStarted = false; 
+        penaltyApplied = false; 
+        
         yield return new WaitForSeconds(3f);
-        gamePlayManagement = GamePlayManagement.SPAWN_LOCATIONS;
+        gamePlayManagement = GamePlayManagement.START;
 
         yield break;
     }

@@ -131,7 +131,6 @@ public class ClientManager : NetworkBehaviour
         Debug.Log($"Client {clientId} connected to the server.");
         connectedClients.Add(clientId);
         if(SceneManager.GetActiveScene().name == "Lobby") UpdateLobbyTextServerRpc();
-        Debug.Log($"Method: OnClientConnectedClientRpc -> Client id -> {clientId}");
     }
 
     [ClientRpc]
@@ -145,12 +144,12 @@ public class ClientManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void AddClientToReadyListServerRpc(ulong _clientID, bool _add)
     {
-        if(_add) { readiedClients.Add(_clientID); Debug.Log($"Method: AddClientToReadyListServerRpc -> Client id -> {_clientID}"); }    
+        if(_add) { readiedClients.Add(_clientID); }    
         else readiedClients.Remove(_clientID); 
 
         if(readiedClients.Count == connectedClients.Count)
         {
-            NetworkManager.Singleton.SceneManager.LoadScene("P_GameScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
+            _ = NetworkManager.Singleton.SceneManager.LoadScene("P_GameScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
         }
     }
 

@@ -42,13 +42,13 @@ public class RoleManager : NetworkBehaviour
 
     void InstantiateLion()
     {
-        Debug.Log("Starting coroutine");
+        // Debug.Log("Starting coroutine");
         StartCoroutine(TrySpawnPlayers(true));
     }
 
     void InstantiateCrowd()
     {
-        Debug.Log("Starting coroutine");
+        // Debug.Log("Starting coroutine");
         StartCoroutine(TrySpawnPlayers(false));
     }
 

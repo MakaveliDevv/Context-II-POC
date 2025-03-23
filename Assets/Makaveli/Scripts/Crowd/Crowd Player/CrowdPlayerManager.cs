@@ -163,7 +163,7 @@ public class CrowdPlayerManager : NetworkBehaviour
     [ClientRpc]
     void ChooseLocationClientRpc(int i)
     {
-        Debug.Log("123 i is: " + i);
+        // Debug.Log("123 i is: " + i);
         playerController.chosenLocation = chosenCards[i].location;
         playerController.SecondHalfOfChooseLocation(chosenCards[i]);
     }

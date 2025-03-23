@@ -200,6 +200,7 @@ public class CrowdPlayerController
             for (int i = 0; i < chosenLocation.childCount; i++)
             {
                 playerPositionInsideTaskLocation = chosenLocation.GetChild(0).GetChild(i).GetChild(0);    
+                Debug.Log($"playerPositionInsideTaskLocation -> {playerPositionInsideTaskLocation.name}");
                 float elapsedTime = 0;
                 float duration = 4f;
 
@@ -222,7 +223,7 @@ public class CrowdPlayerController
         cameraManagement.CameraMovement();
     }
 
-    public void TitlCamera(float distanceOffset, float interpolationDuration) 
+    public void TitlCamera(float distanceOffset, float interpolationDuration, PlayerFormationController playerFormationController) 
     {
         if(repositionCam != null) 
         {
@@ -230,17 +231,19 @@ public class CrowdPlayerController
             mono.StopCoroutine(cameraManagement.RepositionCamera(interpolationDuration));
             repositionCam = null;
         }  
+
+        Debug.Log($"camera tilt position: {playerFormationController.position.gameObject.name}");
     
-        tiltCam = mono.StartCoroutine(cameraManagement.TiltCamera(playerPositionInsideTaskLocation.parent, distanceOffset, interpolationDuration));
+        tiltCam = mono.StartCoroutine(cameraManagement.TiltCamera(playerFormationController.position, distanceOffset, interpolationDuration));
     }
 
-    public void RepositionCamera(float distanceOffset, float interpolationDuration) 
+    public void RepositionCamera(float distanceOffset, float interpolationDuration, PlayerFormationController playerFormationController) 
     {
         if(tiltCam != null) 
         {
             // Debug.Log("Tilt coroutine is running and now set to stop");
 
-            mono.StopCoroutine(cameraManagement.TiltCamera(playerPositionInsideTaskLocation.parent, distanceOffset, interpolationDuration));
+            mono.StopCoroutine(cameraManagement.TiltCamera(playerFormationController.position, distanceOffset, interpolationDuration));
             tiltCam = null;
         }
 

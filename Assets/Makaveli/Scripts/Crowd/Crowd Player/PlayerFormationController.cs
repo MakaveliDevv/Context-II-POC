@@ -13,6 +13,7 @@ public class PlayerFormationController : MonoBehaviour
     public TextMeshProUGUI currentFormationText;
 
     private CrowdPlayerManager playerManager;
+    public Transform position;
 
     private void Awake()
     {
@@ -106,7 +107,7 @@ public class PlayerFormationController : MonoBehaviour
                 // formationManager.SetTargetLocation(playerManager.playerController.chosenLocation);
 
                 // Fetch the shape position
-                Transform position = playerManager.playerController.playerPositionInsideTaskLocation.parent;
+                position = playerManager.playerController.playerPositionInsideTaskLocation.parent;
                 formationManager.SetTargetLocation(position);
             }
 

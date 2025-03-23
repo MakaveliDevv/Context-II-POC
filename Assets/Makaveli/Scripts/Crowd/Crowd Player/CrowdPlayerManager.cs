@@ -9,6 +9,7 @@ public class CrowdPlayerManager : NetworkBehaviour
     public PlayerState playerState; 
 
     [HideInInspector] public CrowdPlayerController playerController; // Class reference
+    public PlayerFormationController playerFormationController;
 
     [Header("Movement Management")]
     [SerializeField] private float movementSpeed = 5f;
@@ -74,6 +75,11 @@ public class CrowdPlayerManager : NetworkBehaviour
         );        
 
         MGameManager.instance.allCrowdPlayers.Add(this);
+
+        if(playerFormationController == null) 
+        {
+            playerFormationController = GetComponent<PlayerFormationController>();
+        }
     }
 
     private void Start()
@@ -232,7 +238,7 @@ public class CrowdPlayerManager : NetworkBehaviour
                     {
                         // Stop the movement of each npc
                         StartCoroutine(NPCsManagement.StopNPCMovement(playerController.npcs));
-                        playerController.TitlCamera(distanceOffset, interpolationDuration);
+                        playerController.TitlCamera(distanceOffset, interpolationDuration, playerFormationController);
                         rearrangeFormation = true;
                     }
                 }
@@ -243,7 +249,7 @@ public class CrowdPlayerManager : NetworkBehaviour
                 rearrangeFormation = false;
                 if(!signal) 
                 {
-                    playerController.RepositionCamera(distanceOffset, interpolationDuration);
+                    playerController.RepositionCamera(distanceOffset, interpolationDuration, playerFormationController);
 
                     signal = true;
                 }
@@ -354,5 +360,21 @@ public class CrowdPlayerManager : NetworkBehaviour
     //     Vector3 size = new Vector3(maxBoundary.x - minBoundary.x, 0.1f, maxBoundary.y - minBoundary.y);
     //     Vector3 center = new Vector3((minBoundary.x + maxBoundary.x) * 0.5f, 0, (minBoundary.y + maxBoundary.y) * 0.5f);
     //     Gizmos.DrawWireCube(center, size);
+    // }
+
+    
+    // float CalculateGroupSideOffset()
+    // {
+    //     // Distribute NPCs across a line perpendicular to target's movement
+    //     float spacing = minNPCDistance;
+    //     int npcCount = MGameManager.instance.allNPCss.Count;
+        
+    //     // Center the group around the target's path
+    //     float centerOffset = (npcCount - 1) * spacing * 0.5f;
+        
+    //     // Calculate individual NPC's offset
+    //     float individualOffset = npcIndex * spacing - centerOffset;
+        
+    //     return individualOffset;
     // }
 }

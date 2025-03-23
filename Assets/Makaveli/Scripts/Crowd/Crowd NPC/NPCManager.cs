@@ -19,6 +19,7 @@ public class NPCManager : NetworkBehaviour
     [Header("Movement Parameters")]
     public float smoothSpeed = 5f;
     public float stoppingThreshold = 0.1f;
+    public float movementSpeed;
     
     [Header("Positioning Parameters")]
     public float minDistanceBehindTarget = 2f;
@@ -56,7 +57,8 @@ public class NPCManager : NetworkBehaviour
             minNPCDistance,
             maxNPCDistance,
             spreadFactor,
-            fixedYPosition
+            fixedYPosition,
+            movementSpeed
         );
 
         moveable = true;
@@ -65,6 +67,7 @@ public class NPCManager : NetworkBehaviour
     void Start()
     {
         // nPCFollower.Start(this);
+        nPCFollower.Start();
         StartCoroutine(nPCFollower.FindPlayer(this));
     }
 
@@ -103,11 +106,6 @@ public class NPCManager : NetworkBehaviour
     {
         Debug.Log("Signal on client");
         gameObject.transform.GetChild(1).gameObject.SetActive(active);
-    }
-
-    private void Emote() 
-    {
-
     }
     
     public override void OnDestroy()

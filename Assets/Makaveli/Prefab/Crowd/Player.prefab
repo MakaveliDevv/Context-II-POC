@@ -4309,7 +4309,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4524348917350902699}
   - component: {fileID: 5450046677199091307}
-  - component: {fileID: 4089227804670623050}
   - component: {fileID: 1680984867353706235}
   m_Layer: 0
   m_Name: TP-Camera
@@ -4365,7 +4364,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 25
+  far clip plane: 1000
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -4384,14 +4383,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!81 &4089227804670623050
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3904333190603064986}
-  m_Enabled: 1
 --- !u!114 &1680984867353706235
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6594,13 +6585,13 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1536
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 0
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
-  m_Constraints: 16
+  m_Constraints: 80
   m_CollisionDetection: 0
 --- !u!136 &4690020631619799525
 CapsuleCollider:
@@ -10687,6 +10678,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   playerState: 0
+  playerFormationController: {fileID: 7098150273792766580}
   movementSpeed: 5
   aplliedMovementSpeedPercentage: 2
   cardsUI: {fileID: 6137546433476278826}
@@ -10704,8 +10696,9 @@ MonoBehaviour:
   camOffset: {x: 0, y: 7, z: -5}
   camSmoothSpeed: 5
   camRotationSpeed: 100
+  chosenCards: []
   og_camRot: {x: 0, y: 0, z: 0, w: 0}
-  distanceOffset: 30
+  distanceOffset: 3
   interpolationDuration: 2
   crowdOnlyObjects:
   - {fileID: 3904333190603064986}
@@ -10752,6 +10745,7 @@ MonoBehaviour:
   formationHotkeys: 000000000000000000000000000000000000000000000000
   toggleStaticFormationKey: 116
   currentFormationText: {fileID: 0}
+  position: {fileID: 0}
 --- !u!114 &3179910992428367868
 MonoBehaviour:
   m_ObjectHideFlags: 0

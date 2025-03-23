@@ -13,8 +13,7 @@ public class CustomNetworkBehaviour : NetworkBehaviour
     public void RequestMoveServerRpc(Vector3 _position, Quaternion _rotation, Vector3 _localScale)
     {
         // Set the position on the server
-        transform.position = _position;
-        transform.rotation = _rotation;
+        transform.SetPositionAndRotation(_position, _rotation);
         transform.localScale =_localScale;
 
         UpdatePositionClientRpc(_position, _rotation, _localScale);

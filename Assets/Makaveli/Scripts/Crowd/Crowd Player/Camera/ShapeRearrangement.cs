@@ -38,12 +38,12 @@ public class ShapeRearrangement
         {
             Ray ray = camera.ScreenPointToRay(Input.mousePosition);
 
-            if (Physics.Raycast(ray, out RaycastHit hit, 100f, npcLayer))
+            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, npcLayer))
             {
                 currentlySelectedNpc = hit.collider.gameObject;
                 isDragging = true;
                 isMovingToTarget = true;
-                // Debug.Log($"Selected NPC at position: {currentlySelectedNpc.transform.position}");
+                Debug.Log($"Selected NPC at position: {currentlySelectedNpc.transform.position} and the name of the object is: {currentlySelectedNpc.gameObject.name}");
             }
         }
 
@@ -52,6 +52,8 @@ public class ShapeRearrangement
         {
             // Get the mouse position in world space
             Vector3 mouseWorldPos = GetMousePositionOnXZPlane();
+
+            Debug.Log($"mouseWorldPos: {mouseWorldPos}");
 
             // Create a new position, keeping the Y value the same
             targetPosition = new(
@@ -72,9 +74,11 @@ public class ShapeRearrangement
 
             Vector3 newPosition = Vector3.Lerp(currentlySelectedNpc.transform.position, targetPosition, lerpSpeed * Time.deltaTime);
          
-
             // Update the NPC position
             currentlySelectedNpc.transform.position = newPosition;
+
+            // CharacterController controller = currentlySelectedNpc.GetComponent<CharacterController>();
+            // controller.Move(newPosition);
         }
 
         // Handle release

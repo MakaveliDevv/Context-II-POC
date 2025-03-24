@@ -75,6 +75,8 @@ public class PlacableObjects : MonoBehaviour
             MGameManager.instance.currentPoint -= 1;
             Debug.Log("object placed in not solving state so -1 point is applied");
             
+            // DESTROY GAME OBJECT
+            // this object needs to be destroyed if it is placed outside the solving task state
             // Destroy the object after a few seconds
             // Destroy(go, 5f);           
         }
@@ -99,6 +101,8 @@ public class PlacableObjects : MonoBehaviour
                     MGameManager.instance.currentPoint -= 1;
                     Debug.Log("Object placed in a non-taskable location, and no valid location nearby. -1 point applied");
 
+                    // DESTROY GAME OBJECT
+                    // this object needs to be destroyed if it is placed in the solving task state but not inside a task location
                     // Destroy the object after a few seconds
                     // Destroy(go, 5f);
                 }

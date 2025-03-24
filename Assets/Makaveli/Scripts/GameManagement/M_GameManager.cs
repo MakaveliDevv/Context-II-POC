@@ -144,7 +144,9 @@ public class MGameManager : NetworkBehaviour
             stateChange = true;
         } 
     }
-
+    
+    // POINTS NOT GETTING UPDATED FOR CROWD PLAYER
+    // THE POSSIBLE TASKS AND COMPLETE TASKS LIST IS NOT GETTING UPDATED
     public void SolvingTaskState()
     {
         if (taskStarted || penaltyApplied) return; // Prevents multiple executions

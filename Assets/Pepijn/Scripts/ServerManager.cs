@@ -3,13 +3,15 @@ using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using System.Net;
 using UnityEngine.SceneManagement;
+using Unity.VisualScripting;
+using System;
 
 public class ServerManager : NetworkBehaviour
 {
     /*
     -Make sure the client and server can communicate with one another
     */
-    [SerializeField] public bool serverBuild;
+    [SerializeField] public bool serverBuild, webBuild;
     [SerializeField] private bool runLocally;
     [SerializeField] private GameObject serverPrefab, clientPrefab;
     [SerializeField] private UnityTransport unityTransport;
@@ -18,6 +20,7 @@ public class ServerManager : NetworkBehaviour
     [SerializeField] ClientManager clientManager;
     GameObject serverObj;
     private string serverAddress = "context2server.atlas-technologies.co.uk";
+    private ushort port = 7777;
 
     private void Start()
     {
@@ -56,13 +59,6 @@ public class ServerManager : NetworkBehaviour
             unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
         //}
 
-        string resolvedIP = ResolveDNS(serverAddress);
-        if (string.IsNullOrEmpty(resolvedIP))
-        {
-            Debug.LogError("Failed to resolve DNS for " + serverAddress);
-            return;
-        }
-
         if(!runLocally)
         {
             unityTransport.SetConnectionData("0.0.0.0", 7777);
@@ -84,12 +80,26 @@ public class ServerManager : NetworkBehaviour
 
     private void StartAsClient()
     {
+        
         if (unityTransport == null)
         {
             unityTransport = NetworkManager.Singleton.GetComponent<UnityTransport>();
         }
 
-        if(!runLocally) unityTransport.SetConnectionData("77.75.125.173", 7777);
+        if(webBuild)
+        {
+            serverAddress = "context2server.atlas-technologies.co.uk";
+            port = 443;
+        }
+        else
+        {
+            serverAddress = "context2server.atlas-technologies.co.uk";
+            port = 7777;
+        }
+
+        string resolvedIP = ResolveDNS(serverAddress);
+
+        if(!runLocally) unityTransport.SetConnectionData(resolvedIP, port);
         else unityTransport.SetConnectionData("127.0.0.1", 7777);
 
         NetworkManager.Singleton.StartClient();

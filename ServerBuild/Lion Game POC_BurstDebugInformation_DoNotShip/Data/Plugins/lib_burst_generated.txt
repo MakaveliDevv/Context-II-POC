@@ -9,7 +9,6 @@ Library: C:\Unity Projects\Context-II-POC\Temp\BurstOutput\Data\Plugins\lib_burs
 --target-framework=NetFramework
 --generate-link-xml=Temp\burst.link.xml
 --temp-folder=C:\Unity Projects\Context-II-POC\Temp\Burst
---debug=Full
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.0.36f1/Editor/Data/PlaybackEngines/LinuxStandaloneSupport
 --decode-folder=C:\Unity Projects\Context-II-POC\Library\Burst
 --output=C:\Unity Projects\Context-II-POC\Temp\BurstOutput\Data\Plugins\lib_burst_generated
@@ -71,7 +70,6 @@ Library: C:\Unity Projects\Context-II-POC\Temp\BurstOutput\Data\Plugins\lib_burs
 --target-framework=NetFramework
 --generate-link-xml=Temp\burst.link.xml
 --temp-folder=C:\Unity Projects\Context-II-POC\Temp\Burst
---debug=Full
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.0.36f1/Editor/Data/PlaybackEngines/LinuxStandaloneSupport
 --decode-folder=C:\Unity Projects\Context-II-POC\Library\Burst
 --output=C:\Unity Projects\Context-II-POC\Temp\BurstOutput\Data\Plugins\lib_burst_generated
@@ -135,7 +133,6 @@ Library: C:\Unity Projects\Context-II-POC\Temp\BurstOutput\Data\Plugins\lib_burs
 --float-mode=Fast
 --generate-link-xml=Temp\burst.link.xml
 --temp-folder=C:\Unity Projects\Context-II-POC\Temp\Burst
---debug=Full
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.0.36f1/Editor/Data/PlaybackEngines/LinuxStandaloneSupport
 --decode-folder=C:\Unity Projects\Context-II-POC\Library\Burst
 --output=C:\Unity Projects\Context-II-POC\Temp\BurstOutput\Data\Plugins\lib_burst_generated
@@ -155,7 +152,6 @@ Library: C:\Unity Projects\Context-II-POC\Temp\BurstOutput\Data\Plugins\lib_burs
 --float-mode=Fast
 --generate-link-xml=Temp\burst.link.xml
 --temp-folder=C:\Unity Projects\Context-II-POC\Temp\Burst
---debug=Full
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.0.36f1/Editor/Data/PlaybackEngines/LinuxStandaloneSupport
 --decode-folder=C:\Unity Projects\Context-II-POC\Library\Burst
 --output=C:\Unity Projects\Context-II-POC\Temp\BurstOutput\Data\Plugins\lib_burst_generated
@@ -173,7 +169,6 @@ Library: C:\Unity Projects\Context-II-POC\Temp\BurstOutput\Data\Plugins\lib_burs
 --target-framework=NetFramework
 --generate-link-xml=Temp\burst.link.xml
 --temp-folder=C:\Unity Projects\Context-II-POC\Temp\Burst
---debug=Full
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.0.36f1/Editor/Data/PlaybackEngines/LinuxStandaloneSupport
 --decode-folder=C:\Unity Projects\Context-II-POC\Library\Burst
 --output=C:\Unity Projects\Context-II-POC\Temp\BurstOutput\Data\Plugins\lib_burst_generated
@@ -289,7 +284,6 @@ Library: C:\Unity Projects\Context-II-POC\Temp\BurstOutput\Data\Plugins\lib_burs
 --target-framework=NetFramework
 --generate-link-xml=Temp\burst.link.xml
 --temp-folder=C:\Unity Projects\Context-II-POC\Temp\Burst
---debug=Full
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.0.36f1/Editor/Data/PlaybackEngines/LinuxStandaloneSupport
 --decode-folder=C:\Unity Projects\Context-II-POC\Library\Burst
 --output=C:\Unity Projects\Context-II-POC\Temp\BurstOutput\Data\Plugins\lib_burst_generated

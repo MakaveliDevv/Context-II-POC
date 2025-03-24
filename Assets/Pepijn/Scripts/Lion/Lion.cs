@@ -1,96 +1,292 @@
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine;
-
-public class Lion : MonoBehaviour
+using Unity.Netcode;
+using System.Collections;
+using System.Collections.Generic;
+public class Lion : NetworkBehaviour
 {
+    [SerializeField] public CustomNetworkBehaviour customNetworkBehaviour;
     public int spheresRemaining, blocksRemaining, cylindersRemaining;
     public TextMeshProUGUI spheresRemainingText, blocksRemainingText, cylindersRemainingText;
-    public GameObject sphere, block, cylinder;
-    public GameObject selectedObject;
+    public string selectedObject = "";
     public LayerMask floorLayer;
     public Sprite blockSprite, cylinderSprite, sphereSprite;
     public Image selectedObjIndicator;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        cylindersRemainingText.text = cylindersRemaining.ToString();
-        spheresRemainingText.text = spheresRemaining.ToString();
-        blocksRemainingText.text = blocksRemaining.ToString();
+    public Camera lionCam;
+    public GameObject lionCanvas;
+    [SerializeField] List<GameObject> objectsToPickup = new();
+    public PlacableObjects carryingObject;
+    Vector3 cameraOffset = new(0,11.7600002f,-4.61000013f);
+    Dictionary<string, GameObject> objectPrefabsDict;
+    [SerializeField] List<GameObject> objectsPrefabs;
+    [SerializeField] List<string> objectNames;
 
-        Camera.main.backgroundColor = Color.blue; // Change background color to blue
+    public Task lastObjectTask = null;
+    public Transform taskLocation;
+    public TaskLocation taskLocationRef;
+    public bool objectPlaced;
+    public bool encounter;
+    public bool objectDropped;
+
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public override void OnNetworkSpawn()
+    {
+        if(customNetworkBehaviour == null) customNetworkBehaviour = GetComponent<CustomNetworkBehaviour>();
+        StartCoroutine(InstantiateCorrectly());
+        Debug.Log("Lion network spawn");
+
+        objectPrefabsDict = new();
+
+        for(int i = 0; i < objectsPrefabs.Count; i++)
+        {
+            objectPrefabsDict.Add(objectNames[i], objectsPrefabs[i]);
+        }
+
+        MGameManager.instance.lion = this;
     }
 
     // Update is called once per frame
     void Update()
     {
-        PlaceObject();
+        if(customNetworkBehaviour.CustomIsOwner())
+        {
+            MoveObjects();
+
+            lionCam.transform.position = transform.position + cameraOffset;
+        }
     }
 
-    void PlaceObject()
+    IEnumerator InstantiateCorrectly()
     {
-        if (selectedObject == null) return;
+        bool timeout = false;
+        float elapsedTime = 0;
 
-        if(selectedObject == sphere && spheresRemaining <= 0) return;
-        if(selectedObject == block && blocksRemaining <= 0) return;
-        if(selectedObject == cylinder && cylindersRemaining <= 0) return;
-
-        if (Input.GetMouseButtonDown(0)) // Left-click
+        while(!customNetworkBehaviour.CustomIsOwner())
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity, floorLayer))
+            yield return new WaitForFixedUpdate();
+            elapsedTime += 0.02f;
+            if(elapsedTime > 1f) 
             {
-                Instantiate(selectedObject, hit.point + new Vector3(0, 1, 0), Quaternion.identity);
-
-                if(selectedObject == block)
-                {
-                    blocksRemaining--;
-                    blocksRemainingText.text = blocksRemaining.ToString();
-                }
-                else if (selectedObject == sphere)
-                {
-                    spheresRemaining--;
-                    spheresRemainingText.text = spheresRemaining.ToString();
-                }
-                else if(selectedObject == cylinder)
-                {
-                    cylindersRemaining--;
-                    cylindersRemainingText.text = cylindersRemaining.ToString();
-                }
+                timeout = true;
+                break;
             }
+        }
+
+        Debug.Log("Timeout: " + timeout + ", IsOwner " + customNetworkBehaviour.CustomIsOwner());
+
+        if(!timeout)
+        {
+            if(!customNetworkBehaviour.CustomIsOwner()) 
+            {
+                lionCanvas.SetActive(false);
+                lionCam.gameObject.SetActive(false);
+            }
+            else
+            {
+                cylindersRemainingText.text = cylindersRemaining.ToString();
+                spheresRemainingText.text = spheresRemaining.ToString();
+                blocksRemainingText.text = blocksRemaining.ToString();
+                lionCam.transform.SetParent(null);
+            }
+        }
+        else
+        {
+            lionCanvas.SetActive(false);
+            lionCam.gameObject.SetActive(false);
+        }
+    }
+
+    void MoveObjects()
+    {
+        if(Input.GetKeyDown(KeyCode.E) && !objectDropped)
+        {
+            objectPlaced = false;
+
+            if(carryingObject == null)
+            {
+                
+            }
+            else
+            {
+                DropObject();
+            }
+        }
+
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            if(carryingObject != null)
+            {
+                Destroy(carryingObject.gameObject);
+                carryingObject = null;
+            }
+        }
+    }
+
+    void DropObject()
+    {
+        if(!carryingObject.placable) return;
+
+        //RequestReparentServerRpc(carryingObject.gameObject, gameObject, true);
+        //objectsToPickup.Insert(0, carryingObject.gameObject);
+        bool solvingTask = false;
+        if(MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.SOLVING_TASK) solvingTask = true;
+        SpawnObjectOnServerRpc(carryingObject.objName, carryingObject.transform.position, carryingObject.transform.rotation, solvingTask);
+        ChangeObjectPlacedBoolOnServerRpc(true);
+
+        lastObjectTask = carryingObject.task;
+        Destroy(carryingObject.gameObject);
+        carryingObject = null;
+        objectDropped = true;
+        StartCoroutine(ReseetBool());
+    }
+
+    private IEnumerator ReseetBool() 
+    {
+        yield return new WaitForSeconds(2f);
+        objectDropped = false;
+    }
+    // [ServerRpc(RequireOwnership = false)]
+    // void RequestReparentServerRpc(NetworkObjectReference objectRef, NetworkObjectReference newParentRef, bool unparent)
+    // {
+    //     if (objectRef.TryGet(out NetworkObject obj))
+    //     {
+    //         if (unparent)
+    //         {
+    //             obj.transform.SetParent(null); // Remove parent
+    //         }
+    //         else if (newParentRef.TryGet(out NetworkObject newParent))
+    //         {
+    //             obj.transform.SetParent(newParent.transform); // Set new parent
+    //         }
+    //     }
+    // }
+
+    [ServerRpc(RequireOwnership = false)]
+    void ChangeObjectPlacedBoolOnServerRpc(bool _result)
+    {
+        objectPlaced = _result;
+        ChangeObjectPlacedBoolOnClientRpc(_result);
+    }
+    [ClientRpc]
+    void ChangeObjectPlacedBoolOnClientRpc(bool _result)
+    {
+        objectPlaced = _result;
+    }
+
+    void OnTriggerEnter(Collider collider)
+    {
+        if(collider.gameObject.CompareTag("Pickup"))
+        {
+            if(!objectsToPickup.Contains(collider.gameObject)) objectsToPickup.Insert(0, collider.gameObject);
+        }
+
+        if(collider.CompareTag("TaskableLocation")) 
+        {
+            Debug.Log("Lion collided with task location");
+            if(MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.SOLVING_TASK) 
+            {
+                taskLocation = collider.transform;
+            }
+        }
+    }
+
+    // void OnTriggerStay(Collider collider)
+    // {
+    //     // If in range of location
+    //     if(collider.CompareTag("TaskableLocation")) 
+    //     {
+    //         if(MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.SOLVING_TASK) 
+    //         {
+    //             if(!encounter) 
+    //             {
+    //                 taskLocation = collider.transform;
+    //                 encounter = true;
+
+    //                 // If object placed
+    //                 if(objectDropped) 
+    //                 {
+    //                     // Lion placed the object 
+    //                     //MGameManager.instance.lionPlacedObject = true;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
+    void OnTriggerExit(Collider collider)
+    {
+        if(collider.gameObject.CompareTag("Pickup"))
+        {
+            if(objectsToPickup.Contains(collider.gameObject)) objectsToPickup.Remove(collider.gameObject);
+        }
+
+        if(collider.CompareTag("TaskableLocation"))
+        {
+            encounter = false;
         }
     }
 
     public void ChangeSkyColor()
     {
-        if(Camera.main.backgroundColor == Color.blue)
+        if(lionCam.backgroundColor == Color.blue)
         {
-            Camera.main.backgroundColor = Color.red;
+            lionCam.backgroundColor = Color.red;
         }
 
-        else if(Camera.main.backgroundColor == Color.red)
+        else if(lionCam.backgroundColor == Color.red)
         {
-            Camera.main.backgroundColor = Color.blue;
+            lionCam.backgroundColor = Color.blue;
         }
     }
 
-    public void SelectBlock()
+    public void SpawnObject(string _objName)
     {
-        selectedObject = block;
-        selectedObjIndicator.sprite = blockSprite;
+        if(carryingObject != null)
+        {
+            Destroy(carryingObject.gameObject);
+            carryingObject = null;
+        }
+        GameObject _newObj = Instantiate(objectPrefabsDict[_objName], transform.position + (transform.forward * 4), Quaternion.identity, transform);
+        carryingObject = _newObj.GetComponent<PlacableObjects>();
+        carryingObject.transform.position += carryingObject.spawnOffset;
+        //carryingObject.transform.position = new Vector3(carryingObject.transform.position.x, (transform.position + carryingObject.spawnOffset).y, carryingObject.transform.position.z);
+        carryingObject.CheckIfPlacable();
+        //SpawnObjectOnServerRpc(_objName, transform.position + (transform.forward * 4));
     }
 
-    public void SelectSphere()
-    {
-        selectedObject = sphere;
-        selectedObjIndicator.sprite = sphereSprite;
+    [ServerRpc(RequireOwnership = false)]
+    void SpawnObjectOnServerRpc(string _objName, Vector3 _position, Quaternion _rotation, bool solvingTask)
+    {   
+        Debug.Log($"Trying to spawn {_objName}");
+        GameObject _newObj = Instantiate(objectPrefabsDict[_objName], _position, _rotation);
+        // placableObject = _newObj;
+        NetworkObject _newObjInstance = _newObj.GetComponent<NetworkObject>();
+
+        PlacableObjects placedObject = _newObjInstance.gameObject.GetComponent<PlacableObjects>();
+        placedObject.PlaceObject(this);
+        _newObjInstance.Spawn();
+        NotifyClientOfSpawnClientRpc(_newObjInstance.NetworkObjectId, solvingTask);
+
+        if(!solvingTask)
+        {
+            StartCoroutine(DestroyObject(_newObjInstance));
+        }
     }
 
-    public void SelectCylinder()
+    IEnumerator DestroyObject(NetworkObject _obj)
     {
-        selectedObject = cylinder;
-        selectedObjIndicator.sprite = cylinderSprite;
+        yield return new WaitForSeconds(5);
+        _obj.Despawn();
+        Destroy(_obj);
+    }
+
+    [ClientRpc]
+    void NotifyClientOfSpawnClientRpc(ulong spawnedObjectId, bool _success)
+    {
+        // Find the spawned object by ID
+        NetworkObject spawnedObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[spawnedObjectId];
+        PlacableObjects placedObject = spawnedObject.gameObject.GetComponent<PlacableObjects>();
+        placedObject.PlaceObject(this);
     }
 }

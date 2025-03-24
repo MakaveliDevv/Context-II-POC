@@ -1,90 +1,264 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class CrowdPlayerController 
+
+public class CrowdPlayerController
 {
-    // References
     private readonly MonoBehaviour mono;
-    private readonly TopDownMovement topDownMovement; // Top down movement class
-    // private readonly CrowdPlayerMovement movement; // FP movement class
-    public readonly CrowdPlayerUIManager UImanagement; // UI management class
     
+    // Class References
+    private readonly TopDownMovement topDownMovement; 
+    public UIManagement UImanagement;
+    public CameraManagement cameraManagement;
+    private readonly CustomNetworkBehaviour customNetworkBehaviour;
+    
+    // Player Management
+    public CharacterController controller;
     public Transform chosenLocation;
-    private readonly Transform npcContainer;
     private Vector2 movementInput;
+    public Transform playerPositionInsideTaskLocation;
     
     private bool isProcessingClick;
     public bool isAtLocation;
-    public bool isLocationChosen;
+    public bool locationChosen;
+
+    // NPC Management
+    private readonly GameObject npc;
+    private readonly int npcCount;
+    public List<GameObject> npcs = new();
+    private Vector3 npcSpawnOffset = new();
+
+    // UI Management
+    private readonly List<GameObject> cardPanels = new();
+    public List<LocationCardUI> cards = new();
+
+    // Camera Management
+    private Coroutine tiltCam;
+    private Coroutine repositionCam;
+
+    // Tasks
+    public List<Task> tasks;
+
+    // Temp stuff
+    private Transform spawnPoint;
+    private Transform npcContainer;
+    private CrowdPlayerManager playerManager;
 
     public CrowdPlayerController
     (
-        MonoBehaviour mono,
-        CharacterController controller,
-        // Transform player,
-        // Transform camera,
-        // Vector2 angleLimit,
-        float movementSpeed,
-        float appliedMovementSpeedPercentage,
-        // float jumpForce,
-        // float sensivity,
-        // bool invert,
-        GameObject npc,
-        int npcCount,
-        GameObject cardsUI,
-        List<GameObject> cardPanels,
-        List<UILocationCard> cards,
-        List<GameObject> NPCs
+        MonoBehaviour mono,                     // Reference to the mono class
+        Camera cam,                             // Reference to the top down camera
+        Vector3 camOffset,                      // Reference to the camera offset position
+        float camSmoothSpeed,                   // Reference to the camera movement
+        float camRotationSpeed,                 // Reference to the camera rotation
+        float movementSpeed,                    // Reference to the player movement speed
+        float appliedMovementSpeedPercentage,   // Reference to the applied player movement speed
+        float jumpForce,
+        GameObject npc,                         // Reference to the npc prefab
+        int npcCount,                           // Reference to the amount of npcs to spawn in for the player
+        LayerMask npcLayer,                     // Reference to the npc layer
+        Vector3 npcSpawnOffset,                 // Reference to the spawn offset for the npc
+        GameObject cardsUI,                      // Reference to the main panel for the UI location cards
+        Transform spawnPoint,
+        Transform npcContainer,
+        List<Task> tasks,
+        CrowdPlayerManager playerManager
+
     ) 
     {
         this.mono = mono;
+        this.npc = npc;
+        this.npcCount = npcCount;
+        this.npcSpawnOffset = npcSpawnOffset;
+        this.spawnPoint = spawnPoint;
+        this.npcContainer = npcContainer;
+        this.tasks = tasks;
+        this.playerManager = playerManager;
 
-        // movement = new
-        // (
-        //     controller,
-        //     player,
-        //     camera,
-        //     angleLimit,
-        //     movementSpeed,
-        //     appliedMovementSpeedPercentage,
-        //     jumpForce,
-        //     sensivity,
-        //     invert
-        // );
+        controller = mono.transform.GetChild(0).GetComponent<CharacterController>();
+        customNetworkBehaviour = mono.GetComponent<CustomNetworkBehaviour>();
+
+        if(controller == null) 
+        {
+            Debug.LogError("No charactercontroller found");
+            return;
+        }
+
+        if(customNetworkBehaviour == null) 
+        {
+            Debug.LogError("No custom network behaviour found!");
+            return;
+        }
 
         topDownMovement = new
         (
             controller,
             controller.transform,
             movementSpeed,
-            appliedMovementSpeedPercentage
+            appliedMovementSpeedPercentage,
+            jumpForce,
+            customNetworkBehaviour
         );
 
         UImanagement = new
         (
-            controller.transform.parent, 
+            mono.transform, 
             cardsUI, 
             cardPanels, 
             cards
         );
-        
-        npcContainer = controller.transform.parent.transform.GetChild(3);
-        mono.StartCoroutine(NPCsManagement.SpawnNPC(NPCs, npc, npcCount, npcContainer));    
+
+        cameraManagement = new
+        (
+            cam,
+            npcLayer,
+            controller.transform,
+            camOffset,
+            camSmoothSpeed,
+            camRotationSpeed
+        );
     }
 
-    public void Start(CrowdPlayerManager playerManager) 
+    public IEnumerator Start(CrowdPlayerManager playerManager) 
     {
+        mono.StartCoroutine(SpawnCrowdWithDelay());
         UImanagement.Start(mono, playerManager);
+        cameraManagement.Start();
+
+        // signal button
+        if(playerManager.transform.GetChild(4).GetChild(9).TryGetComponent<Button>(out var signalBtn))
+        {
+            if(signalBtn != null) 
+            {
+                signalBtn.onClick.RemoveAllListeners();
+                signalBtn.onClick.AddListener(() => 
+                {
+                    Debug.Log("Pressed signal: " + npcs.Count);
+                    foreach (var e in npcs)
+                    {
+                        NPCManager npc = e.GetComponent<NPCManager>();
+                        mono.StartCoroutine(npc.Signal(5f));
+                    }    
+                });
+            }
+        } else { Debug.LogError("Couldn't fetch the 'signalBtn shape button' "); yield break; }
+
+        yield break;
     }
 
+    private IEnumerator SpawnCrowdWithDelay()
+    {
+        yield return new WaitForSeconds(0.1f);
+        CrowdRpcBehaviour crowdRpcBehaviour = mono.GetComponent<CrowdRpcBehaviour>();
+        crowdRpcBehaviour.SetCorrectReferences(controller, npcCount, npc, npcSpawnOffset, this);
+
+        if(customNetworkBehaviour.CustomIsOwner())
+        {
+            crowdRpcBehaviour.SpawnCrowdServerRpc(customNetworkBehaviour.ownerClientID);
+        }
+
+    }
+
+    public void Update(CrowdPlayerManager playerManager) 
+    {
+        UImanagement.Update(playerManager);
+    }
+
+    // Player movement stuff
     public void MovementInput() 
     {
         movementInput = InputActionHandler.GetMovementInput();
         // movement.OverallMovement(movementInput, InputActionHandler.IsSprinting(), InputActionHandler.IsJumping(), ableToLook);
-        topDownMovement.OverallMovement(movementInput, InputActionHandler.IsSprinting());
+        topDownMovement.OverallMovement(movementInput, InputActionHandler.IsSprinting(), InputActionHandler.IsJumping());
     }
 
+    public void CheckPlayerPosition(Transform player) 
+    {
+        if (chosenLocation == null) 
+        {
+            Debug.LogWarning("❌ chosenLocation is NULL.");
+            return;
+        }
+
+        // Debug.Log($"Player Position: {player.position}");
+
+        float distance = Vector3.Distance(
+            new Vector3(player.position.x, 0, player.position.z), 
+            new Vector3(chosenLocation.position.x, 0, chosenLocation.position.z)
+        );
+
+        // Debug.Log($"Target Position: {chosenLocation.position}");
+        // Debug.Log($"📏 Distance to target: {distance}");
+
+        if (distance <= 10f) 
+        {
+            TaskLocation taskLocation = chosenLocation.gameObject.GetComponent<TaskLocation>();
+            taskLocation.fixable = true;
+            // Debug.Log("✅ Player is at the chosen location!");
+
+            float elapsedTime = 0;
+            float duration = 4f;
+
+            // Move the player towards one of the player positions
+            for (int i = 0; i < chosenLocation.childCount; i++)
+            {
+                playerPositionInsideTaskLocation = chosenLocation.GetChild(0).GetChild(i).GetChild(0);    
+                Debug.Log($"playerPositionInsideTaskLocation -> {playerPositionInsideTaskLocation.gameObject.name}");
+                // player.position = targetPosition.position;
+            }
+
+            while(elapsedTime < duration) 
+            {
+                elapsedTime += Time.deltaTime;
+                float t = elapsedTime / duration;
+                player.position = Vector3.Lerp(player.position, playerPositionInsideTaskLocation.position, t);
+            } 
+
+            isAtLocation = true;
+        }
+    }
+
+    // Camera stuff
+    public void CameraMovement() 
+    {
+        cameraManagement.CameraMovement();
+    }
+
+    public void TitlCamera(float distanceOffset, float interpolationDuration, PlayerFormationController playerFormationController) 
+    {
+        if(repositionCam != null) 
+        {
+            // Debug.Log("RepositionCamera coroutine is running and now set to stop");
+            mono.StopCoroutine(cameraManagement.RepositionCamera(interpolationDuration));
+            repositionCam = null;
+        }  
+
+        Debug.Log($"camera tilt position: {playerFormationController.formShapePosition.gameObject.name}");
+    
+        tiltCam = mono.StartCoroutine(cameraManagement.TiltCamera(playerFormationController.formShapePosition, distanceOffset, interpolationDuration));
+    }
+
+    public void RepositionCamera(float distanceOffset, float interpolationDuration, PlayerFormationController playerFormationController) 
+    {
+        if(tiltCam != null) 
+        {
+            // Debug.Log("Tilt coroutine is running and now set to stop");
+
+            mono.StopCoroutine(cameraManagement.TiltCamera(playerFormationController.formShapePosition, distanceOffset, interpolationDuration));
+            tiltCam = null;
+        }
+
+        repositionCam = mono.StartCoroutine(cameraManagement.RepositionCamera(interpolationDuration));
+    }
+    
+    public void DragNPC() 
+    {
+        cameraManagement.DragMovement();
+    }
+
+    // Location cards UI
     public void HideCards() 
     {
         UImanagement.HideCards();
@@ -100,7 +274,57 @@ public class CrowdPlayerController
         UImanagement.CardPanelNavigation();
     }
 
-    public void ChooseLocation(List<UILocationCard> cards, bool inUIMode)
+    public void SecondHalfOfChooseLocation(LocationCardUI card)
+    {
+        // if(MGameManager.instance.tasksPerRound.Count <= 0) return;
+
+        // Assign the tasks form the card
+        tasks = card.tasks;
+
+        // foreach (var task in tasks)
+        // {
+        //     if(MGameManager.instance.tasksPerRound != null) 
+        //     {
+        //         foreach (var item in MGameManager.instance.tasksPerRound)
+        //         {
+        //             if(task.taskName != item.taskName) 
+        //             {
+        //                 MGameManager.instance.tasksPerRound.Add(task);
+        //             }
+        //         }
+
+        //     } else { MGameManager.instance.tasksPerRound.Add(task); }
+        // }
+
+        Debug.Log($"Location: {chosenLocation.gameObject.name}");
+        locationChosen = true;
+        
+        // Set the formation location in the formation manager
+        if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))
+        {
+            Transform npcsLocation = null;
+
+            for (int i = 0; i < chosenLocation.childCount; i++)
+            {
+                npcsLocation = chosenLocation.GetChild(0).GetChild(i);    
+            } 
+
+            Debug.Log($"NPC location: {npcsLocation.gameObject.name}");
+            formationController.SetFormationLocation(npcsLocation);
+            
+            // If already in a formation, update it to use the new location
+            // NPCFormationManager formManager = formationController.formationManager;
+            // if (formManager != null && formManager.currentFormation != FormationType.Follow)
+            // {
+            //     // Re-apply current formation to update positions
+            //     formationController.ChangeFormation(formManager.currentFormation);
+            // }
+        }
+        
+        mono.StartCoroutine(ResetClickState(1.0f)); // 1 second delay
+    }
+
+    public void ChooseLocation(List<LocationCardUI> cards, bool inUIMode)
     {
         // If in UI mode and not already processing a click
         if (inUIMode)
@@ -120,25 +344,46 @@ public class CrowdPlayerController
                             if (!isProcessingClick)
                             {
                                 isProcessingClick = true;
-                                chosenLocation = card.location;
-                                Debug.Log($"Location: {chosenLocation.name}");
-                                isLocationChosen = true;
+                                playerManager.ChooseLocationServerRpc(cards.IndexOf(card));
+
+                                // chosenLocation = card.location;
+
+                                // Assign the tasks form the card
+                                // tasks = card.tasks;
+
+                                // foreach (var task in tasks)
+                                // {
+                                //     if(MGameManager.instance.tasksPerRound != null) 
+                                //     {
+                                //         foreach (var item in MGameManager.instance.tasksPerRound)
+                                //         {
+                                //             if(task.taskName != item.taskName) 
+                                //             {
+                                //                 MGameManager.instance.tasksPerRound.Add(task);
+                                //             }
+                                //         }
+
+                                //     } else { MGameManager.instance.tasksPerRound.Add(task); }
+                                // }
+        
+                                // Debug.Log($"Location: {chosenLocation.gameObject.name}");
+                                // locationChosen = true;
                                 
-                                // Set the formation location in the formation manager
-                                if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))
-                                {
-                                    formationController.SetFormationLocation(chosenLocation);
+                                // // Set the formation location in the formation manager
+                                // if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))
+                                // {
+                                //     formationController.SetFormationLocation(chosenLocation);
                                     
-                                    // If already in a formation, update it to use the new location
-                                    NPCFormationManager formManager = formationController.formationManager;
-                                    if (formManager != null && formManager.currentFormation != FormationType.Follow)
-                                    {
-                                        // Re-apply current formation to update positions
-                                        formationController.ChangeFormation(formManager.currentFormation);
-                                    }
-                                }
+                                //     // If already in a formation, update it to use the new location
+                                //     NPCFormationManager formManager = formationController.formationManager;
+                                //     if (formManager != null && formManager.currentFormation != FormationType.Follow)
+                                //     {
+                                //         // Re-apply current formation to update positions
+                                //         formationController.ChangeFormation(formManager.currentFormation);
+                                //     }
+                                // }
                                 
-                                mono.StartCoroutine(ResetClickState(1.0f)); // 1 second delay
+                                // mono.StartCoroutine(ResetClickState(1.0f)); // 1 second delay
 
                             }
                         });
@@ -153,13 +398,13 @@ public class CrowdPlayerController
             isProcessingClick = false;
         }
 
-        if (!isLocationChosen) 
-        {
-            RandomizeLocation(cards);
-        }
+        // if (!isLocationChosen) 
+        // {
+        //     RandomizeLocation(cards);
+        // }
     }
 
-    private void RandomizeLocation(List<UILocationCard> cards)
+    private void RandomizeLocation(List<LocationCardUI> cards)
     {
         // Check if we have any cards to randomize from
         if (cards.Count > 0)
@@ -168,7 +413,7 @@ public class CrowdPlayerController
             chosenLocation = cards[randomIndex].location;
 
             Debug.Log($"Randomized Location: {chosenLocation.name}");
-            isLocationChosen = true;
+            locationChosen = true;
 
             // Set the formation location in the formation manager
             if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))
@@ -186,87 +431,14 @@ public class CrowdPlayerController
         }
     }
 
-    
-    // public void ConfirmShape() 
-    // {
-    //     UImanagement.shapeManagerUI.ConfirmShape(mono);
-    // }
-    
-    #region Oldcode
-    // public void ChooseLocation(List<UILocationCard> cards, bool _bool)
-    // {
-    //     // If in UI mode and not already processing a click
-    //     if (_bool)
-    //     {
-    //         if (cards.Count > 0)
-    //         {
-    //             for (int i = 0; i < cards.Count; i++)
-    //             {
-    //                 var card = cards[i];
-                    
-    //                 // Remove any existing listeners to prevent duplicates
-    //                 if(card.btn != null) 
-    //                 {
-    //                     card.btn.onClick.RemoveAllListeners();
-    //                     card.btn.onClick.AddListener(() =>
-    //                     {
-    //                         if (!isProcessingClick)
-    //                         {
-    //                             isProcessingClick = true;
-    //                             chosenLocation = card.location;
-    //                             // Debug.Log($"Location: {chosenLocation}");
-    //                             // NPCsManagement.TriggerAllMovements(card.location);
-                                
-    //                             mono.StartCoroutine(ResetClickState(1.0f)); // 1 second delay
-    //                         }
-    //                     });
-    //                 }
-    //             }
-    //         }
-    //     }
-        
-    //     // Only reset if we're not in UI mode
-    //     if (!_bool)
-    //     {
-    //         isProcessingClick = false;
-    //     }
-    // }
-
-    #endregion
-
     private IEnumerator ResetClickState(float delay)
     {
         yield return new WaitForSeconds(delay);
         isProcessingClick = false;
     }
 
-    public void CheckPlayerPosition(Transform player) 
-    {
-        if(Vector3.Distance(new Vector3(player.position.x, 0, player.position.z), new Vector3(chosenLocation.position.x, 0, chosenLocation.position.z)) <= 1f) 
-        {
-            isAtLocation = true;
-            Debug.Log("Player is at the chosen location");
-        }
-    }
 
-    // public void OpenShapePanel(ref bool inUIMode) 
-    // {
-    //     if(inUIMode) 
-    //     {
-    //         UImanagement.OpenShapePanelUI();
-    //     }
-    // }
-
-    // public void CloseShapePanel(ref bool inUIMode) 
-    // {
-    //     if(inUIMode) 
-    //     {
-    //         UImanagement.CloseShapePanelUI();
-    //         inUIMode = false;
-    //     }
-    // }
-
-    public void MoveTowardsChosenLocation(Transform transform, List<GameObject> npcs) 
+    public void MoveTowardsChosenLocation(Transform transform) 
     {
         if (chosenLocation == null) return;
 

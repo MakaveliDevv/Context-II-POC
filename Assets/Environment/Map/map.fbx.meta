@@ -3,37 +3,7 @@ guid: 84c3de242609aad47a0d5478cab44a92
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Buildings.003
-    second: {fileID: 2100000, guid: d17c0545bd659054d851f08a6c640f96, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Material
-    second: {fileID: 2100000, guid: 8b821357a12482a45af69fe4596cb30a, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Material.001
-    second: {fileID: 2100000, guid: 498281d3fc93fe64a8c3d2098ee67743, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Objects
-    second: {fileID: 2100000, guid: 554305d07d356c84faac55f83842680a, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: cliffs
-    second: {fileID: 2100000, guid: 554305d07d356c84faac55f83842680a, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: terrain
-    second: {fileID: 2100000, guid: 498281d3fc93fe64a8c3d2098ee67743, type: 2}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -1,5 +1,7 @@
+using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
-public class NPCManager : MonoBehaviour
+public class NPCManager : NetworkBehaviour
 {   
     // private NPCPatrol nPCPatrol;
     // [SerializeField] private LayerMask layerMask;
@@ -13,10 +15,12 @@ public class NPCManager : MonoBehaviour
 
     // NPC Follow
     public NPCFollower nPCFollower;
+    CustomNetworkBehaviour customNetworkBehaviour;
 
     [Header("Movement Parameters")]
     public float smoothSpeed = 5f;
     public float stoppingThreshold = 0.1f;
+    public float movementSpeed;
     
     [Header("Positioning Parameters")]
     public float minDistanceBehindTarget = 2f;
@@ -25,7 +29,9 @@ public class NPCManager : MonoBehaviour
     public float maxNPCDistance = 3f;
     public float spreadFactor = 1.5f;
     public float fixedYPosition = 1f;
+    public bool moveable;
 
+    public bool signal;
 
     void Awake()
     {
@@ -52,27 +58,65 @@ public class NPCManager : MonoBehaviour
             minNPCDistance,
             maxNPCDistance,
             spreadFactor,
-            fixedYPosition
+            fixedYPosition,
+            movementSpeed
         );
 
-
+        moveable = true;
     }
 
     void Start()
     {
-        nPCFollower.CustomStart(this);
+        // nPCFollower.Start(this);
+        nPCFollower.Start();
+        customNetworkBehaviour = GetComponent<CustomNetworkBehaviour>();
+        StartCoroutine(nPCFollower.FindPlayer(this));
     }
 
     void Update()
     {
         // nPCPatrol.MoveNPC();
+        if(customNetworkBehaviour.CustomIsOwner())
+        {
+            if(moveable) 
+            {
+                nPCFollower.Update(this);
+            }      
+        }
+    }
 
-        nPCFollower.CustomUpdate(this);
-        
+    public IEnumerator Signal(float signalTimer) 
+    {
+        Debug.Log("Start signaling");
+        // Show UI on top of the npc
+        //gameObject.transform.GetChild(0).gameObject.SetActive(true);
+        SignalServerRpc(true);
+
+        yield return new WaitForSeconds(signalTimer);
+
+        SignalServerRpc(false);
+        //gameObject.transform.GetChild(0).gameObject.SetActive(false);
+    }
+
+
+    [ServerRpc(RequireOwnership = false)]
+    void SignalServerRpc(bool active)
+    {
+        Debug.Log("Signal on server");
+        gameObject.transform.GetChild(1).gameObject.SetActive(active);
+        SignalClientRpc(active);
+    }
+    [ClientRpc]
+    void SignalClientRpc(bool active)
+    {
+        Debug.Log("Signal on client");
+        gameObject.transform.GetChild(1).gameObject.SetActive(active);
     }
     
-    private void OnDestroy()
+    public override void OnDestroy()
     {
+        base.OnDestroy();
+        
         if (MGameManager.instance != null && MGameManager.instance.allNPCs.Contains(this))
         {
             MGameManager.instance.allNPCs.Remove(this);

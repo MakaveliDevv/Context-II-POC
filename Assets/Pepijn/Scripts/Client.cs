@@ -17,6 +17,7 @@ public class Client : NetworkBehaviour
     void Start()
     {
         if(clientManager == null) clientManager = FindFirstObjectByType<ClientManager>();
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
         NetworkManager.Singleton.SceneManager.OnLoadComplete += OnClientLoadedScene;
         server = GameObject.Find("Server(Clone)").GetComponent<Server>();
         DontDestroyOnLoad(gameObject);
@@ -90,6 +91,15 @@ public class Client : NetworkBehaviour
         lionNetworkInstance.gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
     }
 
+    private void OnDestroy()
+    {
+        // Unsubscribe to prevent errors when the object is destroyed
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnect;
+        }
+    }
+
     [ServerRpc]
     public void SpawnCrowdAtRandomPositionServerRPC(ulong _clientID)
     {
@@ -135,6 +145,21 @@ public class Client : NetworkBehaviour
         child.position = parent.position;
 
         // Debug.Log($"[Fix] Parent Pos: {parent.position}, Child World Pos: {child.position}, Child Local Pos: {child.localPosition}");
+    }
+
+    private void OnClientDisconnect(ulong clientId)
+    {
+        if (NetworkManager.Singleton.IsServer)
+        {
+            foreach (var obj in FindObjectsOfType<NetworkObject>())
+            {
+                if (obj.IsSpawned && obj.OwnerClientId == clientId)
+                {
+                    obj.Despawn(true);  // Remove from all clients
+                    Destroy(obj.gameObject);  // Ensure removal
+                }
+            }
+        }
     }
 
 }

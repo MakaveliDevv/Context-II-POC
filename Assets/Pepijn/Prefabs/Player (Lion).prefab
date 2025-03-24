@@ -9523,7 +9523,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 80
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!65 &4599386735126560811
 BoxCollider:
@@ -9630,7 +9630,10 @@ MonoBehaviour:
   - Streetlamp
   - Fence
   lastObjectTask: {fileID: 0}
-  correctTask: 0
+  taskLocation: {fileID: 0}
+  objectPlaced: 0
+  encounter: 0
+  objectDropped: 0
 --- !u!114 &3425554454912361435
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9646,7 +9649,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   maxSpeed: 5
   acceleration: 10
-  deceleration: 8
+  deceleration: 20
   rotationSpeed: 200
   animator: {fileID: 2646079631287068894}
 --- !u!114 &8384574020799686969

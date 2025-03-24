@@ -88,4 +88,22 @@ public class GameManagerRpcBehaviour : NetworkBehaviour
             }
         }
     }
+
+    public void UpdatePoints(int _points)
+    {
+        UpdatePointsServerRpc(_points);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void UpdatePointsServerRpc(int _points)
+    {
+        MGameManager.instance.currentPoint += _points;
+        UpdatePointsClientRpc(_points);
+    }
+    [ClientRpc]
+    void UpdatePointsClientRpc(int _points)
+    {
+        MGameManager.instance.currentPoint += _points;
+        MGameManager.instance.pointsText.text = "Points: " + MGameManager.instance.currentPoint;
+    }
 }

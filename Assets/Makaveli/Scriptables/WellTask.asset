@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dcf803fdad922174cbb5674ffe5514f6, type: 3}
-  m_Name: ClockTowerTask
+  m_Name: WellTask
   m_EditorClassIdentifier: 
-  sprite: {fileID: 21300000, guid: bef16e789544dba4b98348f52bda6c99, type: 3}
-  taskName: ClockTowerTask
-  description: clocktower
+  sprite: {fileID: 21300000, guid: 7730a0c0e38f47e46bb8abdff2c443bd, type: 3}
+  taskName: WellTask
+  description: well well well
   isCompleted: 0

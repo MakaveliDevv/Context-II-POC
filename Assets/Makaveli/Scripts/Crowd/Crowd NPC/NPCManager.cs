@@ -15,6 +15,7 @@ public class NPCManager : NetworkBehaviour
 
     // NPC Follow
     public NPCFollower nPCFollower;
+    CustomNetworkBehaviour customNetworkBehaviour;
 
     [Header("Movement Parameters")]
     public float smoothSpeed = 5f;
@@ -68,16 +69,20 @@ public class NPCManager : NetworkBehaviour
     {
         // nPCFollower.Start(this);
         nPCFollower.Start();
+        customNetworkBehaviour = GetComponent<CustomNetworkBehaviour>();
         StartCoroutine(nPCFollower.FindPlayer(this));
     }
 
     void Update()
     {
         // nPCPatrol.MoveNPC();
-        if(moveable) 
+        if(customNetworkBehaviour.CustomIsOwner())
         {
-            nPCFollower.Update(this);
-        }      
+            if(moveable) 
+            {
+                nPCFollower.Update(this);
+            }      
+        }
     }
 
     public IEnumerator Signal(float signalTimer) 

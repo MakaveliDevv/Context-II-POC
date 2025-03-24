@@ -5,10 +5,12 @@ using Unity.Netcode;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine.Rendering;
+using System.Linq;
 
 public class Lion : NetworkBehaviour
 {
-    [SerializeField] CustomNetworkBehaviour customNetworkBehaviour;
+    [SerializeField] public CustomNetworkBehaviour customNetworkBehaviour;
     public int spheresRemaining, blocksRemaining, cylindersRemaining;
     public TextMeshProUGUI spheresRemainingText, blocksRemainingText, cylindersRemainingText;
     public string selectedObject = "";
@@ -26,6 +28,7 @@ public class Lion : NetworkBehaviour
 
     public Task lastObjectTask = null;
     public Transform taskLocation;
+    public TaskLocation taskLocationRef;
     public bool objectPlaced;
     public bool encounter;
     public bool objectDropped;
@@ -130,7 +133,9 @@ public class Lion : NetworkBehaviour
 
         //RequestReparentServerRpc(carryingObject.gameObject, gameObject, true);
         //objectsToPickup.Insert(0, carryingObject.gameObject);
-        SpawnObjectOnServerRpc(carryingObject.objName, carryingObject.transform.position, carryingObject.transform.rotation);
+        bool solvingTask = false;
+        if(MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.SOLVING_TASK) solvingTask = true;
+        SpawnObjectOnServerRpc(carryingObject.objName, carryingObject.transform.position, carryingObject.transform.rotation, solvingTask);
         ChangeObjectPlacedBoolOnServerRpc(true);
 
         lastObjectTask = carryingObject.task;
@@ -179,30 +184,39 @@ public class Lion : NetworkBehaviour
         {
             if(!objectsToPickup.Contains(collider.gameObject)) objectsToPickup.Insert(0, collider.gameObject);
         }
-    }
 
-    void OnTriggerStay(Collider collider)
-    {
-        // If in range of location
         if(collider.CompareTag("TaskableLocation")) 
         {
+            Debug.Log("Lion collided with task location");
             if(MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.SOLVING_TASK) 
             {
-                if(!encounter) 
-                {
-                    taskLocation = collider.transform;
-                    encounter = true;
-
-                    // If object placed
-                    if(objectDropped) 
-                    {
-                        // Lion placed the object 
-                        MGameManager.instance.lionPlacedObject = true;
-                    }
-                }
+                taskLocation = collider.transform;
             }
         }
     }
+
+    // void OnTriggerStay(Collider collider)
+    // {
+    //     // If in range of location
+    //     if(collider.CompareTag("TaskableLocation")) 
+    //     {
+    //         if(MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.SOLVING_TASK) 
+    //         {
+    //             if(!encounter) 
+    //             {
+    //                 taskLocation = collider.transform;
+    //                 encounter = true;
+
+    //                 // If object placed
+    //                 if(objectDropped) 
+    //                 {
+    //                     // Lion placed the object 
+    //                     //MGameManager.instance.lionPlacedObject = true;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     void OnTriggerExit(Collider collider)
     {
@@ -246,7 +260,7 @@ public class Lion : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    void SpawnObjectOnServerRpc(string _objName, Vector3 _position, Quaternion _rotation)
+    void SpawnObjectOnServerRpc(string _objName, Vector3 _position, Quaternion _rotation, bool solvingTask)
     {   
         Debug.Log($"Trying to spawn {_objName}");
         GameObject _newObj = Instantiate(objectPrefabsDict[_objName], _position, _rotation);
@@ -254,19 +268,29 @@ public class Lion : NetworkBehaviour
         NetworkObject _newObjInstance = _newObj.GetComponent<NetworkObject>();
 
         PlacableObjects placedObject = _newObjInstance.gameObject.GetComponent<PlacableObjects>();
-        placedObject.PlaceObject(_newObj);
+        placedObject.PlaceObject(this);
         _newObjInstance.Spawn();
-        NotifyClientOfSpawnClientRpc(_newObjInstance.NetworkObjectId);
+        NotifyClientOfSpawnClientRpc(_newObjInstance.NetworkObjectId, solvingTask);
+
+        if(!solvingTask)
+        {
+            StartCoroutine(DestroyObject(_newObjInstance));
+        }
+    }
+
+    IEnumerator DestroyObject(NetworkObject _obj)
+    {
+        yield return new WaitForSeconds(5);
+        _obj.Despawn();
+        Destroy(_obj);
     }
 
     [ClientRpc]
-    void NotifyClientOfSpawnClientRpc(ulong spawnedObjectId)
+    void NotifyClientOfSpawnClientRpc(ulong spawnedObjectId, bool _success)
     {
         // Find the spawned object by ID
         NetworkObject spawnedObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[spawnedObjectId];
         PlacableObjects placedObject = spawnedObject.gameObject.GetComponent<PlacableObjects>();
-        placedObject.PlaceObject(spawnedObject.gameObject);
-        // Add it to the client's list
-        //carryingObject = _objectToPickup.gameObject.GetComponent<PlacableObjects>();
+        placedObject.PlaceObject(this);
     }
 }

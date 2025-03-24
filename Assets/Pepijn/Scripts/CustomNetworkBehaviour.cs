@@ -12,6 +12,7 @@ public class CustomNetworkBehaviour : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void RequestMoveServerRpc(Vector3 _position, Quaternion _rotation, Vector3 _localScale)
     {
+        Debug.Log($"Reqeusting move on server: {gameObject.name} to {_position}");
         // Set the position on the server
         transform.SetPositionAndRotation(_position, _rotation);
         transform.localScale =_localScale;
@@ -48,6 +49,7 @@ public class CustomNetworkBehaviour : NetworkBehaviour
     public bool CustomIsOwner()
     {
         // Debug.Log("owner ID: " + ownerClientID + ", local ID: " + NetworkManager.Singleton.LocalClientId);
+        if( NetworkManager.Singleton == null) return false;
         if(ownerClientID == NetworkManager.Singleton.LocalClientId) return true;
         else return false;
     }

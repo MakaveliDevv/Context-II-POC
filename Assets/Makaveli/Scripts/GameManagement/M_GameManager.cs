@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -55,6 +56,7 @@ public class MGameManager : NetworkBehaviour
     [Header("Point System Management")]
     public float currentPoint = 0;
     public float maxPoints;
+    public TextMeshProUGUI pointsText;
 
     void Awake()
     {
@@ -159,51 +161,64 @@ public class MGameManager : NetworkBehaviour
             
             // Fetch the location
             Transform taskLocation = lion.taskLocation;
-            Debug.Log($"From SolvingTaskState method: {taskLocation.gameObject.name}");
+            if(taskLocation == null) return;
+            currentInteractableLocation = lion.taskLocationRef;
 
-            // Try to fetch the TaskLocation component
-            if(taskLocation.gameObject.TryGetComponent<TaskLocation>(out var _taskLocation)) 
-            {
-                currentInteractableLocation = _taskLocation; // Assign the task location 
-                Debug.Log($"current interactable location: {currentInteractableLocation.gameObject.name}");
-            }
-            else { Debug.LogError("Couldn't fetch the TaskLocation component, something went wrong!"); return; }
+            Debug.Log($"From SolvingTaskState method: {taskLocation.gameObject.name}");
+            Debug.Log($"current interactable location: {currentInteractableLocation.gameObject.name}");
 
             // Check if the object placed is the same task as one of the tasks on the location
-            foreach (var task in currentInteractableLocation.tasks)
+            if(lion.lastObjectTask != null) 
             {
-                Debug.Log("last object task:" + lion.lastObjectTask.name);
-                Debug.Log("Task:" + task.name);
-                if(lion.lastObjectTask.taskName == task.taskName) 
+                foreach (var task in currentInteractableLocation.tasks)
                 {
-                    currentInteractableLocation.locationFixed = true;
-                    currentInteractableLocation.fixable = false;
-
-                    // Add the task to complete task
-                    for (int i = 0; i < possibleTasks.Count; i++)
+                    Debug.Log("last object task:" + lion.lastObjectTask.name);
+                    Debug.Log("Task:" + task.name);
+                    if(lion.lastObjectTask.taskName == task.taskName) 
                     {
-                        if (possibleTasks[i].taskName == task.taskName) 
-                        {
-                            completeTasks.Add(possibleTasks[i]);
-                            possibleTasks.RemoveAt(i); 
-                            break;
-                        }
-                    }
+                        currentInteractableLocation.locationFixed = true;
+                        currentInteractableLocation.fixable = false;
 
-                    taskComplete = true;
-                    currentPoint += 1f;
-                    Debug.Log($"Adding +1 point to {currentPoint}");
-                }    
-                else 
-                {
-                    currentPoint += 0;
-                    Debug.Log($"Adding +0 point to {currentPoint}");
+                        // Add the task to complete task
+                        for (int i = 0; i < possibleTasks.Count; i++)
+                        {
+                            if (possibleTasks[i].taskName == task.taskName) 
+                            {
+                                completeTasks.Add(possibleTasks[i]);
+                                possibleTasks.RemoveAt(i); 
+                                break;
+                            }
+                        }
+
+                        taskComplete = true;
+                        //currentPoint += 1f;
+                        UpdatePoints(1);
+                        Debug.Log($"Adding +1 point to {currentPoint}");
+                    }    
+                    else 
+                    {
+                        //currentPoint += 0;
+                        Debug.Log($"Adding +0 point to {currentPoint}");
+                    }
+                    
                 }
+
+                StartCoroutine(DisplayEndRound());
             }
             
             // StartCoroutine(DisplayEndRound(lion));
-            StartCoroutine(DisplayEndRound());
         }
+        else
+        {
+            Debug.Log($"SolvingTaskState: lionPlacedObject: {lionPlacedObject}, taskStarted {taskStarted}");
+        }
+    }
+
+
+    public void UpdatePoints(int _points)
+    {
+        if(!lion.customNetworkBehaviour.CustomIsOwner()) return;
+        gameManagerRpcBehaviour.UpdatePoints(_points);
     }
 
     private IEnumerator DisplayEndRound() 

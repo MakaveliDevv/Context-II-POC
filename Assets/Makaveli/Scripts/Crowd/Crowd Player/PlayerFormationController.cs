@@ -104,10 +104,6 @@ public class PlayerFormationController : MonoBehaviour
             // Use the chosenLocation from the player controller if available
             if (playerManager.playerController.chosenLocation != null)
             {
-                // formationManager.SetTargetLocation(playerManager.playerController.chosenLocation);
-
-                // Fetch the shape position
-                // formShapePosition = playerManager.playerController.playerPositionInsideTaskLocation.parent;
                 Debug.Log($"form shape position: {formShapePosition.gameObject.name}");
                 formationManager.SetTargetLocation(formShapePosition);
             }
@@ -156,12 +152,3 @@ public class PlayerFormationController : MonoBehaviour
         }
     }
 }
-
-
-
-
-
-
-
-
-

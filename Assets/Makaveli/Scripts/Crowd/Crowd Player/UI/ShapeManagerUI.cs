@@ -44,9 +44,6 @@ public class ShapeManagerUI
         InitializeButtons(playerManager);
 
         yield return null;
-        
-        // Set up button listeners
-        // playerManager.StartCoroutine(AddListeners(playerManager));
    
         // Initialize panel by activating only the first object
         UpdatePanel();

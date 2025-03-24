@@ -16,4 +16,5 @@ MonoBehaviour:
   taskName: TreeTask
   description: 'The citizens want to have more flora in the town and therefore a
     tree would be essential '
+  taskText: '- Add a tree'
   isCompleted: 0

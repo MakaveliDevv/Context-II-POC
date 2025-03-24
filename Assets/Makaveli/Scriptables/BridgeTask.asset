@@ -16,4 +16,5 @@ MonoBehaviour:
   taskName: BridgeTask
   description: The bridge is missing! A bridge is necessary to enable citizens to
     travel more quickly.
+  taskText: '- Add a bridge'
   isCompleted: 0

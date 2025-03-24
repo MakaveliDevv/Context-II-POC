@@ -15,4 +15,5 @@ MonoBehaviour:
   sprite: {fileID: 21300000, guid: a8d3d06b703ce9c4784d15cb47afd1fb, type: 3}
   taskName: BenchTask
   description: 
+  taskText: '- Add a bench'
   isCompleted: 0

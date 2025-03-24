@@ -15,4 +15,5 @@ MonoBehaviour:
   sprite: {fileID: 21300000, guid: 6267d633eddb5c441941e1d461f6af69, type: 3}
   taskName: BarnHouseTask
   description: 
+  taskText: '- Add a barn'
   isCompleted: 0

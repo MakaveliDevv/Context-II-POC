@@ -5,13 +5,13 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Makaveli/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
-  - enabled: 1
+  - enabled: 0
     path: Assets/Pepijn/Scenes/ServerTesting.unity
     guid: 70cc4093c5dabe048be4cb8a5b10f1a4
-  - enabled: 1
+  - enabled: 0
     path: Assets/Pepijn/Scenes/P_SampleScene.unity
     guid: 4874e8e44592ad64f9cbaaf9f16bfe39
   - enabled: 1

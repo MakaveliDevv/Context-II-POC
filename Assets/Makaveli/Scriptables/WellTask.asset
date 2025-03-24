@@ -15,4 +15,5 @@ MonoBehaviour:
   sprite: {fileID: 21300000, guid: 7730a0c0e38f47e46bb8abdff2c443bd, type: 3}
   taskName: WellTask
   description: well well well
+  taskText: '- Add a well'
   isCompleted: 0

@@ -4,10 +4,6 @@ using UnityEngine;
 using Unity.Netcode;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
-using UnityEngine.Rendering;
-using System.Linq;
-
 public class Lion : NetworkBehaviour
 {
     [SerializeField] public CustomNetworkBehaviour customNetworkBehaviour;

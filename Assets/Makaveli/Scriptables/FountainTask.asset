@@ -15,4 +15,5 @@ MonoBehaviour:
   sprite: {fileID: 21300000, guid: bef16e789544dba4b98348f52bda6c99, type: 3}
   taskName: FountainTask
   description: fountain
+  taskText: '- Add a fountain'
   isCompleted: 0

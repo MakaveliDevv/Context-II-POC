@@ -8564,10 +8564,9 @@ MonoBehaviour:
   spawnLocations: 0
   stateChange: 0
   spawnInTimer: 2
-  lionPlacedObject: 0
-  currInterLoc: {fileID: 0}
-  currentInteractableLocation: {fileID: 0}
   lion: {fileID: 0}
+  lionPlacedObject: 0
+  currentInteractableLocation: {fileID: 0}
   currentPoint: 0
   maxPoints: 0
 --- !u!4 &3071420781276761187

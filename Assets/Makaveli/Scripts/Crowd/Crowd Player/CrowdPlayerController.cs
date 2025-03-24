@@ -55,6 +55,7 @@ public class CrowdPlayerController
         float camRotationSpeed,                 // Reference to the camera rotation
         float movementSpeed,                    // Reference to the player movement speed
         float appliedMovementSpeedPercentage,   // Reference to the applied player movement speed
+        float jumpForce,
         GameObject npc,                         // Reference to the npc prefab
         int npcCount,                           // Reference to the amount of npcs to spawn in for the player
         LayerMask npcLayer,                     // Reference to the npc layer
@@ -97,6 +98,7 @@ public class CrowdPlayerController
             controller.transform,
             movementSpeed,
             appliedMovementSpeedPercentage,
+            jumpForce,
             customNetworkBehaviour
         );
 

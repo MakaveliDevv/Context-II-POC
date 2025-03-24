@@ -4,6 +4,7 @@ using UnityEngine;
 using Unity.Netcode;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 
 public class Lion : NetworkBehaviour
 {
@@ -24,8 +25,10 @@ public class Lion : NetworkBehaviour
     [SerializeField] List<string> objectNames;
 
     public Task lastObjectTask = null;
+    public Transform taskLocation;
     public bool objectPlaced;
-    public bool correctTask;
+    public bool encounter;
+    public bool objectDropped;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public override void OnNetworkSpawn()
@@ -97,7 +100,7 @@ public class Lion : NetworkBehaviour
 
     void MoveObjects()
     {
-        if(Input.GetKeyDown(KeyCode.E))
+        if(Input.GetKeyDown(KeyCode.E) && !objectDropped)
         {
             objectPlaced = false;
 
@@ -133,8 +136,15 @@ public class Lion : NetworkBehaviour
         lastObjectTask = carryingObject.task;
         Destroy(carryingObject.gameObject);
         carryingObject = null;
+        objectDropped = true;
+        StartCoroutine(ReseetBool());
     }
 
+    private IEnumerator ReseetBool() 
+    {
+        yield return new WaitForSeconds(2f);
+        objectDropped = false;
+    }
     // [ServerRpc(RequireOwnership = false)]
     // void RequestReparentServerRpc(NetworkObjectReference objectRef, NetworkObjectReference newParentRef, bool unparent)
     // {
@@ -171,9 +181,6 @@ public class Lion : NetworkBehaviour
         }
     }
 
-    public bool encounter;
-    public Transform taskLocation;
-
     void OnTriggerStay(Collider collider)
     {
         // If in range of location
@@ -181,13 +188,13 @@ public class Lion : NetworkBehaviour
         {
             if(MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.SOLVING_TASK) 
             {
-                taskLocation = collider.transform;
                 if(!encounter) 
                 {
+                    taskLocation = collider.transform;
                     encounter = true;
 
                     // If object placed
-                    if(objectPlaced) 
+                    if(objectDropped) 
                     {
                         // Lion placed the object 
                         MGameManager.instance.lionPlacedObject = true;
@@ -243,13 +250,12 @@ public class Lion : NetworkBehaviour
     {   
         Debug.Log($"Trying to spawn {_objName}");
         GameObject _newObj = Instantiate(objectPrefabsDict[_objName], _position, _rotation);
+        // placableObject = _newObj;
         NetworkObject _newObjInstance = _newObj.GetComponent<NetworkObject>();
 
         PlacableObjects placedObject = _newObjInstance.gameObject.GetComponent<PlacableObjects>();
-        placedObject.PlaceObject();
-
+        placedObject.PlaceObject(_newObj);
         _newObjInstance.Spawn();
-
         NotifyClientOfSpawnClientRpc(_newObjInstance.NetworkObjectId);
     }
 
@@ -259,7 +265,7 @@ public class Lion : NetworkBehaviour
         // Find the spawned object by ID
         NetworkObject spawnedObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[spawnedObjectId];
         PlacableObjects placedObject = spawnedObject.gameObject.GetComponent<PlacableObjects>();
-        placedObject.PlaceObject();
+        placedObject.PlaceObject(spawnedObject.gameObject);
         // Add it to the client's list
         //carryingObject = _objectToPickup.gameObject.GetComponent<PlacableObjects>();
     }

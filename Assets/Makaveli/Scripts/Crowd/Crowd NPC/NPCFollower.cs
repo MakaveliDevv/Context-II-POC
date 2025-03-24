@@ -5,6 +5,7 @@ public class NPCFollower
 {
     [Header("References")]
     public Transform target;
+    private CrowdPlayerManager Player;
     public Transform transform;
     private CharacterController controller;
 
@@ -30,7 +31,9 @@ public class NPCFollower
     private Vector3 lastValidPosition;
     private bool isStuck = false;
     private float stuckTimer = 0f;
-    private float stuckTimeThreshold = 0.8f;
+    private readonly float stuckTimeThreshold = 0.8f;
+    private Vector3 velocity;
+    private readonly float gravity = 9.81f;
 
     // Smoothing parameters
     public Vector3 currentVelocity;
@@ -97,6 +100,7 @@ public class NPCFollower
             if(npc != null) 
             {
                 target = npc.transform.parent.GetChild(0).transform;
+                Player = target.GetComponent<CrowdPlayerManager>();
             }
             else 
             {
@@ -159,12 +163,23 @@ public class NPCFollower
 
         // Apply movement
         ApplyMovement(npc);
+        ApplyGravity();
         
         // Update last valid position if not stuck
         if (!isStuck)
         {
             lastValidPosition = controller.transform.position;
         }
+    }
+
+    private void ApplyGravity() 
+    {
+        // If controller not grounded
+        if(!controller.isGrounded) velocity.y -= gravity * Time.deltaTime;
+        else if(InputActionHandler.IsJumping()) velocity.y = Player.jumpForce * 1.5f;
+        	
+        // Move controller
+        controller.Move(velocity * Time.deltaTime);
     }
 
     void CheckIfStuck()

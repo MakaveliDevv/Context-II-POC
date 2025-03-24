@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,7 +10,7 @@ public class PlacableObjects : MonoBehaviour
     [SerializeField] Material unplacableMaterial, placableMaterial;
     [SerializeField] Material originalMaterial;
     MeshRenderer meshRenderer;
-    [SerializeField] public Vector3 spawnOffset;
+    public Vector3 spawnOffset;
 
     // -------------------------------------
     public Task task;
@@ -61,13 +62,51 @@ public class PlacableObjects : MonoBehaviour
         }
     }
 
-    public void PlaceObject()
+    public void PlaceObject(GameObject go)
     {
         meshRenderer = GetComponent<MeshRenderer>();
         Debug.Log($"Changing {meshRenderer.gameObject.name}'s material to {originalMaterial.name}");
         meshRenderer.material = originalMaterial;
         placed = true;
         GetComponent<Collider>().isTrigger = false;
-        MGameManager.instance.currentPoint -= 1;
+
+        if(MGameManager.instance.gamePlayManagement != MGameManager.GamePlayManagement.SOLVING_TASK) 
+        {
+            MGameManager.instance.currentPoint -= 1;
+            Debug.Log("object placed in not solving state so -1 point is applied");
+            
+            // Destroy the object after a few seconds
+            // Destroy(go, 5f);           
+        }
+        else if(MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.SOLVING_TASK) 
+        {
+            if(go.TryGetComponent<PlacableObjects>(out var placableObject)) 
+            {
+                Collider[] nearbyColliders = Physics.OverlapSphere(transform.position, 1.5f); 
+                bool foundValidLocation = false;
+
+                foreach (var nearbyCollider in nearbyColliders)
+                {
+                    if (nearbyCollider.CompareTag("TaskableLocation"))
+                    {
+                        foundValidLocation = true;
+                        break; 
+                    }
+                }
+
+                if (!foundValidLocation)
+                {
+                    MGameManager.instance.currentPoint -= 1;
+                    Debug.Log("Object placed in a non-taskable location, and no valid location nearby. -1 point applied");
+
+                    // Destroy the object after a few seconds
+                    // Destroy(go, 5f);
+                }
+            }
+            else 
+            {
+                Debug.LogError("Couldnt fetch the PlacableObjects component");
+            }
+        }
     }
 }

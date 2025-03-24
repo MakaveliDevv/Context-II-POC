@@ -14,6 +14,7 @@ public class CrowdPlayerManager : NetworkBehaviour
     [Header("Movement Management")]
     [SerializeField] private float movementSpeed = 5f;
     [SerializeField] private float aplliedMovementSpeedPercentage = .5f;
+    public float jumpForce;
 
     // UI Management
     [Header("UI Management")]
@@ -63,6 +64,7 @@ public class CrowdPlayerManager : NetworkBehaviour
             camRotationSpeed,                   // Reference to the camera rotation
             movementSpeed,                      // Reference to the player movement speed
             aplliedMovementSpeedPercentage,     // Reference to the applied player movement speed
+            jumpForce,
             npcPrefab,                          // Reference to the npc prefab
             npcCount,                           // Reference to the amount of npcs to spawn in for the player
             npcLayer,                           // Reference to the npc layer
@@ -256,7 +258,7 @@ public class CrowdPlayerManager : NetworkBehaviour
 
                 if(signal) 
                 {
-                    transform.GetChild(4).GetChild(8).gameObject.SetActive(true); // Display the signal button
+                    transform.GetChild(4).GetChild(9).gameObject.SetActive(true); // Display the signal button
                     playerController.MovementInput();
                 }
 

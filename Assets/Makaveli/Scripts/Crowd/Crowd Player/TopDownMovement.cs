@@ -21,6 +21,7 @@ public class TopDownMovement
         Transform playerBody,
         float movementSpeed,
         float appliedMovementSpeedPercentage,
+        float jumpForce,
         CustomNetworkBehaviour customNetworkBehaviour
     )
     {
@@ -28,6 +29,7 @@ public class TopDownMovement
         this.playerBody = playerBody;
         this.movementSpeed = movementSpeed;
         this.appliedMovementSpeedPercentage = appliedMovementSpeedPercentage;
+        this.jumpForce = jumpForce;
         this.customNetworkBehaviour = customNetworkBehaviour;
 
         currentMovementSpeed = movementSpeed;

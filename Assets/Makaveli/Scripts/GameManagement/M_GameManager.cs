@@ -157,6 +157,7 @@ public class MGameManager : NetworkBehaviour
             
             // Fetch the location
             Transform taskLocation = lion.taskLocation;
+            Debug.Log($"From SolvingTaskState method: {taskLocation.gameObject.name}");
 
             // Try to fetch the TaskLocation component
             if(taskLocation.gameObject.TryGetComponent<TaskLocation>(out var _taskLocation)) 
@@ -201,13 +202,6 @@ public class MGameManager : NetworkBehaviour
             // StartCoroutine(DisplayEndRound(lion));
             StartCoroutine(DisplayEndRound());
         }
-        // else if (lion.objectPlaced && !penaltyApplied)  
-        // {
-        //     penaltyApplied = true; 
-        //     currentPoint -= 1f;
-        //     Debug.Log($"Adding -1 point to {currentPoint}");
-        //     StartCoroutine(DisplayEndRound());
-        // }
     }
 
     private IEnumerator DisplayEndRound() 

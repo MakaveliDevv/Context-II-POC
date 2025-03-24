@@ -6,6 +6,8 @@ public class UIManagement
     public ShapeManagerUI shapeManagerUI;
     private readonly LocationManagerUI locationManagerUI;
     private readonly TaskManagerUI taskManagerUI;
+    public bool taskCreated;
+
     public UIManagement(Transform player, GameObject cardsUI, List<GameObject> cardPanels, List<LocationCardUI> cards) 
     {
         locationManagerUI = new (cardsUI ,cardPanels ,cards);
@@ -35,7 +37,6 @@ public class UIManagement
         locationManagerUI.ButtonHandler();
     }
 
-    public bool taskCreated;
     public void Update(CrowdPlayerManager playerManager) 
     {
         if(!playerManager.signal) 

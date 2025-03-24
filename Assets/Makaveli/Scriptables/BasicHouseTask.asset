@@ -15,4 +15,5 @@ MonoBehaviour:
   sprite: {fileID: 21300000, guid: 6792eb49c8b9a4345bce8aa448792a13, type: 3}
   taskName: BaseHouseTask
   description: 
+  taskText: '- Add a house'
   isCompleted: 0

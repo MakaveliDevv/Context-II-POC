@@ -130,6 +130,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5acd4f9d45c66094da85642c0b23af11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   objName: PlanterBox
   placable: 0
   placed: 0
@@ -137,3 +138,4 @@ MonoBehaviour:
   placableMaterial: {fileID: 2100000, guid: d1c694d07cda7f548b78c83474cb2f3f, type: 2}
   originalMaterial: {fileID: 2825462251689752293, guid: 86ce70c76529a95419ad05d390ef10ec, type: 3}
   spawnOffset: {x: 0, y: 0.04, z: 0}
+  task: {fileID: 11400000, guid: 6f1005c2bacb18b4b8f3c67531da2548, type: 2}

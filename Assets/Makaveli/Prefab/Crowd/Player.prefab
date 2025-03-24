@@ -8237,7 +8237,7 @@ RectTransform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 5828547785564147620}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -8305,7 +8305,7 @@ MonoBehaviour:
   m_StartCorner: 0
   m_StartAxis: 0
   m_CellSize: {x: 885, y: 1080}
-  m_Spacing: {x: 15, y: 0}
+  m_Spacing: {x: 450, y: 15}
   m_Constraint: 2
   m_ConstraintCount: 1
 --- !u!1 &6815768061100298258
@@ -10681,6 +10681,7 @@ MonoBehaviour:
   playerFormationController: {fileID: 7098150273792766580}
   movementSpeed: 5
   aplliedMovementSpeedPercentage: 2
+  jumpForce: 0
   cardsUI: {fileID: 6137546433476278826}
   inUIMode: 0
   signal: 0

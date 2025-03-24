@@ -39,8 +39,11 @@ public class P_LionMovement : NetworkBehaviour
         if(customNetworkBehaviour.CustomIsOwner())
         {
             // Get input
-            inputX = Input.GetAxis("Horizontal");
-            inputZ = Input.GetAxis("Vertical");
+            inputX = Input.GetAxisRaw("Horizontal");
+            inputZ = Input.GetAxisRaw("Vertical");
+
+            float animInputX = Input.GetAxis("Horizontal");
+            float animInputZ = Input.GetAxis("Vertical");
 
             // Calculate movement direction
             moveDirection = new Vector3(inputX, 0, inputZ).normalized;
@@ -53,7 +56,7 @@ public class P_LionMovement : NetworkBehaviour
             }
 
             // Update animator speed parameter
-            float currentSpeed = Mathf.Abs(inputX);
+            float currentSpeed = Mathf.Abs((animInputX + animInputZ) / 2f);
             if (animator != null)
             {
                 SetAnimatorFloatServerRpc(currentSpeed);
@@ -68,11 +71,27 @@ public class P_LionMovement : NetworkBehaviour
             // Handle movement
             if (moveDirection.magnitude > 0)
             {
-                rb.linearVelocity = Vector3.MoveTowards(rb.linearVelocity, moveDirection * maxSpeed, acceleration * Time.fixedDeltaTime);
+                // Get current velocity
+                Vector3 currentVelocity = rb.linearVelocity;
+
+                // Keep the vertical velocity (y) unchanged, while updating only the horizontal (x, z) velocity
+                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, moveDirection.x * maxSpeed, acceleration * Time.fixedDeltaTime);
+                currentVelocity.z = Mathf.MoveTowards(currentVelocity.z, moveDirection.z * maxSpeed, acceleration * Time.fixedDeltaTime);
+
+                // Set the new velocity
+                rb.linearVelocity = currentVelocity;
             }
             else
             {
-                rb.linearVelocity = Vector3.MoveTowards(rb.linearVelocity, Vector3.zero, deceleration * Time.fixedDeltaTime);
+                // Get current velocity
+                Vector3 currentVelocity = rb.linearVelocity;
+
+                // Keep the vertical velocity (y) unchanged, while reducing the horizontal (x, z) velocity
+                currentVelocity.x = Mathf.MoveTowards(currentVelocity.x, 0, deceleration * Time.fixedDeltaTime);
+                currentVelocity.z = Mathf.MoveTowards(currentVelocity.z, 0, deceleration * Time.fixedDeltaTime);
+
+                // Set the new velocity
+                rb.linearVelocity = currentVelocity;
             }
             customNetworkBehaviour.RequestMoveServerRpc(transform.position, transform.rotation, transform.localScale);
         }

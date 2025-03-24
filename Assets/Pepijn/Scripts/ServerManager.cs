@@ -16,6 +16,7 @@ public class ServerManager : NetworkBehaviour
     Server server;
     [SerializeField] private ClientServerRefs clientServerRefs;
     [SerializeField] ClientManager clientManager;
+    GameObject serverObj;
     private string serverAddress = "context2server.atlas-technologies.co.uk";
 
     private void Start()
@@ -25,7 +26,7 @@ public class ServerManager : NetworkBehaviour
         DontDestroyOnLoad(gameObject);
         if (serverBuild)
         {
-            StartAsServer();
+            if(serverObj == null) StartAsServer();
         }
         else
         {
@@ -74,6 +75,7 @@ public class ServerManager : NetworkBehaviour
         NetworkManager.Singleton.StartServer();
 
         GameObject serverInstance = Instantiate(serverPrefab);
+        serverObj = serverInstance;
         serverInstance.GetComponent<NetworkObject>().Spawn();
 
         clientServerRefs.server = serverInstance.GetComponent<Server>();

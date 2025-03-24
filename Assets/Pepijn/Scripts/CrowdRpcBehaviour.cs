@@ -53,7 +53,9 @@ public class CrowdRpcBehaviour : NetworkBehaviour
             NetworkObject newNPCInstance = newNPC.GetComponent<NetworkObject>();
 
             newNPCInstance.Spawn();
+            Debug.Log($"Updating client ID: {newNPCInstance.name} to {_clientID}");
             newNPCInstance.gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
+            newNPCInstance.gameObject.transform.GetChild(0).GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
             newNPCInstance.transform.SetParent(npcContainer);
             
             NotifyClientOfSpawnClientRpc(newNPCInstance.NetworkObjectId);
@@ -78,6 +80,9 @@ public class CrowdRpcBehaviour : NetworkBehaviour
         Debug.Log("Spawned Object: " + spawnedObject.gameObject.name);
 
         // Add it to the client's list
-        crowdPlayerController.npcs.Add(spawnedObject.gameObject);
+        if(crowdPlayerController != null && spawnedObject != null)
+        {
+            if(crowdPlayerController.npcs != null) crowdPlayerController.npcs.Add(spawnedObject.gameObject);
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -20,9 +21,12 @@ public class ClientManager : NetworkBehaviour
     public Image readyButtonImg;
     public Sprite readySprite, unreadySprite;
     bool isReady;
+    [SerializeField] GameObject lobby;
+    bool inLobby;
     void Awake()
     {
         instance = this;
+        inLobby = true;
     }
     void Start()
     {
@@ -34,7 +38,7 @@ public class ClientManager : NetworkBehaviour
         }
         
 
-        DontDestroyOnLoad(gameObject);
+        //DontDestroyOnLoad(gameObject);
         if (NetworkManager.Singleton != null)
         {
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
@@ -80,7 +84,11 @@ public class ClientManager : NetworkBehaviour
 
         OnClientDisconnectedClientRpc(clientId);
 
-        if(connectedClients.Count == 0) NetworkManager.Singleton.SceneManager.LoadScene("Lobby", UnityEngine.SceneManagement.LoadSceneMode.Single);
+        if(connectedClients.Count == 0)
+        {
+            LoadSceneWithoutDontDestroy("Lobby");
+            //NetworkManager.Singleton.SceneManager.LoadScene("Lobby", UnityEngine.SceneManagement.LoadSceneMode.Single);
+        }
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -95,6 +103,21 @@ public class ClientManager : NetworkBehaviour
         }
 
         clientsConnectedText.text = $"Connected Clients ({connectedClients.Count}/6)";
+    }
+
+    public void LoadSceneWithoutDontDestroy(string sceneName)
+    {
+        // Find all objects marked as DontDestroyOnLoad
+        List<GameObject> dontDestroyObjects = FindAllDontDestroyOnLoadObjects();
+
+        // Destroy them
+        foreach (GameObject obj in dontDestroyObjects)
+        {
+            Destroy(obj);
+        }
+
+        // Load the new scene
+        NetworkManager.Singleton.SceneManager.LoadScene("Lobby", UnityEngine.SceneManagement.LoadSceneMode.Single);
     }
 
     [ClientRpc]
@@ -147,18 +170,44 @@ public class ClientManager : NetworkBehaviour
         if(_add) { readiedClients.Add(_clientID); }    
         else readiedClients.Remove(_clientID); 
 
-        if(readiedClients.Count == connectedClients.Count)
+        if((readiedClients.Count == connectedClients.Count) && (readiedClients.Count > 1))
         {
-            _ = NetworkManager.Singleton.SceneManager.LoadScene("P_GameScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
+            //NetworkManager.Singleton.SceneManager.LoadScene("P_GameScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
+            NetworkManager.Singleton.SceneManager.LoadScene("P_GameScene", LoadSceneMode.Additive);
+            inLobby = false;
+            lobby.SetActive(false);
+            DisableLobbyClientRpc();
         }
     }
+
+    [ClientRpc]
+    void DisableLobbyClientRpc()    
+    {
+        inLobby = false;
+        lobby.SetActive(false);
+    }
+
+    // private IEnumerator SwitchScene(string newSceneName)
+    // {
+    //     // Get the current active scene
+    //     Scene oldScene = SceneManager.GetActiveScene();
+
+    //     // Load the new scene additively
+    //     NetworkManager.Singleton.SceneManager.LoadScene(newSceneName, LoadSceneMode.Additive);
+
+    //     // Set the new scene as active
+    //     //NetworkManager.Singleton.SceneManager.SetActiveScene(SceneManager.GetSceneByName(newSceneName));
+
+    //     // Unload the old scene, but keep DontDestroyOnLoad objects
+    //     SceneManager.UnloadSceneAsync(oldScene);
+    // }
 
     [ServerRpc(RequireOwnership = false)]
     public void AddClientToLoadedListServerRpc(ulong _clientID)
     {
         scenceLoadedClients.Add(_clientID);
         Debug.Log($"Loaded client {_clientID}");
-        if(SceneManager.GetActiveScene().name == "P_GameScene")
+        if(!inLobby)
         {
             if(scenceLoadedClients.Count == connectedClients.Count)
             {
@@ -223,4 +272,24 @@ public class ClientManager : NetworkBehaviour
             Debug.Log($"Client not set to lion: {NetworkManager.LocalClientId}, not {_lionID}");
         }
     }
+
+        private List<GameObject> FindAllDontDestroyOnLoadObjects()
+        {
+            List<GameObject> dontDestroyObjects = new List<GameObject>();
+
+            // Create a temporary scene to move DontDestroyOnLoad objects into
+            Scene tempScene = SceneManager.CreateScene("TempScene");
+            
+            // Move all root objects from DontDestroyOnLoad to the new scene
+            foreach (GameObject obj in FindObjectsOfType<GameObject>())
+            {
+                if (obj.scene.name == null || obj.scene.name == "DontDestroyOnLoad")
+                {
+                    dontDestroyObjects.Add(obj);
+                    SceneManager.MoveGameObjectToScene(obj, tempScene);
+                }
+            }
+
+            return dontDestroyObjects;
+        }
 }

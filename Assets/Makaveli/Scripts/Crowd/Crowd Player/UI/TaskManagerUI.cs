@@ -39,6 +39,7 @@ public class TaskManagerUI
                 if(taskCard.TryGetComponent<TaskCardUI>(out var taskCardUI))
                 {
                     taskCardUI.task = task;
+                    taskCardUI.SetCardText(task.taskText);
                 }
                 else { Debug.LogError("Couldn't fetch the 'TaskCardUI' component"); return; }
             }

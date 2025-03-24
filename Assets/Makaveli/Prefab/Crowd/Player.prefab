@@ -10681,6 +10681,7 @@ MonoBehaviour:
   playerFormationController: {fileID: 7098150273792766580}
   movementSpeed: 5
   aplliedMovementSpeedPercentage: 2
+  jumpForce: 0
   cardsUI: {fileID: 6137546433476278826}
   inUIMode: 0
   signal: 0
@@ -10745,7 +10746,7 @@ MonoBehaviour:
   formationHotkeys: 000000000000000000000000000000000000000000000000
   toggleStaticFormationKey: 116
   currentFormationText: {fileID: 0}
-  position: {fileID: 0}
+  formShapePosition: {fileID: 0}
 --- !u!114 &3179910992428367868
 MonoBehaviour:
   m_ObjectHideFlags: 0

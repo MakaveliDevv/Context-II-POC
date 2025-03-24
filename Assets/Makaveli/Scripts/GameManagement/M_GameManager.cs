@@ -208,12 +208,11 @@ public class MGameManager : NetworkBehaviour
             
             // StartCoroutine(DisplayEndRound(lion));
         }
-        else
-        {
-            Debug.Log($"SolvingTaskState: lionPlacedObject: {lionPlacedObject}, taskStarted {taskStarted}");
-        }
+        // else
+        // {
+        //     Debug.Log($"SolvingTaskState: lionPlacedObject: {lionPlacedObject}, taskStarted {taskStarted}");
+        // }
     }
-
 
     public void UpdatePoints(int _points)
     {

@@ -191,7 +191,6 @@ public class MGameManager : NetworkBehaviour
                         }
 
                         taskComplete = true;
-                        //currentPoint += 1f;
                         UpdatePoints(1);
                         Debug.Log($"Adding +1 point to {currentPoint}");
                     }    
@@ -206,12 +205,7 @@ public class MGameManager : NetworkBehaviour
                 StartCoroutine(DisplayEndRound());
             }
             
-            // StartCoroutine(DisplayEndRound(lion));
         }
-        // else
-        // {
-        //     Debug.Log($"SolvingTaskState: lionPlacedObject: {lionPlacedObject}, taskStarted {taskStarted}");
-        // }
     }
 
     public void UpdatePoints(int _points)
@@ -224,39 +218,20 @@ public class MGameManager : NetworkBehaviour
     {
         Debug.Log("End Round Started...");
 
-        if(taskComplete) 
-        {
-            Debug.Log("Correct task objet");
-        }
-        else 
-        {
-            Debug.Log("Incorrect task objet");
-        }
+        // if(taskComplete) 
+        // {
+        //     Debug.Log("Correct task objet");
+        // }
+        // else 
+        // {
+        //     Debug.Log("Incorrect task objet");
+        // }
 
         yield return new WaitForSeconds(5f);
 
         // then turn state to end state
         gamePlayManagement = GamePlayManagement.END;
     }
-
-    // private IEnumerator DisplayEndRound(Lion lion) 
-    // {
-    //     Debug.Log("End Round Started...");
-
-    //     if(lion.correctTask) 
-    //     {
-    //         Debug.Log("Correct task objet");
-    //     }
-    //     else 
-    //     {
-    //         Debug.Log("Incorrect task objet");
-    //     }
-
-    //     yield return new WaitForSeconds(5f);
-
-    //     // then turn state to end state
-    //     gamePlayManagement = GamePlayManagement.END;
-    // }
 
     public void EndState()
     {

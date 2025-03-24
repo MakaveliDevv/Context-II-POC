@@ -5,6 +5,7 @@ public class ShapeRearrangement
     private readonly Camera camera;    
     private LayerMask npcLayer;
     private GameObject currentlySelectedNpc;
+    private CharacterController controller;
     private Vector3 targetPosition;
     private bool isDragging;
     private bool isMovingToTarget;
@@ -41,9 +42,10 @@ public class ShapeRearrangement
             if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, npcLayer))
             {
                 currentlySelectedNpc = hit.collider.gameObject;
+                controller = currentlySelectedNpc.GetComponent<CharacterController>();
                 isDragging = true;
                 isMovingToTarget = true;
-                Debug.Log($"Selected NPC at position: {currentlySelectedNpc.transform.position} and the name of the object is: {currentlySelectedNpc.gameObject.name}");
+                Debug.Log($"Selected NPC at position: {currentlySelectedNpc.transform.position} and the name of the object is: {currentlySelectedNpc.name}");
             }
         }
 
@@ -58,7 +60,8 @@ public class ShapeRearrangement
             // Create a new position, keeping the Y value the same
             targetPosition = new(
                 mouseWorldPos.x,
-                currentlySelectedNpc.transform.position.y,
+                // currentlySelectedNpc.transform.position.y,
+                controller.transform.position.y,
                 mouseWorldPos.z
             );
 
@@ -72,13 +75,10 @@ public class ShapeRearrangement
             // Debug post-clamped position
             // Debug.Log($"Post-clamp position: {targetPosition}");
 
-            Vector3 newPosition = Vector3.Lerp(currentlySelectedNpc.transform.position, targetPosition, lerpSpeed * Time.deltaTime);
+            Vector3 movement = Vector3.Lerp(Vector3.zero, targetPosition - controller.transform.position, lerpSpeed * Time.deltaTime);
          
             // Update the NPC position
-            currentlySelectedNpc.transform.position = newPosition;
-
-            // CharacterController controller = currentlySelectedNpc.GetComponent<CharacterController>();
-            // controller.Move(newPosition);
+            controller.Move(movement);
         }
 
         // Handle release

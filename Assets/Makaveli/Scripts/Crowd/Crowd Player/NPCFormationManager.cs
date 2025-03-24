@@ -311,16 +311,6 @@ public class NPCFormationManager : MonoBehaviour
         }
     }
 
-    // Add this new method to calculate the center offset for each formation
-    private Vector3 CalculateFormationCenterOffset(FormationType formation, int totalNPCs, float spacing)
-    {
-        // Calculate the bounds of the formation with the given spacing
-        Bounds bounds = CalculateFormationBounds(formation, totalNPCs, spacing);
-        
-        // Return the center of the bounds
-        // This will help us center the formation properly
-        return bounds.center;
-    }
     // public Vector3 GetFormationPosition(int npcIndex, int totalNPCs)
     // {
     //     if (currentFormation == FormationType.Follow || totalNPCs <= 1)
@@ -349,6 +339,12 @@ public class NPCFormationManager : MonoBehaviour
     //     // Apply formation scale
     //     localPosition *= formationScale;
         
+    //     // Calculate formation center offset to ensure proper centering within location
+    //     Vector3 formationCenterOffset = CalculateFormationCenterOffset(currentFormation, totalNPCs, optimalSpacing);
+        
+    //     // Apply the center offset to the local position
+    //     localPosition -= formationCenterOffset;
+        
     //     if (staticFormations && currentFormation != FormationType.Follow)
     //     {
     //         // Use custom location if available, otherwise use stored origin
@@ -357,8 +353,7 @@ public class NPCFormationManager : MonoBehaviour
             
     //         if (useCustomLocation && targetLocation != null)
     //         {
-    //             basePosition = targetLocation.position;
-    //             baseRotation = targetLocation.rotation;
+    //             targetLocation.GetPositionAndRotation(out basePosition, out baseRotation);
     //         }
     //         else
     //         {
@@ -371,10 +366,14 @@ public class NPCFormationManager : MonoBehaviour
     //         Vector3 forward = baseRotation * Vector3.forward;
             
     //         Vector3 worldOffset = right * localPosition.x + 
-    //                              Vector3.up * localPosition.y + 
-    //                              forward * localPosition.z;
+    //                             forward * localPosition.z;  // Remove localPosition.y component here
             
-    //         return basePosition + worldOffset;
+    //         // Return the world position with the target location's Y position
+    //         return new Vector3(
+    //             basePosition.x + worldOffset.x,
+    //             basePosition.y,  // Use target location's Y position directly
+    //             basePosition.z + worldOffset.z
+    //         );
     //     }
     //     else
     //     {
@@ -383,13 +382,28 @@ public class NPCFormationManager : MonoBehaviour
     //         Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
             
     //         Vector3 worldOffset = right * localPosition.x + 
-    //                              Vector3.up * localPosition.y + 
-    //                              forward * localPosition.z;
+    //                             forward * localPosition.z;  // Remove localPosition.y component here
             
-    //         return playerTransform.position + worldOffset;
+    //         // Return the world position with the player's Y position
+    //         return new Vector3(
+    //             playerTransform.position.x + worldOffset.x,
+    //             playerTransform.position.y,  // Use player's Y position directly
+    //             playerTransform.position.z + worldOffset.z
+    //         );
     //     }
     // }
     
+    // Add this new method to calculate the center offset for each formation
+    private Vector3 CalculateFormationCenterOffset(FormationType formation, int totalNPCs, float spacing)
+    {
+        // Calculate the bounds of the formation with the given spacing
+        Bounds bounds = CalculateFormationBounds(formation, totalNPCs, spacing);
+        
+        // Return the center of the bounds
+        // This will help us center the formation properly
+        return bounds.center;
+    }
+
     #region Formation Position Generators
     
     private Vector3 GetTrianglePosition(int npcIndex, int totalNPCs)

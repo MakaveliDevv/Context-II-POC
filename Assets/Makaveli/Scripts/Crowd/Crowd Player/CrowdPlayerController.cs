@@ -276,25 +276,8 @@ public class CrowdPlayerController
 
     public void SecondHalfOfChooseLocation(LocationCardUI card)
     {
-        // if(MGameManager.instance.tasksPerRound.Count <= 0) return;
-
         // Assign the tasks form the card
         tasks = card.tasks;
-
-        // foreach (var task in tasks)
-        // {
-        //     if(MGameManager.instance.tasksPerRound != null) 
-        //     {
-        //         foreach (var item in MGameManager.instance.tasksPerRound)
-        //         {
-        //             if(task.taskName != item.taskName) 
-        //             {
-        //                 MGameManager.instance.tasksPerRound.Add(task);
-        //             }
-        //         }
-
-        //     } else { MGameManager.instance.tasksPerRound.Add(task); }
-        // }
 
         Debug.Log($"Location: {chosenLocation.gameObject.name}");
         locationChosen = true;
@@ -313,12 +296,12 @@ public class CrowdPlayerController
             formationController.SetFormationLocation(npcsLocation);
             
             // If already in a formation, update it to use the new location
-            // NPCFormationManager formManager = formationController.formationManager;
-            // if (formManager != null && formManager.currentFormation != FormationType.Follow)
-            // {
-            //     // Re-apply current formation to update positions
-            //     formationController.ChangeFormation(formManager.currentFormation);
-            // }
+            NPCFormationManager formManager = formationController.formationManager;
+            if (formManager != null && formManager.currentFormation != FormationType.Follow)
+            {
+                // Re-apply current formation to update positions
+                formationController.ChangeFormation(formManager.currentFormation);
+            }
         }
         
         mono.StartCoroutine(ResetClickState(1.0f)); // 1 second delay
@@ -345,46 +328,6 @@ public class CrowdPlayerController
                             {
                                 isProcessingClick = true;
                                 playerManager.ChooseLocationServerRpc(cards.IndexOf(card));
-
-                                // chosenLocation = card.location;
-
-                                // Assign the tasks form the card
-                                // tasks = card.tasks;
-
-                                // foreach (var task in tasks)
-                                // {
-                                //     if(MGameManager.instance.tasksPerRound != null) 
-                                //     {
-                                //         foreach (var item in MGameManager.instance.tasksPerRound)
-                                //         {
-                                //             if(task.taskName != item.taskName) 
-                                //             {
-                                //                 MGameManager.instance.tasksPerRound.Add(task);
-                                //             }
-                                //         }
-
-                                //     } else { MGameManager.instance.tasksPerRound.Add(task); }
-                                // }
-        
-                                // Debug.Log($"Location: {chosenLocation.gameObject.name}");
-                                // locationChosen = true;
-                                
-                                // // Set the formation location in the formation manager
-                                // if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))
-                                // {
-                                //     formationController.SetFormationLocation(chosenLocation);
-                                    
-                                //     // If already in a formation, update it to use the new location
-                                //     NPCFormationManager formManager = formationController.formationManager;
-                                //     if (formManager != null && formManager.currentFormation != FormationType.Follow)
-                                //     {
-                                //         // Re-apply current formation to update positions
-                                //         formationController.ChangeFormation(formManager.currentFormation);
-                                //     }
-                                // }
-                                
-                                // mono.StartCoroutine(ResetClickState(1.0f)); // 1 second delay
-
                             }
                         });
                     }

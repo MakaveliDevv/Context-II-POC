@@ -31,7 +31,9 @@ public class NPCManager : NetworkBehaviour
     public float fixedYPosition = 1f;
     public bool moveable;
 
-    public bool signal;
+    // Anim
+    private Animator animator;
+
 
     void Awake()
     {
@@ -71,6 +73,8 @@ public class NPCManager : NetworkBehaviour
         nPCFollower.Start();
         customNetworkBehaviour = GetComponent<CustomNetworkBehaviour>();
         StartCoroutine(nPCFollower.FindPlayer(this));
+
+        animator = transform.GetChild(0).GetComponent<Animator>();
     }
 
     void Update()
@@ -82,6 +86,49 @@ public class NPCManager : NetworkBehaviour
             {
                 nPCFollower.Update(this);
             }      
+        }
+    }
+
+    public void HappyEmote() 
+    {
+        animator.SetBool("Happy", true);
+
+        // Turn off the others
+        animator.SetBool("Sad", false);
+        animator.SetBool("Tomato", false);
+    }
+
+    public void SadEmote() 
+    {
+        animator.SetBool("Sad", true);
+
+        // Turn off the others
+        animator.SetBool("Happy", false);
+        animator.SetBool("Tomato", false);
+    }
+
+    public void ThrowingEmote() 
+    {
+        animator.SetBool("Tomato", true);
+
+        // Turn off the others
+        animator.SetBool("Happy", false);
+        animator.SetBool("Sad", false);
+    }
+
+    public void EmoteNPC(string emoteName) 
+    {
+        if(emoteName.Contains("Happy")) 
+        {
+            HappyEmote();
+        }
+        else if (emoteName.Contains("Sad")) 
+        {
+            SadEmote();
+        }
+        else if(emoteName.Contains("Tomato")) 
+        {
+            ThrowingEmote();
         }
     }
 

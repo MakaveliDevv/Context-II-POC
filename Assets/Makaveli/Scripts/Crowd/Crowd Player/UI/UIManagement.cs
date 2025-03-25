@@ -62,35 +62,36 @@ public class UIManagement
                 Debug.Log($"Fetching buttons: {btn.name}");
 
                 Button btnComponent = btn.GetComponent<Button>();
-                Debug.Log($"Setting up button component: {btnComponent.gameObject.name}");
-                
-                btnComponent.onClick.RemoveAllListeners();
-
-                // Store the emote name for THIS button
-                if(btn.TryGetComponent<Emotes>(out var emoteComponent)) 
+                if(btnComponent != null)
                 {
-                    string currentEmoteName = emoteComponent.emoteName;
-                    Debug.Log($"Button has emote: {currentEmoteName}");
+                    Debug.Log($"Setting up button component: {btnComponent.gameObject.name}");
+                    btnComponent.onClick.RemoveAllListeners();
 
-                    btnComponent.onClick.AddListener(() =>
+                    // Store the emote name for THIS button
+                    if(btn.TryGetComponent<Emotes>(out var emoteComponent)) 
                     {
-                        Debug.Log($"Button clicked! Emote: {currentEmoteName}");
-                        foreach (var npc in playerManager.playerController.npcs)
-                        {
-                            NPCManager npcManager = npc.GetComponent<NPCManager>();
-                            if (npcManager != null)
-                            {
-                                npcManager.EmoteNPC(currentEmoteName);
-                            }
-                        }
-                    });
+                        string currentEmoteName = emoteComponent.emoteName;
+                        Debug.Log($"Button has emote: {currentEmoteName}");
 
+                        btnComponent.onClick.AddListener(() =>
+                        {
+                            Debug.Log($"Button clicked! Emote: {currentEmoteName}");
+                            foreach (var npc in playerManager.playerController.npcs)
+                            {
+                                NPCManager npcManager = npc.GetComponent<NPCManager>();
+                                if (npcManager != null)
+                                {
+                                    npcManager.EmoteNPC(currentEmoteName);
+                                }
+                            }
+                        });
+                    }
                 }
-                else Debug.LogError("Couldn't fetch the Emotes component from the emote button");
+                //else Debug.LogError("Couldn't fetch the Emotes component from the emote button");
             }
             
         }
-        else { Debug.LogError("No button found!");}
+        //else { Debug.LogError("No button found!");}
        
         yield break;
     } 
@@ -114,7 +115,7 @@ public class UIManagement
     {
         if(!playerManager.signal) 
         {
-            playerManager.transform.GetChild(4).GetChild(8).gameObject.SetActive(false);
+            playerManager.transform.GetChild(4).GetChild(7).gameObject.SetActive(false);
         }
 
         taskManagerUI.DisplayTaskBtn(playerManager);

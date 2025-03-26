@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ public class ClientManager : NetworkBehaviour
     public static ClientManager instance;
     public int lionClientId;
     public List<ulong> connectedClients = new();
+    public List<ulong> possibleLionClients = new();
     public List<ulong> scenceLoadedClients = new();
     public List<ulong> readiedClients = new();
     [SerializeField] List<TextMeshProUGUI> lobbyClientTexts;
@@ -23,6 +25,11 @@ public class ClientManager : NetworkBehaviour
     bool isReady;
     [SerializeField] GameObject lobby;
     bool inLobby;
+    [SerializeField] public TMP_InputField nameInputField;
+    public List<string> clientNames = new();
+    [SerializeField] GameObject logo, afterJoinObj;
+    [SerializeField] Image chooseCrowdImg, chooseLionImg;
+    [SerializeField] Sprite selectedSprite, unselectedSprite;
     void Awake()
     {
         instance = this;
@@ -47,6 +54,11 @@ public class ClientManager : NetworkBehaviour
         scenceLoadedClients.Clear();
     }
 
+    public void ClearText()
+    {
+        nameInputField.text = "";
+    }
+
     public void ReadyUp()
     {
         if(!isReady)
@@ -69,7 +81,8 @@ public class ClientManager : NetworkBehaviour
 
         Debug.Log($"Client {clientId} connected to the server.");
         connectedClients.Add(clientId);
-        if(SceneManager.GetActiveScene().name == "Lobby") UpdateLobbyTextServerRpc();
+        possibleLionClients.Add(clientId);
+        //if(SceneManager.GetActiveScene().name == "Lobby") UpdateLobbyTextServerRpc((int)clientId, nameInputField.text, true);
 
         OnClientConnectedClientRpc(clientId);
     }
@@ -80,7 +93,8 @@ public class ClientManager : NetworkBehaviour
 
         Debug.Log($"Client {clientId} disconnected from the server.");
         connectedClients.Remove(clientId);
-        if(SceneManager.GetActiveScene().name == "Lobby") UpdateLobbyTextServerRpc();
+        possibleLionClients.Remove(clientId);
+        //if(SceneManager.GetActiveScene().name == "Lobby") UpdateLobbyTextServerRpc((int)clientId, nameInputField.text, false);
 
         OnClientDisconnectedClientRpc(clientId);
 
@@ -91,15 +105,53 @@ public class ClientManager : NetworkBehaviour
         }
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    void UpdateLobbyTextServerRpc()
+    public void ChangePrefToLion()
     {
-        UpdateLobbyTextClientRpc(connectedClients.ToArray());
+        if(isReady) return;
 
+        chooseCrowdImg.sprite = unselectedSprite;
+        chooseLionImg.sprite = selectedSprite;
+        ChangePrefsServerRpc(true, ClientServerRefs.instance.localClient.OwnerClientId);
+    }
+
+    public void ChangePrefToCrowd()
+    {
+        if(isReady) return;
+        
+        chooseCrowdImg.sprite = selectedSprite;
+        chooseLionImg.sprite = unselectedSprite;
+        ChangePrefsServerRpc(false, ClientServerRefs.instance.localClient.OwnerClientId);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void ChangePrefsServerRpc(bool toLion, ulong clientID)
+    {
+        if(toLion)
+        {
+            if(!possibleLionClients.Contains(clientID)) possibleLionClients.Add(clientID);
+        }
+        else
+        {
+            if(possibleLionClients.Contains(clientID)) possibleLionClients.Remove(clientID);
+        }
+    }
+
+    void UpdateLobbyText()
+    {
         for(int i = 0; i < lobbyClientTexts.Count; i++)
         {
-            if(i < connectedClients.Count) lobbyClientTexts[i].text = "Client " + connectedClients[i];
-            else lobbyClientTexts[i].text = "";
+            if(i < connectedClients.Count) 
+            {
+                lobbyClientTexts[i].text = clientNames[i];
+                UpdateLobbyTextClientRpc(connectedClients.Count, i, clientNames[i]);
+            }
+            else 
+            {
+                lobbyClientTexts[i].text = "";
+                UpdateLobbyTextClientRpc(connectedClients.Count, i, "");
+            }
+            // if(connecting) lobbyClientTexts[clientID - 1].text = clientName;
+            // else lobbyClientTexts[clientID - 1].text = "";
         }
 
         clientsConnectedText.text = $"Connected Clients ({connectedClients.Count}/6)";
@@ -121,15 +173,10 @@ public class ClientManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    void UpdateLobbyTextClientRpc(ulong[] _connectedClients)
+    void UpdateLobbyTextClientRpc(int playerAmount, int index, string name)
     {
-        for(int i = 0; i < lobbyClientTexts.Count; i++)
-        {
-            if(i < _connectedClients.Length) lobbyClientTexts[i].text = "Client " + _connectedClients[i];
-            else lobbyClientTexts[i].text = "";
-        }
-
-        clientsConnectedText.text = $"Connected Clients ({_connectedClients.Length}/6)";
+        lobbyClientTexts[index].text = name;
+        clientsConnectedText.text = $"Players: ({playerAmount}/6)";
     }
 
     // public void LoadGameScene()
@@ -151,9 +198,34 @@ public class ClientManager : NetworkBehaviour
     [ClientRpc]
     void OnClientConnectedClientRpc(ulong clientId)
     {
+        logo.SetActive(false);
+        afterJoinObj.SetActive(true);
         Debug.Log($"Client {clientId} connected to the server.");
         connectedClients.Add(clientId);
-        if(SceneManager.GetActiveScene().name == "Lobby") UpdateLobbyTextServerRpc();
+        if(SceneManager.GetActiveScene().name == "Lobby") 
+        {
+            if(ClientServerRefs.instance.localClient.OwnerClientId == clientId) 
+            {
+                if(clientNames.Contains(nameInputField.text)) Debug.Log("name already in list");
+                Debug.Log($"Adding name: {nameInputField.text}"); AddClientNameToListServerRpc((int)clientId, nameInputField.text, true);
+            }
+        }
+        //if(SceneManager.GetActiveScene().name == "Lobby") UpdateLobbyTextServerRpc((int)clientId, nameInputField.text, true);
+    }
+    [ServerRpc(RequireOwnership = false)]
+    void AddClientNameToListServerRpc(int clientID, string clientName, bool connecting)
+    {
+        if(connecting) AddUniqueName(clientName);
+        else clientNames.RemoveAt(clientID - 1);
+
+        UpdateLobbyText();
+    }
+
+    void AddUniqueName(string _name)
+    {
+        string newName = _name;
+        if(clientNames.Contains(_name)) newName += "*";
+        clientNames.Add(newName);
     }
 
     [ClientRpc]
@@ -162,7 +234,8 @@ public class ClientManager : NetworkBehaviour
         Debug.Log($"Client {clientId} disconnected from the server.");
         readiedClients.Remove(clientId); 
         connectedClients.Remove(clientId);
-        if(SceneManager.GetActiveScene().name == "Lobby") UpdateLobbyTextServerRpc();
+        if(SceneManager.GetActiveScene().name == "Lobby") AddClientNameToListServerRpc((int)clientId, nameInputField.text, false);
+        //if(SceneManager.GetActiveScene().name == "Lobby") UpdateLobbyTextServerRpc((int)clientId, nameInputField.text, false);
     }
     [ServerRpc(RequireOwnership = false)]
     public void AddClientToReadyListServerRpc(ulong _clientID, bool _add)
@@ -214,15 +287,10 @@ public class ClientManager : NetworkBehaviour
                 Debug.Log("All clients loaded");
                 //DecideLionServerRpc();
                 //ActivateSceneClientRpc();
-                ulong lionID;
-                if (lionClientId == 0) 
-                {
-                    lionID = connectedClients[Random.Range(0, connectedClients.Count)];
-                }
-                else
-                {
-                    lionID = (ulong)lionClientId;
-                }
+                ulong lionID = 0;
+                if(possibleLionClients.Count > 0) lionID = possibleLionClients[UnityEngine.Random.Range(0, possibleLionClients.Count)];
+                else lionID = connectedClients[UnityEngine.Random.Range(0, connectedClients.Count)];
+                
                 DecideLionClientRpc(lionID);
             }
             else
@@ -241,21 +309,6 @@ public class ClientManager : NetworkBehaviour
     void ActivateSceneClientRpc()
     {
         Resources.FindObjectsOfTypeAll<GameObject>().FirstOrDefault(obj => obj.name == "SceneObj").SetActive(true);  
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    void DecideLionServerRpc()
-    {
-        ulong lionID = 0;
-        if(lionClientId == 0) 
-        {
-            lionID = connectedClients[Random.Range(0, connectedClients.Count)];
-        }
-        else
-        {
-            lionID = (ulong)lionClientId;
-        }
-        DecideLionClientRpc(lionID);
     }
 
     [ClientRpc]

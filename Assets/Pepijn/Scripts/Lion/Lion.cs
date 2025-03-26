@@ -28,6 +28,9 @@ public class Lion : NetworkBehaviour
     public bool objectPlaced;
     public bool encounter;
     public bool objectDropped;
+    [SerializeField] Animator animator;
+    [SerializeField] NetworkObject serverCarryingObject;
+    [SerializeField] Transform holdingTransform;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public override void OnNetworkSpawn()
@@ -119,6 +122,10 @@ public class Lion : NetworkBehaviour
             {
                 Destroy(carryingObject.gameObject);
                 carryingObject = null;
+
+                DestroyCarryingObjectServerRpc();
+                ChangeAnimatorCarryWeightServerRpc(0);
+                serverCarryingObject = null;
             }
         }
     }
@@ -137,6 +144,9 @@ public class Lion : NetworkBehaviour
         lastObjectTask = carryingObject.task;
         Destroy(carryingObject.gameObject);
         carryingObject = null;
+        DestroyCarryingObjectServerRpc();
+        ChangeAnimatorCarryWeightServerRpc(0);
+        serverCarryingObject = null;
         objectDropped = true;
         StartCoroutine(ReseetBool());
     }
@@ -146,21 +156,6 @@ public class Lion : NetworkBehaviour
         yield return new WaitForSeconds(2f);
         objectDropped = false;
     }
-    // [ServerRpc(RequireOwnership = false)]
-    // void RequestReparentServerRpc(NetworkObjectReference objectRef, NetworkObjectReference newParentRef, bool unparent)
-    // {
-    //     if (objectRef.TryGet(out NetworkObject obj))
-    //     {
-    //         if (unparent)
-    //         {
-    //             obj.transform.SetParent(null); // Remove parent
-    //         }
-    //         else if (newParentRef.TryGet(out NetworkObject newParent))
-    //         {
-    //             obj.transform.SetParent(newParent.transform); // Set new parent
-    //         }
-    //     }
-    // }
 
     [ServerRpc(RequireOwnership = false)]
     void ChangeObjectPlacedBoolOnServerRpc(bool _result)
@@ -190,29 +185,6 @@ public class Lion : NetworkBehaviour
             }
         }
     }
-
-    // void OnTriggerStay(Collider collider)
-    // {
-    //     // If in range of location
-    //     if(collider.CompareTag("TaskableLocation")) 
-    //     {
-    //         if(MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.SOLVING_TASK) 
-    //         {
-    //             if(!encounter) 
-    //             {
-    //                 taskLocation = collider.transform;
-    //                 encounter = true;
-
-    //                 // If object placed
-    //                 if(objectDropped) 
-    //                 {
-    //                     // Lion placed the object 
-    //                     //MGameManager.instance.lionPlacedObject = true;
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
 
     void OnTriggerExit(Collider collider)
     {
@@ -247,12 +219,74 @@ public class Lion : NetworkBehaviour
             Destroy(carryingObject.gameObject);
             carryingObject = null;
         }
+        if(serverCarryingObject != null)
+        {
+            DestroyCarryingObjectServerRpc();
+            ChangeAnimatorCarryWeightServerRpc(0);
+            serverCarryingObject = null;
+        }
         GameObject _newObj = Instantiate(objectPrefabsDict[_objName], transform.position + (transform.forward * 4), Quaternion.identity, transform);
         carryingObject = _newObj.GetComponent<PlacableObjects>();
         carryingObject.transform.position += carryingObject.spawnOffset;
+
         //carryingObject.transform.position = new Vector3(carryingObject.transform.position.x, (transform.position + carryingObject.spawnOffset).y, carryingObject.transform.position.z);
+        carryingObject.isIndicator = true;
         carryingObject.CheckIfPlacable();
+
+        CarryObjectOnServerRpc(_objName);
         //SpawnObjectOnServerRpc(_objName, transform.position + (transform.forward * 4));
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    void CarryObjectOnServerRpc(string _objName)
+    {   
+        GameObject _newObj = Instantiate(objectPrefabsDict[_objName], transform.position + (transform.forward * 2), Quaternion.identity); //should be 2 instead of 4
+        NetworkObject _newObjInstance = _newObj.GetComponent<NetworkObject>();
+        _newObjInstance.Spawn();
+        _newObjInstance.transform.SetParent(transform);
+
+        PlacableObjects placedObject = _newObjInstance.gameObject.GetComponent<PlacableObjects>();
+
+        serverCarryingObject = _newObjInstance;
+
+        float weight = placedObject.weight;
+        animator.SetLayerWeight(1, weight);
+        ChangeAnimatorCarryWeightClientRpc(weight);
+
+
+        CarryObjectOnClientRpc(_newObjInstance.NetworkObjectId);
+    }
+    [ClientRpc]
+    void CarryObjectOnClientRpc(ulong spawnedObjectId)
+    {
+        NetworkObject spawnedObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[spawnedObjectId];
+        serverCarryingObject = spawnedObject;
+        PlacableObjects placedObject = spawnedObject.gameObject.GetComponent<PlacableObjects>();
+        spawnedObject.gameObject.GetComponent<Collider>().enabled = false;
+
+        placedObject.transform.localScale = placedObject.transform.localScale * placedObject.holdingScale.x;
+        Debug.Log($"Local Position before change: {placedObject.transform.localPosition} , applying {placedObject.holdingOffset}");
+        placedObject.transform.localPosition += placedObject.holdingOffset + new Vector3(0, 3, 0);
+        Debug.Log($"Local Position after change: {placedObject.transform.localPosition}");
+        //placedObject.transform.position += new Vector3(0, 3f, 0) + placedObject.holdingOffset;
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    void DestroyCarryingObjectServerRpc()
+    {
+        Destroy(serverCarryingObject);
+    }
+
+    [ServerRpc]
+    void ChangeAnimatorCarryWeightServerRpc(float _weight)
+    {
+        ChangeAnimatorCarryWeightClientRpc(_weight);
+    }
+
+    [ClientRpc]
+    void ChangeAnimatorCarryWeightClientRpc(float _weight)
+    {
+        animator.SetLayerWeight(1, _weight);
     }
 
     [ServerRpc(RequireOwnership = false)]

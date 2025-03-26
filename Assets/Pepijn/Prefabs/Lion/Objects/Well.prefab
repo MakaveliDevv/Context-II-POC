@@ -138,4 +138,6 @@ MonoBehaviour:
   placableMaterial: {fileID: 2100000, guid: d1c694d07cda7f548b78c83474cb2f3f, type: 2}
   originalMaterial: {fileID: 2825462251689752293, guid: 86ce70c76529a95419ad05d390ef10ec, type: 3}
   spawnOffset: {x: 0, y: 0, z: 0}
+  isIndicator: 0
+  weight: 0.9
   task: {fileID: 11400000, guid: 2253f264fe866304397bd282946a9f8e, type: 2}

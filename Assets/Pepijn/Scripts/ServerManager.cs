@@ -39,11 +39,9 @@ public class ServerManager : NetworkBehaviour
 
     public void JoinServer()
     {
-        if (serverBuild)
-        {
-           
-        }
-        else
+        if(clientManager.nameInputField.text == "Enter your name..." || clientManager.nameInputField.text == "") return;
+
+        if (!serverBuild)
         {
             StartAsClient();
             clientManager.startButton.SetActive(false);

@@ -138,8 +138,13 @@ MonoBehaviour:
   objName: Windmill
   placable: 0
   placed: 0
+  collidingObjects: []
   unplacableMaterial: {fileID: 2100000, guid: 01bb444ef2d2ba2428578d9b8da916c4, type: 2}
   placableMaterial: {fileID: 2100000, guid: d1c694d07cda7f548b78c83474cb2f3f, type: 2}
   originalMaterial: {fileID: 2100000, guid: e321483404bcfd84196edacdd9182730, type: 2}
   spawnOffset: {x: 0, y: 1.14033, z: 0}
+  isIndicator: 0
+  weight: 1
+  holdingScale: {x: 0.5, y: 0.5, z: 0.5}
+  holdingOffset: {x: 0, y: -0.73, z: -0.42}
   task: {fileID: 11400000, guid: 40113a5285455e043bd5e387fe853268, type: 2}

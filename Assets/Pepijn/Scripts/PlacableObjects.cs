@@ -7,17 +7,23 @@ public class PlacableObjects : NetworkBehaviour
 {
     public string objName;
     public bool placable, placed;
-    List<GameObject> collidingObjects = new();
+    [SerializeField] List<GameObject> collidingObjects = new();
     [SerializeField] Material unplacableMaterial, placableMaterial;
     [SerializeField] Material originalMaterial;
     MeshRenderer meshRenderer;
     public Vector3 spawnOffset;
+    public bool isIndicator;
+    [Range(0, 1)] public float weight;
+    public Vector3 holdingScale;
+    public Vector3 holdingOffset;
 
     // -------------------------------------
     public Task task;
 
     void OnTriggerEnter(Collider collider)
     {
+        if(!isIndicator) return;
+
         if(collider.gameObject.layer != 12 && !placed && collider.gameObject.layer != 9)
         {
             collidingObjects.Add(collider.gameObject);
@@ -27,6 +33,8 @@ public class PlacableObjects : NetworkBehaviour
 
     void OnTriggerExit(Collider collider)
     {
+        if(!isIndicator) return;
+
         if(collider.gameObject.layer != 12 && !placed && collider.gameObject.layer != 9)
         {
             collidingObjects.Remove(collider.gameObject);
@@ -36,6 +44,8 @@ public class PlacableObjects : NetworkBehaviour
 
     public void CheckIfPlacable()
     {
+        if(!isIndicator) return;
+
         if(meshRenderer == null) meshRenderer = GetComponent<MeshRenderer>();
         if(collidingObjects.Count == 0)
         {

@@ -134,8 +134,13 @@ MonoBehaviour:
   objName: Fence
   placable: 0
   placed: 0
+  collidingObjects: []
   unplacableMaterial: {fileID: 2100000, guid: 01bb444ef2d2ba2428578d9b8da916c4, type: 2}
   placableMaterial: {fileID: 2100000, guid: d1c694d07cda7f548b78c83474cb2f3f, type: 2}
   originalMaterial: {fileID: 2825462251689752293, guid: 86ce70c76529a95419ad05d390ef10ec, type: 3}
   spawnOffset: {x: 0, y: 0.5, z: 0}
+  isIndicator: 0
+  weight: 0.2
+  holdingScale: {x: 0.25, y: 0.25, z: 0.25}
+  holdingOffset: {x: 0, y: -1.5, z: 0.06}
   task: {fileID: 11400000, guid: 9ac750c52f0889345bd7a249bec84e2c, type: 2}

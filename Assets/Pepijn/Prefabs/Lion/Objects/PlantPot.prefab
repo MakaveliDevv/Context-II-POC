@@ -134,8 +134,13 @@ MonoBehaviour:
   objName: PlanterBox
   placable: 0
   placed: 0
+  collidingObjects: []
   unplacableMaterial: {fileID: 2100000, guid: 01bb444ef2d2ba2428578d9b8da916c4, type: 2}
   placableMaterial: {fileID: 2100000, guid: d1c694d07cda7f548b78c83474cb2f3f, type: 2}
   originalMaterial: {fileID: 2825462251689752293, guid: 86ce70c76529a95419ad05d390ef10ec, type: 3}
   spawnOffset: {x: 0, y: 0.04, z: 0}
+  isIndicator: 0
+  weight: 0.1
+  holdingScale: {x: 1.2, y: 1.2, z: 1.2}
+  holdingOffset: {x: -0.11, y: -2.31, z: 0.31}
   task: {fileID: 11400000, guid: 6f1005c2bacb18b4b8f3c67531da2548, type: 2}

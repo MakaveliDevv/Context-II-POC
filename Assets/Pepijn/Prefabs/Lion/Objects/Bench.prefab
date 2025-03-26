@@ -130,11 +130,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5acd4f9d45c66094da85642c0b23af11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   objName: Bench
   placable: 0
   placed: 0
+  collidingObjects: []
   unplacableMaterial: {fileID: 2100000, guid: 01bb444ef2d2ba2428578d9b8da916c4, type: 2}
   placableMaterial: {fileID: 2100000, guid: d1c694d07cda7f548b78c83474cb2f3f, type: 2}
   originalMaterial: {fileID: 2825462251689752293, guid: 86ce70c76529a95419ad05d390ef10ec, type: 3}
   spawnOffset: {x: 0, y: 0.898, z: 0}
+  isIndicator: 0
+  weight: 0.3
+  holdingScale: {x: 1, y: 1, z: 1}
+  holdingOffset: {x: 0.24, y: -0.87, z: -0.14}
   task: {fileID: 11400000, guid: 3cf1940b3fd6fd641b7db9e50ccd1dd8, type: 2}

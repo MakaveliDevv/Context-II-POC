@@ -87,9 +87,6 @@ public class Lion : NetworkBehaviour
             }
             else
             {
-                cylindersRemainingText.text = cylindersRemaining.ToString();
-                spheresRemainingText.text = spheresRemaining.ToString();
-                blocksRemainingText.text = blocksRemaining.ToString();
                 lionCam.transform.SetParent(null);
             }
         }

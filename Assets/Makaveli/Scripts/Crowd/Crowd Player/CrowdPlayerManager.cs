@@ -133,6 +133,8 @@ public class CrowdPlayerManager : NetworkBehaviour
                 _go.SetActive(false);
             }
         }
+
+        if(!customNetworkBehaviour.CustomIsOwner()) GameObject.Find("LoadingCanvas").SetActive(false);
     }
 
     private void OnEnable()
@@ -173,7 +175,6 @@ public class CrowdPlayerManager : NetworkBehaviour
 
     private void Update()
     {
-        Debug.Log($"Local Position Crowd: {transform.GetChild(0).localPosition}");
         inUIMode = LocationCardsUIVisibility();  
         UIMode(inUIMode);
         playerController.Update(this);

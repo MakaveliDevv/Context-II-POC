@@ -74,6 +74,8 @@ public class ServerManager : NetworkBehaviour
 
         clientServerRefs.server = serverInstance.GetComponent<Server>();
         clientServerRefs.isServer = true;
+
+        Debug.Log("Server started");
     }
 
     private void StartAsClient()

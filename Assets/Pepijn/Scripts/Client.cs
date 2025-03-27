@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -100,7 +101,6 @@ public class Client : NetworkBehaviour
         // Select a random position for the crowd
         int randomIndex = Random.Range(0, availablePositions.Count);
         Vector3 spawnLocation = availablePositions[randomIndex].position;
-        spawnLocation.y += 10f;
 
         Debug.Log($"Spawning at: {spawnLocation}");
         
@@ -132,6 +132,7 @@ public class Client : NetworkBehaviour
 
     IEnumerator FixChildPosition(Transform _child)
     {
+        yield return new WaitForSeconds(0.5f);
         while(_child.localPosition != Vector3.zero)
         {
             _child.localPosition = Vector3.zero;
@@ -139,6 +140,7 @@ public class Client : NetworkBehaviour
             yield return null;
         }
 
+        GameObject.Find("LoadingCanvas").SetActive(false);
         _child.transform.parent.GetComponent<CrowdPlayerManager>().spawnedSuccesfully = true;
     }
 

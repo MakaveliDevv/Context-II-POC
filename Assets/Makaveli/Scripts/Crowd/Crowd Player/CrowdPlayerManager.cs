@@ -24,6 +24,7 @@ public class CrowdPlayerManager : NetworkBehaviour
     private bool lastDisplayUIState = false; 
     private bool openShapePanelFirstTime;
     public bool signal;
+    [SerializeField] GameObject arrow;
 
     // NPC Management
     [Header("NPC Management")]
@@ -38,7 +39,7 @@ public class CrowdPlayerManager : NetworkBehaviour
     // Camera Management
     [Header("Camera Management")]
     public Camera cam;
-    [SerializeField] private Vector3 camOffset = new(0, 10, -5);    
+    [SerializeField] private Vector3 camOffset = new(0, 15, -10);    
     [SerializeField] private float camSmoothSpeed = 5f;
     [SerializeField] private float camRotationSpeed = 100f;  
     public List<LocationCardUI> chosenCards = new();
@@ -53,8 +54,6 @@ public class CrowdPlayerManager : NetworkBehaviour
     [Header("Tasks")]
     public List<Task> tasks = new();
     public bool spawnedSuccesfully;
-    private float formationUpdateInterval = 1f; // Default 1 second interval
-    private float formationUpdateTimer = 0f;
 
     private void Awake()
     {
@@ -183,7 +182,17 @@ public class CrowdPlayerManager : NetworkBehaviour
     void ChooseLocationClientRpc(int i)
     {
         // Debug.Log("123 i is: " + i);
+        if(chosenTaskLocation != null) 
+        {
+            chosenTaskLocation.indicator.SetActive(false); 
+            chosenTaskLocation.playerCam = null;
+            chosenTaskLocation = null;
+        }
+
         playerController.chosenLocation = chosenCards[i].location;
+        chosenTaskLocation = playerController.chosenLocation.GetComponent<TaskLocation>();
+        chosenTaskLocation.indicator.SetActive(true);
+        chosenTaskLocation.playerCam = cam.transform;
         playerController.SecondHalfOfChooseLocation(chosenCards[i]);
     }
 
@@ -239,9 +248,44 @@ public class CrowdPlayerManager : NetworkBehaviour
                 // An extra method to keep track of the chosen locations
                 StartCoroutine(MGameManager.instance.InitializeLocation());
 
+                // If location selected, change state
+                if(playerController.locationChosen) 
+                {
+                    MGameManager.instance.showLocationCards = false;
+                    playerState = PlayerState.TRAVELING;
+                }
+
+                break;
+
+            case PlayerState.TRAVELING:
+                // Debug.Log("🚀 TRAVELING state running...");
+                playerController.MovementInput();
+
+                // Travel mechanic
+                // playerController.MoveTowardsChosenLocation(transform);
+                // InputActionHandler.DisableInputActions();
+
+                // Check if player at position
+                playerController.CheckPlayerPosition(playerController.controller.transform);
+
+                if(playerController.isAtLocation == true) 
+                {
+                    // Debug.Log("✅ Switching to CHOOSE_SHAPE state");
+                    playerState = PlayerState.CHOOSE_SHAPE;
+                }
+
             break;
 
-            case PlayerState.CUSTOMIZE_SHAPE:
+            case PlayerState.CHOOSE_SHAPE:
+                if(!openShapePanelFirstTime) 
+                {
+                    playerController.UImanagement.shapeManagerUI.OpenShapePanel(this);
+                    openShapePanelFirstTime = true;
+                }
+
+            break;
+
+            case PlayerState.REARRANGE_SHAPE:
                 openShapePanelFirstTime = false;
                 signal = false; 
 

@@ -23,13 +23,14 @@ public class ClientManager : NetworkBehaviour
     public Image readyButtonImg;
     public Sprite readySprite, unreadySprite;
     bool isReady;
-    [SerializeField] GameObject lobby;
-    bool inLobby;
+    [SerializeField] public GameObject lobby;
+    public bool inLobby;
     [SerializeField] public TMP_InputField nameInputField;
     public List<string> clientNames = new();
     [SerializeField] GameObject logo, afterJoinObj;
     [SerializeField] Image chooseCrowdImg, chooseLionImg;
     [SerializeField] Sprite selectedSprite, unselectedSprite;
+    public Scene lobbyScene;
     void Awake()
     {
         instance = this;

@@ -57,6 +57,7 @@ public class CrowdRpcBehaviour : NetworkBehaviour
             newNPCInstance.gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
             newNPCInstance.gameObject.transform.GetChild(0).GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
             newNPCInstance.transform.SetParent(npcContainer);
+            crowdPlayerController.npcs.Add(newNPCInstance.gameObject);
             
             NotifyClientOfSpawnClientRpc(newNPCInstance.NetworkObjectId);
         }

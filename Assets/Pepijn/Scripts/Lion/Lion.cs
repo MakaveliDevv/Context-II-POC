@@ -321,4 +321,9 @@ public class Lion : NetworkBehaviour
         PlacableObjects placedObject = spawnedObject.gameObject.GetComponent<PlacableObjects>();
         placedObject.PlaceObject(this);
     }
+
+    void OnDestroy()
+    {
+        Destroy(lionCam.gameObject);
+    }
 }

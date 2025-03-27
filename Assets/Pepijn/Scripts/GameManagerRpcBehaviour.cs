@@ -134,6 +134,13 @@ public class GameManagerRpcBehaviour : NetworkBehaviour
 
         EndGameClientRpc();
 
+        Destroy(mGameManager.lion.gameObject);
+        foreach(var _crowdPlayer in mGameManager.allCrowdPlayers)
+        {
+            foreach(var _npc in _crowdPlayer.playerController.npcs) Destroy(_npc.gameObject);
+            Destroy(_crowdPlayer.gameObject);
+        }
+
         yield return new WaitForSeconds(10);
 
         ReturnToLobby();
@@ -151,18 +158,19 @@ public class GameManagerRpcBehaviour : NetworkBehaviour
     [ClientRpc]
     void EndGameClientRpc()
     {
-        mGameManager.lion.gameObject.SetActive(false);
         mGameManager.timeObj.SetActive(false);
-        foreach(var _crowdPlayer in mGameManager.allCrowdPlayers)
-        {
-            _crowdPlayer.gameObject.SetActive(false);
-        }
+        // mGameManager.lion.gameObject.SetActive(false);
+        // foreach(var _crowdPlayer in mGameManager.allCrowdPlayers)
+        // {
+        //     _crowdPlayer.gameObject.SetActive(false);
+        // }
         mGameManager.finishCamera.SetActive(true);
     }
 
     void ReturnToLobby()
     {
         SceneManager.UnloadSceneAsync("P_GameScene");
+        clientManager.scenceLoadedClients.Clear();
 
         ReturnToLobbyClientRpc();
     }
@@ -172,6 +180,8 @@ public class GameManagerRpcBehaviour : NetworkBehaviour
     {
         SceneManager.UnloadSceneAsync("P_GameScene");
         clientManager.lobby.SetActive(true);
+        clientManager.inLobby = true;
+        clientManager.scenceLoadedClients.Clear();
         clientManager.ReadyUp();
     }
 }

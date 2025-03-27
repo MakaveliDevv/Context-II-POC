@@ -24,7 +24,7 @@ public class ClientManager : NetworkBehaviour
     public Sprite readySprite, unreadySprite;
     bool isReady;
     [SerializeField] public GameObject lobby;
-    bool inLobby;
+    public bool inLobby;
     [SerializeField] public TMP_InputField nameInputField;
     public List<string> clientNames = new();
     [SerializeField] GameObject logo, afterJoinObj;

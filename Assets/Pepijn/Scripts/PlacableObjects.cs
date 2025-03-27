@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -95,7 +96,7 @@ public class PlacableObjects : NetworkBehaviour
         {
             MGameManager.instance.UpdatePoints(-1);
             Debug.Log("object placed in not solving state so -1 point is applied");
-            StartCoroutine(DestroyObject());           
+            StartCoroutine(DestroyObject(_lion.wrongObjectText, "Wrong time! Removing object..."));           
         }
         else if(MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.SOLVING_TASK) 
         {
@@ -142,7 +143,7 @@ public class PlacableObjects : NetworkBehaviour
                 //for now, to advance the game anyways
                 MGameManager.instance.lionPlacedObject = true;
                 Debug.Log("Object placed in a non-taskable location, and no valid location nearby. -1 point applied");
-                StartCoroutine(DestroyObject());
+                StartCoroutine(DestroyObject(_lion.wrongObjectText, "Wrong location! Removing object..."));
             }
         }
     }
@@ -155,9 +156,15 @@ public class PlacableObjects : NetworkBehaviour
         Destroy(_netObj);
     }
 
-    IEnumerator DestroyObject()
+    IEnumerator DestroyObject(TextMeshProUGUI _lionText, string _text)
     {
-        yield return new WaitForSeconds(5);
+        _lionText.text = _text;
+        yield return new WaitForSeconds(3);
+        if(_lionText.text == _text) _lionText.text = "";
+        else
+        {
+            Debug.Log($"Text no longer the same: [{_text}] != [{_lionText.text}] ");
+        }
         DestroyThisServerRpc();
     }
 }

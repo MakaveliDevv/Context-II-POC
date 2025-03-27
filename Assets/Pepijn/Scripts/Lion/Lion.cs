@@ -31,6 +31,7 @@ public class Lion : NetworkBehaviour
     [SerializeField] Animator animator;
     [SerializeField] NetworkObject serverCarryingObject;
     [SerializeField] Transform holdingTransform;
+    [SerializeField] public TextMeshProUGUI wrongObjectText;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public override void OnNetworkSpawn()

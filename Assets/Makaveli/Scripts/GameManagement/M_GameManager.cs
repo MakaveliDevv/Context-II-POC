@@ -238,7 +238,7 @@ public class MGameManager : NetworkBehaviour
                     }
                     
                 }
-
+                lion.lastObjectTask = null;
                 StartCoroutine(DisplayEndRound());
             }
             

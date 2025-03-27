@@ -9507,7 +9507,7 @@ MonoBehaviour:
   maxPoints: 0
   pointsText: {fileID: 443741907}
   timeText: {fileID: 1565205045}
-  roundTime: 5
+  roundTime: 300
   mediumTreePointThreshold: 1
   bigTreePointThreshold: 2
   elapsedTime: 0

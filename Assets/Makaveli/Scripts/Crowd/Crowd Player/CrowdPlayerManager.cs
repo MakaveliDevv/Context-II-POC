@@ -51,6 +51,7 @@ public class CrowdPlayerManager : NetworkBehaviour
 
     [Header("Tasks")]
     public List<Task> tasks = new();
+    public bool spawnedSuccesfully;
 
 
     private void Awake()
@@ -172,6 +173,7 @@ public class CrowdPlayerManager : NetworkBehaviour
 
     private void Update()
     {
+        Debug.Log($"Local Position Crowd: {transform.GetChild(0).localPosition}");
         inUIMode = LocationCardsUIVisibility();  
         UIMode(inUIMode);
         playerController.Update(this);
@@ -179,7 +181,7 @@ public class CrowdPlayerManager : NetworkBehaviour
         switch (playerState)
         {
             case PlayerState.ROAM_AROUND:
-                playerController.MovementInput();
+                if (spawnedSuccesfully) playerController.MovementInput();
 
             break;
 

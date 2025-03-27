@@ -98,8 +98,7 @@ public class Client : NetworkBehaviour
         }
         
         // Select a random position for the crowd
-        //int randomIndex = Random.Range(0, availablePositions.Count);
-        int randomIndex = 3;
+        int randomIndex = Random.Range(0, availablePositions.Count);
         Vector3 spawnLocation = availablePositions[randomIndex].position;
         spawnLocation.y += 10f;
 
@@ -107,26 +106,40 @@ public class Client : NetworkBehaviour
         
         // Instantiate and spawn the crowd at the random position
         GameObject crowdInstance = Instantiate(crowd, spawnLocation, Quaternion.identity);
+        Debug.Log($"Spawned Crowd Instance: {crowdInstance.gameObject.name}");
+
         NetworkObject crowdNetworkInstance = crowdInstance.GetComponent<NetworkObject>();
         crowdNetworkInstance.SpawnWithOwnership(_clientID);
         
         // Update client IDs
+        Debug.Log($"Spawned Crowd NetworkInstance: {crowdNetworkInstance.gameObject.name}");
         crowdNetworkInstance.gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
         crowdNetworkInstance.transform.GetChild(0).gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
 
         // Force child position after spawn
-        StartCoroutine(FixChildPosition(crowdNetworkInstance.transform));
+        //StartCoroutine(FixChildPosition(crowdNetworkInstance.transform));
+
+        FixChildPositionClientRpc(_clientID, crowdNetworkInstance.NetworkObjectId);
     }
 
-    IEnumerator FixChildPosition(Transform parent)
+    [ClientRpc]
+    void FixChildPositionClientRpc(ulong _clientID, ulong spawnedObjectId)
     {
-        yield return new WaitForSeconds(0.5f); // Delay to let everything initialize
+        if(NetworkManager.Singleton.LocalClientId != _clientID) return;
+        NetworkObject spawnedObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[spawnedObjectId];
+        StartCoroutine(FixChildPosition(spawnedObject.gameObject.transform.GetChild(0)));
+    }
 
-        Transform child = parent.GetChild(0);
-        child.localPosition = Vector3.zero;
-        child.position = parent.position;
+    IEnumerator FixChildPosition(Transform _child)
+    {
+        while(_child.localPosition != Vector3.zero)
+        {
+            _child.localPosition = Vector3.zero;
+            Debug.Log($"Setting {_child.name} to {_child.localPosition}");
+            yield return null;
+        }
 
-        // Debug.Log($"[Fix] Parent Pos: {parent.position}, Child World Pos: {child.position}, Child Local Pos: {child.localPosition}");
+        _child.transform.parent.GetComponent<CrowdPlayerManager>().spawnedSuccesfully = true;
     }
 
     private void OnClientDisconnect(ulong clientId)

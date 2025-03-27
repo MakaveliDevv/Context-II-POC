@@ -37,7 +37,7 @@ public class CrowdPlayerManager : NetworkBehaviour
     // Camera Management
     [Header("Camera Management")]
     public Camera cam;
-    [SerializeField] private Vector3 camOffset = new(0, 10, -5);    
+    [SerializeField] private Vector3 camOffset = new(0, 15, -10);    
     [SerializeField] private float camSmoothSpeed = 5f;
     [SerializeField] private float camRotationSpeed = 100f;  
     public List<LocationCardUI> chosenCards = new();
@@ -52,6 +52,7 @@ public class CrowdPlayerManager : NetworkBehaviour
     [Header("Tasks")]
     public List<Task> tasks = new();
     public bool spawnedSuccesfully;
+    TaskLocation chosenTaskLocation;
 
 
     private void Awake()
@@ -169,7 +170,17 @@ public class CrowdPlayerManager : NetworkBehaviour
     void ChooseLocationClientRpc(int i)
     {
         // Debug.Log("123 i is: " + i);
+        if(chosenTaskLocation != null) 
+        {
+            chosenTaskLocation.indicator.SetActive(false); 
+            chosenTaskLocation.playerCam = null;
+            chosenTaskLocation = null;
+        }
+
         playerController.chosenLocation = chosenCards[i].location;
+        chosenTaskLocation = playerController.chosenLocation.GetComponent<TaskLocation>();
+        chosenTaskLocation.indicator.SetActive(true);
+        chosenTaskLocation.playerCam = cam.transform;
         playerController.SecondHalfOfChooseLocation(chosenCards[i]);
     }
 

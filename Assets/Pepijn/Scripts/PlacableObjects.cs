@@ -24,7 +24,7 @@ public class PlacableObjects : NetworkBehaviour
     {
         if(!isIndicator) return;
 
-        if(collider.gameObject.layer != 12 && !placed && collider.gameObject.layer != 9)
+        if(!placed && collider.gameObject.layer != 9)
         {
             collidingObjects.Add(collider.gameObject);
             CheckIfPlacable();
@@ -35,7 +35,7 @@ public class PlacableObjects : NetworkBehaviour
     {
         if(!isIndicator) return;
 
-        if(collider.gameObject.layer != 12 && !placed && collider.gameObject.layer != 9)
+        if(!placed && collider.gameObject.layer != 9)
         {
             collidingObjects.Remove(collider.gameObject);
             CheckIfPlacable();
@@ -46,8 +46,18 @@ public class PlacableObjects : NetworkBehaviour
     {
         if(!isIndicator) return;
 
+        bool touchingGround = false, touchingOther = false;
+
+        foreach(GameObject obj in collidingObjects)
+        {
+            if(obj.layer == 12) touchingGround = true;
+            else touchingOther = true;
+        }
+
         if(meshRenderer == null) meshRenderer = GetComponent<MeshRenderer>();
-        if(collidingObjects.Count == 0)
+
+
+        if(touchingGround && !touchingOther)
         {
             ChangePlacability(true);
         }

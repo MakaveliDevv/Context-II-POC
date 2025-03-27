@@ -98,7 +98,8 @@ public class Client : NetworkBehaviour
         }
         
         // Select a random position for the crowd
-        int randomIndex = Random.Range(0, availablePositions.Count);
+        //int randomIndex = Random.Range(0, availablePositions.Count);
+        int randomIndex = 3;
         Vector3 spawnLocation = availablePositions[randomIndex].position;
         spawnLocation.y += 10f;
 

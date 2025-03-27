@@ -57,6 +57,12 @@ public class MGameManager : NetworkBehaviour
     public float currentPoint = 0;
     public float maxPoints;
     public TextMeshProUGUI pointsText;
+    public TextMeshProUGUI timeText;
+    public int roundTime;
+    public int mediumTreePointThreshold, bigTreePointThreshold;
+    [HideInInspector] public int elapsedTime;
+    public GameObject bigTree, mediumTree, smallTree, pointsObj, timeObj;
+    public GameObject finishCamera;
 
     void Awake()
     {
@@ -70,6 +76,8 @@ public class MGameManager : NetworkBehaviour
             Destroy(transform.parent.gameObject); 
         }
         gameManagerRpcBehaviour = FindFirstObjectByType<GameManagerRpcBehaviour>();
+        bigTree.SetActive(false);
+        mediumTree.SetActive(false);
     }
 
     void Start()
@@ -79,6 +87,11 @@ public class MGameManager : NetworkBehaviour
 
         chosenLocations.Clear();
         ChosenLocations.Clear();
+
+        if(ClientServerRefs.instance.isServer) 
+        {
+            gameManagerRpcBehaviour.StartGameTimer();
+        }
     }
 
     private bool spawnLocation;
@@ -111,6 +124,30 @@ public class MGameManager : NetworkBehaviour
             case GamePlayManagement.END:
                 gameManagerRpcBehaviour.GameStateManagement("END");
             break;
+        }
+
+        CheckPoints();
+    }
+
+    void CheckPoints()
+    {
+        if(bigTree.activeSelf) return;
+
+        //Enable big tree
+        if(currentPoint >= bigTreePointThreshold)
+        {
+            bigTree.SetActive(true);
+        }
+        if(mediumTree.activeSelf) return;
+        //Enable medium tree
+        else if(currentPoint >= mediumTreePointThreshold) 
+        {
+            mediumTree.SetActive(true);
+        }
+        //Small tree things
+        else
+        {
+            
         }
     }
 

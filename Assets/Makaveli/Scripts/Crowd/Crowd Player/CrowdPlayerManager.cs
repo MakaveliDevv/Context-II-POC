@@ -23,6 +23,7 @@ public class CrowdPlayerManager : NetworkBehaviour
     private bool lastDisplayUIState = false; 
     private bool openShapePanelFirstTime;
     public bool signal;
+    [SerializeField] GameObject arrow;
 
     // NPC Management
     [Header("NPC Management")]
@@ -209,6 +210,7 @@ public class CrowdPlayerManager : NetworkBehaviour
                 if(playerController.locationChosen) 
                 {
                     MGameManager.instance.showLocationCards = false;
+                    arrow.SetActive(true);
                     playerState = PlayerState.TRAVELING;
                 }
 
@@ -217,6 +219,15 @@ public class CrowdPlayerManager : NetworkBehaviour
             case PlayerState.TRAVELING:
                 // Debug.Log("🚀 TRAVELING state running...");
                 playerController.MovementInput();
+
+                Vector3 direction = playerController.chosenLocation.transform.position - arrow.transform.position;
+                direction.y = 0; // Ignore vertical difference to keep rotation constrained
+
+                Quaternion desRot = Quaternion.LookRotation(direction); // Get rotation facing player
+                desRot = Quaternion.Euler(-90, 0, desRot.eulerAngles.y); // Force X to -90, Y to 0, keep Z rotation
+
+                arrow.transform.rotation = desRot;
+                arrow.transform.position = playerController.controller.transform.position + new Vector3(0, 1.5f, 0);
 
                 // Travel mechanic
                 // playerController.MoveTowardsChosenLocation(transform);
@@ -228,6 +239,15 @@ public class CrowdPlayerManager : NetworkBehaviour
                 if(playerController.isAtLocation == true) 
                 {
                     // Debug.Log("✅ Switching to CHOOSE_SHAPE state");
+                    arrow.SetActive(false);
+
+                    if(chosenTaskLocation != null) 
+                    {
+                        chosenTaskLocation.indicator.SetActive(false); 
+                        chosenTaskLocation.playerCam = null;
+                        chosenTaskLocation = null;
+                    }
+
                     playerState = PlayerState.CHOOSE_SHAPE;
                 }
 

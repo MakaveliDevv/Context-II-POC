@@ -24,7 +24,7 @@ public class CrowdPlayerManager : NetworkBehaviour
     private bool lastDisplayUIState = false; 
     private bool openShapePanelFirstTime;
     public bool signal;
-    [SerializeField] GameObject arrow;
+    public GameObject arrow;
 
     // NPC Management
     [Header("NPC Management")]
@@ -54,6 +54,14 @@ public class CrowdPlayerManager : NetworkBehaviour
     [Header("Tasks")]
     public List<Task> tasks = new();
     public bool spawnedSuccesfully;
+    public TaskLocation chosenTaskLocation;
+    
+
+    // -------
+    public bool choosingShape;
+    public bool customizingShape;
+    private float formationUpdateTimer;
+    private float formationUpdateInterval = 1f;
 
     private void Awake()
     {
@@ -201,10 +209,6 @@ public class CrowdPlayerManager : NetworkBehaviour
         playerController.RepositionCamera(distanceOffset, interpolationDuration, playerFormationController);
     }
 
-    public bool choosingShape;
-    public bool customizingShape;
-
-    public bool swag;
     private void Update()
     {
         inUIMode = LocationCardsUIVisibility();  
@@ -230,11 +234,8 @@ public class CrowdPlayerManager : NetworkBehaviour
 
                 if(playerController.locationChosen) 
                 {
-                    // if(!swag) 
-                    // {
-                        swag = true;
-                        playerController.CheckPlayerPosition(playerController.controller.transform);
-                    // }
+             
+                    playerController.CheckPlayerPosition(playerController.controller.transform);
                 }
                 
 
@@ -248,44 +249,9 @@ public class CrowdPlayerManager : NetworkBehaviour
                 // An extra method to keep track of the chosen locations
                 StartCoroutine(MGameManager.instance.InitializeLocation());
 
-                // If location selected, change state
-                if(playerController.locationChosen) 
-                {
-                    MGameManager.instance.showLocationCards = false;
-                    playerState = PlayerState.TRAVELING;
-                }
+            break;	
 
-                break;
-
-            case PlayerState.TRAVELING:
-                // Debug.Log("🚀 TRAVELING state running...");
-                playerController.MovementInput();
-
-                // Travel mechanic
-                // playerController.MoveTowardsChosenLocation(transform);
-                // InputActionHandler.DisableInputActions();
-
-                // Check if player at position
-                playerController.CheckPlayerPosition(playerController.controller.transform);
-
-                if(playerController.isAtLocation == true) 
-                {
-                    // Debug.Log("✅ Switching to CHOOSE_SHAPE state");
-                    playerState = PlayerState.CHOOSE_SHAPE;
-                }
-
-            break;
-
-            case PlayerState.CHOOSE_SHAPE:
-                if(!openShapePanelFirstTime) 
-                {
-                    playerController.UImanagement.shapeManagerUI.OpenShapePanel(this);
-                    openShapePanelFirstTime = true;
-                }
-
-            break;
-
-            case PlayerState.REARRANGE_SHAPE:
+            case PlayerState.CUSTOMIZE_SHAPE:
                 openShapePanelFirstTime = false;
                 signal = false; 
 
@@ -309,7 +275,6 @@ public class CrowdPlayerManager : NetworkBehaviour
 
                 if(!playerController.UImanagement.followButtonPressed) StartCoroutine(NPCsManagement.StopNPCMovement(playerController.npcs, 0f));
                 playerController.UImanagement.NPCsFollowBtn.gameObject.SetActive(true);
-                swag = false;
                 customizeShape = false;
 
             break;
@@ -325,7 +290,7 @@ public class CrowdPlayerManager : NetworkBehaviour
 
                 // Display something like new task spawning in or something like that 
                 // And then turn to roaming around state
-                StartCoroutine(TempMethod());
+                StartCoroutine(ResetState());
               
 
             break;
@@ -365,8 +330,16 @@ public class CrowdPlayerManager : NetworkBehaviour
         // Debug.Log($"[Parent Transform] World Pos: {transform.position}, Local Pos: {transform.localPosition}");
     }
 
-    private IEnumerator TempMethod() 
+    private IEnumerator ResetState() 
     {
+        arrow.SetActive(false);
+        if(chosenTaskLocation != null) 
+        {
+            chosenTaskLocation.indicator.SetActive(false); 
+            chosenTaskLocation.playerCam = null;
+            chosenTaskLocation = null;
+        }
+
         playerController.isAtLocation = false;
         playerController.locationChosen = false;
         yield return new WaitForSeconds(3f);

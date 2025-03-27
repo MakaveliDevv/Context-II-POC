@@ -190,6 +190,7 @@ public class CrowdPlayerController
             TaskLocation taskLocation = chosenLocation.gameObject.GetComponent<TaskLocation>();
             taskLocation.fixable = true;
             Debug.Log("✅ Player is at the chosen location!");
+            
 
             // float elapsedTime = 0;
             // float duration = 4f;
@@ -210,8 +211,6 @@ public class CrowdPlayerController
             // } 
 
             isAtLocation = true;
-
-            playerManager.swag = false;
         }
     }
 
@@ -324,6 +323,7 @@ public class CrowdPlayerController
                                 isProcessingClick = true;
                                 playerManager.ChooseLocationServerRpc(cards.IndexOf(card));
                                 MGameManager.instance.showLocationCards = false;
+                                playerManager.arrow.SetActive(true);
                                 playerManager.playerState = CrowdPlayerManager.PlayerState.DEFAULT;
                             }
                         });

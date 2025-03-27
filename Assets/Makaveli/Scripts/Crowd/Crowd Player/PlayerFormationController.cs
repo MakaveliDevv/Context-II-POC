@@ -13,7 +13,8 @@ public class PlayerFormationController : MonoBehaviour
     public TextMeshProUGUI currentFormationText;
 
     private CrowdPlayerManager playerManager;
-    public Transform formShapePosition;
+    public Vector3 formShapePosition;
+    private Transform location = null;
 
     private void Awake()
     {
@@ -96,17 +97,10 @@ public class PlayerFormationController : MonoBehaviour
 
     private void HandleFormation() 
     {
-        if(playerManager.playerController.UImanagement.shapeManagerUI.shapeConfirmed) 
+        if(playerManager.playerController.UImanagement.shapeManagerUI.shapeSelected) 
         {
             // Fetch the shape name
             string shapeName = playerManager.playerController.UImanagement.shapeManagerUI.shapeName;
-
-            // Use the chosenLocation from the player controller if available
-            if (playerManager.playerController.chosenLocation != null)
-            {
-                Debug.Log($"form shape position: {formShapePosition.gameObject.name}");
-                formationManager.SetTargetLocation(formShapePosition);
-            }
 
             // Convert string to enum and change formation
             if (Enum.TryParse(shapeName, out FormationType formationType))
@@ -119,22 +113,29 @@ public class PlayerFormationController : MonoBehaviour
             }
         }
     }
-    
+
     public void ChangeFormation(FormationType newFormation)
     {
         formationManager.ChangeFormation(newFormation);
         UpdateFormationText();
     }
     
-    // New method to set formation location
-    public Transform SetFormationLocation(Transform location)
+    public void SetFormationLocationTransform(Transform formationLocationTransform)
     {
-        if (formationManager != null)
+        // Assign the passed Transform to the location
+        location = formationLocationTransform;
+    }
+
+    // Your existing SetFormationLocation method
+    public Vector3 SetFormationLocation(Vector3 position)
+    {
+        if (formationManager != null && location != null)
         {
+            location.position = position;
             formationManager.SetTargetLocation(location);
         }
 
-        return formShapePosition = location;
+        return formShapePosition = position;
     }
     
     private void UpdateFormationText()

@@ -47,9 +47,9 @@ public static class NPCsManagement
         } 
     }
 
-    public static IEnumerator StopNPCMovement(List<GameObject> npcs) 
+    public static IEnumerator StopNPCMovement(List<GameObject> npcs, float timer) 
     {
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(timer);
 
         for (int i = 0; i < npcs.Count; i++)
         {

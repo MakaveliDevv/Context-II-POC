@@ -82,7 +82,7 @@ public class CrowdRpcBehaviour : NetworkBehaviour
         // Add it to the client's list
         if(crowdPlayerController != null && spawnedObject != null)
         {
-            if(crowdPlayerController.npcs != null) crowdPlayerController.npcs.Add(spawnedObject.gameObject);
+            crowdPlayerController.npcs?.Add(spawnedObject.gameObject);
         }
     }
 }

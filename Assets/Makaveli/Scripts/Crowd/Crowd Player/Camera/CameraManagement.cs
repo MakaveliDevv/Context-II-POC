@@ -7,6 +7,7 @@ public class CameraManagement
     private ShapeRearrangement shapeRearrangement; 
 
     private readonly Transform player;
+    private CrowdPlayerManager playerManager;
     private LayerMask npcLayer;
 
     // Camera movement 
@@ -24,6 +25,7 @@ public class CameraManagement
 
     public CameraManagement
     (
+        CrowdPlayerManager playerManager,
         Camera camera, 
         LayerMask npcLayer,
         Transform player, 
@@ -32,6 +34,7 @@ public class CameraManagement
         float rotationSpeed
     )
     {
+        this.playerManager = playerManager;
         this.camera = camera;
         this.npcLayer = npcLayer;
         this.player = player;
@@ -41,7 +44,7 @@ public class CameraManagement
     }
 
     public void Start() 
-    {
+    {        
         topDownController = new
         (
             player,
@@ -132,6 +135,12 @@ public class CameraManagement
         
         // Ensure final position and rotation are exactly as stored
         camera.transform.SetPositionAndRotation(originalCameraPosition, originalCameraRotation);
+        
+        if(Vector3.Distance(camera.transform.position, originalCameraPosition) < .2f) 
+        {
+            playerManager.playerState = CrowdPlayerManager.PlayerState.ROAM_AROUND;
+        }
+
         yield break;
     }
 }

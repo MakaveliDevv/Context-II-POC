@@ -9,6 +9,7 @@ public enum FormationType
     Circle,
     Line,
     Arrow,
+    Customize,
     // Add more formations as needed
 }
 
@@ -50,7 +51,8 @@ public class NPCFormationManager : MonoBehaviour
             { FormationType.Square, GetRectanglePosition },
             { FormationType.Circle, GetCirclePosition },
             { FormationType.Line, GetLinePosition },
-            { FormationType.Arrow, GetArrowPosition }
+            { FormationType.Arrow, GetArrowPosition },
+            { FormationType.Customize, GetCirclePosition }
         };
         
         if (playerTransform == null)

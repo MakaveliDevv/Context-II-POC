@@ -5,11 +5,12 @@ using UnityEngine;
 
 public class CrowdPlayerManager : NetworkBehaviour 
 {
-    public enum PlayerState { ROAM_AROUND, CHOOSE_LOCATION, TRAVELING, CHOOSE_SHAPE, REARRANGE_SHAPE, SIGNAL, END }
+    public enum PlayerState { DEFAULT, CHOOSE_LOCATION, ROAM_AROUND, TRAVELING, CHOOSE_SHAPE, CUSTOMIZE_SHAPE, SIGNAL, NOTHING }
     public PlayerState playerState; 
 
     [HideInInspector] public CrowdPlayerController playerController; // Class reference
     public PlayerFormationController playerFormationController;
+    private NPCFormationManager npcFormationManager;
 
     [Header("Movement Management")]
     [SerializeField] private float movementSpeed = 5f;
@@ -30,7 +31,7 @@ public class CrowdPlayerManager : NetworkBehaviour
     [SerializeField] private LayerMask npcLayer;
     [SerializeField] private Vector3 npcSpawnOffset = new();    
     [SerializeField] private int npcCount;
-    private bool rearrangeFormation;
+    private bool customizeShape;
     public Transform spawnPoint;
     public Transform npcContainer;
 
@@ -52,10 +53,12 @@ public class CrowdPlayerManager : NetworkBehaviour
     [Header("Tasks")]
     public List<Task> tasks = new();
     public bool spawnedSuccesfully;
-
+    private float formationUpdateInterval = 1f; // Default 1 second interval
+    private float formationUpdateTimer = 0f;
 
     private void Awake()
     {
+        npcFormationManager = GetComponent<NPCFormationManager>();
         playerController = new
         (
             this,                               // Reference to the mono class
@@ -87,8 +90,19 @@ public class CrowdPlayerManager : NetworkBehaviour
 
     private void Start()
     {
-        StartCoroutine(playerController.Start(this));
+        playerController.Start();
         og_camRot = cam.transform.rotation;
+        
+        // if(npcsFormationLocation == null) 
+        // {
+        //     npcsFormationLocation = transform.Find("CrowdPlayer").Find("npc formationPoint");
+        // }
+
+        // Debug.Log($"npcs formation location: {npcsFormationLocation.gameObject.name}");
+        // Debug.Log($"npcs formation location local position: {npcsFormationLocation.localPosition}");
+        // Debug.Log($"npcs formation location world position: {npcsFormationLocation.position}");
+        
+        // playerFormationController.SetFormationLocationTransform(npcsFormationLocation);
     }
 
     public override void OnNetworkSpawn()
@@ -173,16 +187,47 @@ public class CrowdPlayerManager : NetworkBehaviour
         playerController.SecondHalfOfChooseLocation(chosenCards[i]);
     }
 
+    public void RepositionCamera() 
+    {
+        playerController.RepositionCamera(distanceOffset, interpolationDuration, playerFormationController);
+    }
+
+    public bool choosingShape;
+    public bool customizingShape;
+
+    public bool swag;
     private void Update()
     {
         inUIMode = LocationCardsUIVisibility();  
         UIMode(inUIMode);
-        playerController.Update(this);
+     
+        playerController.Update();
 
+        formationUpdateTimer += Time.deltaTime;
+        if (formationUpdateTimer >= formationUpdateInterval)
+        {
+            playerFormationController.SetFormationLocation(playerController.npcsFormationLocation.position);
+            formationUpdateTimer = 0f; 
+        }
+  
         switch (playerState)
         {
-            case PlayerState.ROAM_AROUND:
+            case PlayerState.DEFAULT:
                 if (spawnedSuccesfully) playerController.MovementInput();
+                StartCoroutine(NPCsManagement.ResumeNPCMovement(playerController.npcs, transform));
+                npcFormationManager.currentFormation = FormationType.Follow;
+                playerController.UImanagement.NPCsFollowBtn.gameObject.SetActive(false);
+                playerController.UImanagement.followButtonPressed = false;
+
+                if(playerController.locationChosen) 
+                {
+                    // if(!swag) 
+                    // {
+                        swag = true;
+                        playerController.CheckPlayerPosition(playerController.controller.transform);
+                    // }
+                }
+                
 
             break;
 
@@ -194,83 +239,41 @@ public class CrowdPlayerManager : NetworkBehaviour
                 // An extra method to keep track of the chosen locations
                 StartCoroutine(MGameManager.instance.InitializeLocation());
 
-                // If location selected, change state
-                if(playerController.locationChosen) 
-                {
-                    MGameManager.instance.showLocationCards = false;
-                    playerState = PlayerState.TRAVELING;
-                }
-
-                break;
-
-            case PlayerState.TRAVELING:
-                // Debug.Log("🚀 TRAVELING state running...");
-                playerController.MovementInput();
-
-                // Travel mechanic
-                // playerController.MoveTowardsChosenLocation(transform);
-                // InputActionHandler.DisableInputActions();
-
-                // Check if player at position
-                playerController.CheckPlayerPosition(playerController.controller.transform);
-
-                if(playerController.isAtLocation == true) 
-                {
-                    // Debug.Log("✅ Switching to CHOOSE_SHAPE state");
-                    playerState = PlayerState.CHOOSE_SHAPE;
-                }
-
             break;
 
-            case PlayerState.CHOOSE_SHAPE:
-                if(!openShapePanelFirstTime) 
-                {
-                    playerController.UImanagement.shapeManagerUI.OpenShapePanel(this);
-                    openShapePanelFirstTime = true;
-                }
-
-            break;
-
-            case PlayerState.REARRANGE_SHAPE:
+            case PlayerState.CUSTOMIZE_SHAPE:
                 openShapePanelFirstTime = false;
                 signal = false; 
 
                 playerController.DragNPC();
 
-                if(!rearrangeFormation) 
+                if(!customizeShape) 
                 {
-                    if (playerController.UImanagement.shapeManagerUI.shapeConfirmed) 
+                    if (playerController.UImanagement.shapeManagerUI.shapeSelected) 
                     {
                         // Stop the movement of each npc
-                        StartCoroutine(NPCsManagement.StopNPCMovement(playerController.npcs));
+                        StartCoroutine(NPCsManagement.StopNPCMovement(playerController.npcs, 3f));
                         playerController.TitlCamera(distanceOffset, interpolationDuration, playerFormationController);
-                        rearrangeFormation = true;
+                        customizeShape = true;
                     }
                 }
 
             break;
 
-            case PlayerState.SIGNAL:
-                rearrangeFormation = false;
-                if(!signal) 
-                {
-                    playerController.RepositionCamera(distanceOffset, interpolationDuration, playerFormationController);
+            case PlayerState.ROAM_AROUND:
+                playerController.MovementInput();
 
-                    signal = true;
-                }
-
-                if(signal) 
-                {
-                    transform.GetChild(4).GetChild(9).gameObject.SetActive(true); // Display the signal button
-                    playerController.MovementInput();
-                }
+                if(!playerController.UImanagement.followButtonPressed) StartCoroutine(NPCsManagement.StopNPCMovement(playerController.npcs, 0f));
+                playerController.UImanagement.NPCsFollowBtn.gameObject.SetActive(true);
+                swag = false;
+                customizeShape = false;
 
             break;
 
-            case PlayerState.END:
+            case PlayerState.NOTHING:
                 playerController.chosenLocation = null;
                 signal = false;
-                playerController.UImanagement.shapeManagerUI.shapeConfirmed = false;
+                playerController.UImanagement.shapeManagerUI.shapeSelected = false;
 
                 StartCoroutine(NPCsManagement.ResumeNPCMovement(playerController.npcs, transform));
 
@@ -289,22 +292,6 @@ public class CrowdPlayerManager : NetworkBehaviour
         }
     }
 
-    private void LateUpdate()
-    {
-        playerController.CameraMovement();
-        // Debug.Log($"[Parent Transform] World Pos: {transform.position}, Local Pos: {transform.localPosition}");
-    }
-
-    private IEnumerator TempMethod() 
-    {
-        playerController.isAtLocation = false;
-        playerController.locationChosen = false;
-        yield return new WaitForSeconds(3f);
-        playerState = PlayerState.ROAM_AROUND;
-        yield break;
-    }
-
-    // UI stuff
     private bool LocationCardsUIVisibility() 
     {
         bool inUIMode = MGameManager.instance.showLocationCards; 
@@ -326,6 +313,21 @@ public class CrowdPlayerManager : NetworkBehaviour
         // Debug.Log($"UILocationCard: showLocationCards = {MGameManager.instance.showLocationCards}, lastDisplayUIState = {lastDisplayUIState}, inUIMode = {inUIMode}");
         
         return inUIMode;
+    }
+
+    private void LateUpdate()
+    {
+        playerController.CameraMovement();
+        // Debug.Log($"[Parent Transform] World Pos: {transform.position}, Local Pos: {transform.localPosition}");
+    }
+
+    private IEnumerator TempMethod() 
+    {
+        playerController.isAtLocation = false;
+        playerController.locationChosen = false;
+        yield return new WaitForSeconds(3f);
+        playerState = PlayerState.DEFAULT;
+        yield break;
     }
 
     public bool UIMode(bool inUIMode) 

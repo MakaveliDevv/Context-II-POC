@@ -9,93 +9,77 @@ public class UIManagement
     public ShapeManagerUI shapeManagerUI;
     private readonly LocationManagerUI locationManagerUI;
     private readonly TaskManagerUI taskManagerUI;
+    private readonly EmoteUI emoteManagerUI;
     public bool taskCreated;
+    private readonly Transform canvas;
     
     // Emotes
-    public Emotes selectedEmote;
-    public GameObject emotePanel;
-    public List<GameObject> emoteButtons = new();
+    public List<Button> emoteButtons = new();
+
+    // Buttons
+    private Button signalBtn;
+    public Button NPCsFollowBtn;
+    public bool followButtonPressed;
 
     public UIManagement(Transform player, GameObject cardsUI, List<GameObject> cardPanels, List<LocationCardUI> cards) 
     {
-        locationManagerUI = new (cardsUI ,cardPanels ,cards);
-        shapeManagerUI = new (player); 
-        taskManagerUI = new (player);
+        if(player.TryGetComponent<CrowdPlayerManager>(out var playerManager)) 
+        {
+            canvas = player.transform.Find("Player Canvas");
+            Debug.Log($"canvas = {canvas.name}");
+
+            locationManagerUI = new (cardsUI ,cardPanels ,cards);
+            taskManagerUI = new (canvas, playerManager);
+            shapeManagerUI = new (canvas, playerManager); 
+            emoteManagerUI = new(canvas, playerManager, emoteButtons);
+
+
+        } else { Debug.LogError("Couldn't fetch the playermanager component from the player!"); }
+
     }
 
     public void Start(MonoBehaviour mono, CrowdPlayerManager playerManager) 
     {
-        mono.StartCoroutine(shapeManagerUI.Start(playerManager));
-        taskManagerUI.Start();
         locationManagerUI.Start();
-        
-        playerManager.StartCoroutine(InitializeEmoteButtons(playerManager));
+        taskManagerUI.Start();
+        mono.StartCoroutine(shapeManagerUI.Start());
+        emoteManagerUI.Start();
+
+        // signal button
+        if(canvas.Find("Buttons").Find("SignalBtn").TryGetComponent<Button>(out var signalBtn))
+        {
+            this.signalBtn = signalBtn;
+            this.signalBtn.onClick.RemoveAllListeners();
+            this.signalBtn.onClick.AddListener(() => 
+            {
+                Debug.Log("Pressed signal: " + playerManager.playerController.npcs.Count);
+                foreach (var e in playerManager.playerController.npcs)
+                {
+                    NPCManager npc = e.GetComponent<NPCManager>();
+                    mono.StartCoroutine(npc.Signal(5f));
+                }    
+            });
+            
+        } else { Debug.LogError("Couldn't fetch the 'signalBtn shape button' "); return; }
+
+        // NPCsFollow button
+        if(canvas.Find("Buttons").Find("NPCsFollowBtn").TryGetComponent<Button>(out var NPCsFollowBtn))
+        {
+            this.NPCsFollowBtn = NPCsFollowBtn;
+            this.NPCsFollowBtn.onClick.RemoveAllListeners();
+            this.NPCsFollowBtn.onClick.AddListener(() => 
+            {
+                // Resume npc movement
+                followButtonPressed = true;
+                // mono.StartCoroutine(NPCsManagement.ResumeNPCMovement(playerManager.playerController.npcs, playerManager.transform));
+                playerManager.playerState = CrowdPlayerManager.PlayerState.DEFAULT;
+                
+            });
+            
+        } else { Debug.LogError("Couldn't fetch the 'signalBtn shape button' "); return; }
     }
 
-    private IEnumerator InitializeEmoteButtons(CrowdPlayerManager playerManager) 
-    {
-        // Wait before initializing
-        yield return new WaitForSeconds(2f);
-
-        emotePanel = playerManager.transform.Find("Player Canvas").transform.GetChild(8).gameObject;
-        emotePanel.SetActive(true);
-        Debug.Log($"emotePanel: {emotePanel.name}");
-
-        // Clear the existing list to prevent duplicates if this runs multiple times
-        emoteButtons.Clear();
-        
-        for (int i = 0; i < emotePanel.transform.childCount; i++)
-        {
-            GameObject buttonObject = emotePanel.transform.GetChild(i).gameObject;
-            emoteButtons.Add(buttonObject);  
-            Debug.Log($"Added button {i}: {buttonObject.name}");
-        }
-
-        yield return null;
-
-        Debug.Log($"btns count: {emoteButtons.Count}");
-
-        if(emoteButtons != null && emoteButtons.Count > 0) 
-        {
-            foreach (var btn in emoteButtons)
-            {
-                Debug.Log($"Fetching buttons: {btn.name}");
-
-                Button btnComponent = btn.GetComponent<Button>();
-                if(btnComponent != null)
-                {
-                    Debug.Log($"Setting up button component: {btnComponent.gameObject.name}");
-                    btnComponent.onClick.RemoveAllListeners();
-
-                    // Store the emote name for THIS button
-                    if(btn.TryGetComponent<Emotes>(out var emoteComponent)) 
-                    {
-                        string currentEmoteName = emoteComponent.emoteName;
-                        Debug.Log($"Button has emote: {currentEmoteName}");
-
-                        btnComponent.onClick.AddListener(() =>
-                        {
-                            Debug.Log($"Button clicked! Emote: {currentEmoteName}");
-                            foreach (var npc in playerManager.playerController.npcs)
-                            {
-                                NPCManager npcManager = npc.GetComponent<NPCManager>();
-                                if (npcManager != null)
-                                {
-                                    npcManager.EmoteNPC(currentEmoteName);
-                                }
-                            }
-                        });
-                    }
-                }
-                //else Debug.LogError("Couldn't fetch the Emotes component from the emote button");
-            }
-            
-        }
-        //else { Debug.LogError("No button found!");}
-       
-        yield break;
-    } 
-
+    
     public void DisplayCards(MonoBehaviour monoBehaviour) 
     {
         monoBehaviour.StartCoroutine(locationManagerUI.DisplayCards(monoBehaviour));
@@ -113,18 +97,13 @@ public class UIManagement
 
     public void Update(CrowdPlayerManager playerManager) 
     {
-        if(!playerManager.signal) 
-        {
-            playerManager.transform.GetChild(4).GetChild(7).gameObject.SetActive(false);
-        }
-
-        taskManagerUI.DisplayTaskBtn(playerManager);
-
+        shapeManagerUI.Update();
+        
         if(playerManager.playerState == CrowdPlayerManager.PlayerState.TRAVELING) 
         {
             if(!taskCreated) 
             {
-                taskManagerUI.CreateTaskCard(playerManager);
+                taskManagerUI.CreateTaskCard();
                 taskCreated = true;
             }
         }
@@ -134,14 +113,4 @@ public class UIManagement
             taskCreated = false;
         }
     }
-
-    // public void OpenShapePanelUI() 
-    // {
-    //     shapeManagerUI.OpenShapePanel();
-    // }
-
-    // public void CloseShapePanelUI() 
-    // {
-    //     shapeManagerUI.CloseShapePanel();
-    // }
 }

@@ -2,38 +2,41 @@ using UnityEngine;
 using UnityEngine.UI;
 public class TaskManagerUI 
 {
-    private readonly Transform player;
-    private GameObject tasksPanelUI;
+    private readonly CrowdPlayerManager player;
+    private readonly Transform canvas;
+    private Transform parentPanel;
+    private Transform taskPanel;
     private Button openPanelBtn;
     private bool panelOpen;
 
-    public TaskManagerUI(Transform player) 
-    {
-        this.player = player;
-    }
+    public TaskManagerUI(Transform canvas, CrowdPlayerManager player) { this.canvas = canvas; this.player = player; }
 
     public void Start() 
     {
-        tasksPanelUI = player.Find("Player Canvas").GetChild(4).gameObject;
-        openPanelBtn = player.transform.Find("Player Canvas").GetChild(10).GetComponent<Button>();
-        if(openPanelBtn != null) 
+        parentPanel = canvas.Find("TaskManagement");
+        taskPanel = parentPanel.Find("TasksPanel");
+        Debug.Log($"parentPanel = {parentPanel.name}, taskPanel = {taskPanel.name}");
+        
+        if(parentPanel.Find("TaskPanelButton").TryGetComponent<Button>(out var openPanelBtn)) 
         {
-            openPanelBtn.onClick.RemoveAllListeners();
-            openPanelBtn.onClick.AddListener(TogglePanel);
-        }
-        else { Debug.LogError("The button couldn't be fetched"); return; }
+            Debug.Log($"TaskPanelButton: {openPanelBtn.name}");
+
+            this.openPanelBtn = openPanelBtn;
+            this.openPanelBtn.onClick.RemoveAllListeners();
+            this.openPanelBtn.onClick.AddListener(TogglePanel);
+        } else { Debug.LogError("Couldn't fetch the 'open task panel button'");  return; }
     }
 
-    public void CreateTaskCard(CrowdPlayerManager playerManager) 
+    public void CreateTaskCard() 
     {
-        if(playerManager.playerController.tasks.Count > 0) 
+        if(player.playerController.tasks.Count > 0) 
         {
             // Fetch the tasks the player has
-            foreach (var task in playerManager.playerController.tasks)
+            foreach (var task in player.playerController.tasks)
             {
                 // Create for each tasks a task card
                 GameObject taskCard = Object.Instantiate(MGameManager.instance.taskCard);
-                taskCard.transform.SetParent(tasksPanelUI.transform.GetChild(0)); 
+                taskCard.transform.SetParent(taskPanel.transform.GetChild(0)); 
                 
                 // Assign the the tasks to the task card
                 if(taskCard.TryGetComponent<TaskCardUI>(out var taskCardUI))
@@ -48,20 +51,20 @@ public class TaskManagerUI
 
     private void TogglePanel() 
     {
-        if(openPanelBtn != null && player.TryGetComponent<CrowdPlayerManager>(out var playerManager)) 
+        if(openPanelBtn != null) 
         {
-            if(playerManager.playerState != CrowdPlayerManager.PlayerState.CHOOSE_SHAPE ||
-            playerManager.playerState != CrowdPlayerManager.PlayerState.CHOOSE_LOCATION ||
-            playerManager.playerState != CrowdPlayerManager.PlayerState.REARRANGE_SHAPE) 
+            if(player.playerState != CrowdPlayerManager.PlayerState.CHOOSE_SHAPE ||
+            player.playerState != CrowdPlayerManager.PlayerState.CHOOSE_LOCATION ||
+            player.playerState != CrowdPlayerManager.PlayerState.CUSTOMIZE_SHAPE) 
             {
                 if(!panelOpen) 
                 {
-                    tasksPanelUI.SetActive(true);
+                    taskPanel.gameObject.SetActive(true);
                     panelOpen = true;
                 }
                 else 
                 {
-                    tasksPanelUI.SetActive(false);
+                    taskPanel.gameObject.SetActive(false);
                     panelOpen = false;
                 }
             }

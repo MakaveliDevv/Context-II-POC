@@ -91,30 +91,52 @@ public class NPCManager : NetworkBehaviour
 
     public void HappyEmote() 
     {
-        animator.SetBool("Happy", true);
-
-        // Turn off the others
-        animator.SetBool("Sad", false);
-        animator.SetBool("Tomato", false);
+        Debug.Log("Happy Emote");
+        animator.SetTrigger("Happy");
     }
 
     public void SadEmote() 
     {
-        animator.SetBool("Sad", true);
-
-        // Turn off the others
-        animator.SetBool("Happy", false);
-        animator.SetBool("Tomato", false);
+        Debug.Log("Sad Emote");
+        animator.SetTrigger("Sad");
     }
 
     public void ThrowingEmote() 
     {
-        animator.SetBool("Tomato", true);
-
-        // Turn off the others
-        animator.SetBool("Happy", false);
-        animator.SetBool("Sad", false);
+        Debug.Log("Throwing Emote");
+        animator.SetTrigger("Tomato");
     }
+    
+    // public void HappyEmote() 
+    // {
+    //     Debug.Log("Happy Emote");
+    //     animator.SetBool("Happy", true);
+
+    //     // Turn off the others
+    //     animator.SetBool("Sad", false);
+    //     animator.SetBool("Tomato", false);
+    // }
+
+    // public void SadEmote() 
+    // {
+    //     Debug.Log("Sad Emote");
+    //     animator.SetBool("Sad", true);
+
+    //     // Turn off the others
+    //     animator.SetBool("Happy", false);
+    //     animator.SetBool("Tomato", false);
+    // }
+
+    // public void ThrowingEmote() 
+    // {
+    //     Debug.Log("Throwing Emote");
+
+    //     animator.SetBool("Tomato", true);
+
+    //     // Turn off the others
+    //     animator.SetBool("Happy", false);
+    //     animator.SetBool("Sad", false);
+    // }
 
     public void EmoteNPC(string emoteName) 
     {

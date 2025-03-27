@@ -23,7 +23,7 @@ public class MGameManager : NetworkBehaviour
     [Header("Crowd Player Management")]
     public List<CrowdPlayerManager> allCrowdPlayers = new(); 
     public Dictionary<CrowdPlayerManager, Transform> chosenLocations = new();
-    [SerializeField] public List<DictionaryEntry<CrowdPlayerManager, Transform>> ChosenLocations = new();
+    public List<DictionaryEntry<CrowdPlayerManager, Transform>> ChosenLocations = new();
     public Dictionary<CrowdPlayerManager, GameObject> playerShapeUI = new();
     public List<DictionaryEntry<CrowdPlayerManager, GameObject>> PlayerShapeUI = new();
     public List<Transform> playersSpawnPositions = new();
@@ -250,7 +250,7 @@ public class MGameManager : NetworkBehaviour
         for (int i = 0; i < allCrowdPlayers.Count; i++)
         {
             var player = allCrowdPlayers[i];
-            player.playerState = CrowdPlayerManager.PlayerState.END;
+            player.playerState = CrowdPlayerManager.PlayerState.NOTHING;
         }      
 
         yield return null;

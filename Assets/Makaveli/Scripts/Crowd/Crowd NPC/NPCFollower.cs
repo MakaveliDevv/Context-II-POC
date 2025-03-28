@@ -6,7 +6,7 @@ public class NPCFollower
     [Header("References")]
     public Transform target;
     private Transform transform;
-    private CharacterController controller;
+    public CharacterController controller;
     private CrowdPlayerManager Player;
 
     [Header("Movement Parameters")]
@@ -120,6 +120,7 @@ public class NPCFollower
     public void Update(NPCManager npc)
     {
         if (target == null || MGameManager.instance.allNPCs == null) return;
+        if (!Player.spawnedSuccesfully) return;
 
         // Calculate center of mass for all NPCs
         CalculateCenterOfMass();
@@ -488,7 +489,7 @@ public class NPCFollower
 //     public Transform target;
 //     private CrowdPlayerManager Player;
 //     public Transform transform;
-//     private CharacterController controller;
+//     public CharacterController controller;
 
 //     [Header("Movement Parameters")]
 //     public float smoothSpeed = 5f;
@@ -581,7 +582,7 @@ public class NPCFollower
 //             if(npc != null) 
 //             {
 //                 target = npc.transform.parent.GetChild(0).transform;
-//                 Player = target.GetComponent<CrowdPlayerManager>();
+//                 Player = target.GetComponentInParent<CrowdPlayerManager>();
 //             }
 //             else 
 //             {
@@ -602,6 +603,7 @@ public class NPCFollower
 //     public void Update(NPCManager npc)
 //     {
 //         if (target == null || MGameManager.instance.allNPCs == null) return;
+//         if (!Player.spawnedSuccesfully) return;
 
 //         // Calculate center of mass for all NPCs
 //         CalculateCenterOfMass();

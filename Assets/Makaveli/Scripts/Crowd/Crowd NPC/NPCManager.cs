@@ -36,6 +36,9 @@ public class NPCManager : NetworkBehaviour
     [SerializeField] private string speedParameter = "Speed"; 
     [SerializeField] private float speed; 
     private Vector3 lastPosition;
+    [SerializeField] GameObject tomato;
+    Lion lion;
+    [SerializeField] float tomatoThrowAngle, tomatoThrowForce;
 
 
     void Awake()
@@ -114,11 +117,59 @@ public class NPCManager : NetworkBehaviour
         animator.SetTrigger("Sad");
     }
 
+    public void NotItEmote()
+    {   
+        Debug.Log("Sad Emote");
+        animator.SetTrigger("Not It");
+    }
+
     public void ThrowingEmote() 
     {
         Debug.Log("Throwing Emote");
         animator.SetTrigger("Tomato");
+        StartCoroutine(InstantiateTomatoAfterDelay(Random.Range(0.05f, 0.3f)));
     }
+
+    IEnumerator InstantiateTomatoAfterDelay(float _delay)
+    {
+        yield return new WaitForSeconds(_delay);
+        InstantiateTomatoOnServerRpc(ClientServerRefs.instance.localClient.OwnerClientId);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    void InstantiateTomatoOnServerRpc(ulong _clientID)
+    {
+        GameObject tomatoInstance = Instantiate(tomato, nPCFollower.controller.transform.position, Quaternion.identity);
+        NetworkObject tomatoNetworkInstance = tomatoInstance.GetComponent<NetworkObject>();
+        tomatoNetworkInstance.Spawn();
+        tomatoNetworkInstance.gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
+
+        MoveTomatoOnCorrectClientRpc(_clientID, tomatoNetworkInstance.NetworkObjectId);
+        StartCoroutine(DeleteTomatoAfterDelay(2f, tomatoNetworkInstance));
+    }
+
+    [ClientRpc]
+    void MoveTomatoOnCorrectClientRpc(ulong _clientID, ulong _networkObjectId)
+    {
+        if(_clientID != ClientServerRefs.instance.localClient.OwnerClientId) return;
+        if(lion == null) lion = FindFirstObjectByType<Lion>();
+        NetworkObject spawnedObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[_networkObjectId];
+
+        Rigidbody rb = spawnedObject.GetComponent<Rigidbody>();
+        Vector3 lionDirection = (lion.transform.position - nPCFollower.controller.transform.position).normalized;
+        lionDirection.y = 1;
+        Vector3 direction = Quaternion.Euler(tomatoThrowAngle, 0, 0) * lionDirection;
+        rb.AddForce(direction * tomatoThrowForce, ForceMode.VelocityChange);
+
+        
+    }
+
+    IEnumerator DeleteTomatoAfterDelay(float _delay, NetworkObject _tomato)
+    {
+        yield return new WaitForSeconds(_delay);
+        Destroy(_tomato);
+    }
+
     
     public void MovementAnim() 
     {
@@ -169,6 +220,10 @@ public class NPCManager : NetworkBehaviour
         else if(emoteName.Contains("Tomato")) 
         {
             ThrowingEmote();
+        }
+        else if(emoteName.Contains("Notit")) 
+        {
+            NotItEmote();
         }
     }
 

@@ -49,6 +49,7 @@ public class EmoteUI
             if (btn.TryGetComponent<Emotes>(out var emoteComponent))
             {
                 string currentEmoteName = emoteComponent.emoteName;
+                Debug.Log($"Initializing button: {btn.gameObject.name}");
                 btn.onClick.RemoveAllListeners();
                 btn.onClick.AddListener(() =>
                 {

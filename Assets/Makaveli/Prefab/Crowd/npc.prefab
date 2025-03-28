@@ -1139,6 +1139,9 @@ MonoBehaviour:
   moveable: 0
   speedParameter: Speed
   speed: 0
+  tomato: {fileID: 3736516785522560189, guid: 7875592874dea6f40af9fd9b39c4ead6, type: 3}
+  tomatoThrowAngle: -30
+  tomatoThrowForce: 15
 --- !u!1 &5239333967948332566
 GameObject:
   m_ObjectHideFlags: 0

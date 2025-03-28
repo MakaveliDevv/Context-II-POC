@@ -53,6 +53,11 @@ public class NPCFollower
     private readonly float movementSpeed;
     private readonly float repositionInterval = 2f;
 
+    private float stuckRecoveryTimer = 0f;
+    private readonly float stuckRecoveryThreshold = 2f; // Time to attempt recovery
+    private int stuckAttempts = 0;
+    private readonly int maxStuckAttempts = 3; // Prevent infinite recovery attempts
+
     private float movementSpeedMultiplier;
 
     public NPCFollower
@@ -69,6 +74,8 @@ public class NPCFollower
         float movementSpeed
     ) 
     {
+        movementSpeedMultiplier = Random.Range(0.8f, 1.2f);
+
         this.transform = transform;
         this.smoothSpeed = smoothSpeed;
         this.stoppingThreshold = stoppingThreshold;
@@ -78,10 +85,10 @@ public class NPCFollower
         this.maxNPCDistance = maxNPCDistance;
         this.spreadFactor = spreadFactor;
         this.fixedYPosition = fixedYPosition;
-        this.lastValidPosition = transform.position;
+        lastValidPosition = transform.position;
         this.movementSpeed = movementSpeed;
 
-        movementSpeedMultiplier = Random.Range(0.8f, 1.2f);
+        this.movementSpeed *= movementSpeedMultiplier;
     }
 
     public void Start() 
@@ -106,6 +113,8 @@ public class NPCFollower
             {
                 target = npc.transform.parent.GetChild(0).transform;
                 Player = target.GetComponentInParent<CrowdPlayerManager>();
+                PlayerFormationController formationController = Player.GetComponent<PlayerFormationController>();
+                formationController.ChangeFormation(FormationType.Circle);
             }
             else 
             {
@@ -212,27 +221,101 @@ public class NPCFollower
     void CheckIfStuck()
     {
         float movementMagnitude = currentVelocity.magnitude;
+        float distanceToTarget = Vector3.Distance(controller.transform.position, targetPosition);
         
-        // If velocity is very low but we're not at the target position
-        if (movementMagnitude < 0.1f && Vector3.Distance(controller.transform.position, targetPosition) > 1.0f)
+        // Conditions for being stuck
+        if (movementMagnitude < 0.1f && distanceToTarget > 1.0f)
         {
             stuckTimer += Time.deltaTime;
             
             if (stuckTimer > stuckTimeThreshold)
             {
                 isStuck = true;
+                stuckRecoveryTimer += Time.deltaTime;
                 
-                // Try to find an alternate path
-                Vector3 randomDirection = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized;
-                targetPosition = controller.transform.position + randomDirection * 2f;
+                // Attempt recovery strategies
+                if (stuckRecoveryTimer > stuckRecoveryThreshold)
+                {
+                    stuckAttempts++;
+                    
+                    if (stuckAttempts <= maxStuckAttempts)
+                    {
+                        // First attempt: Try moving to last valid position with slight offset
+                        if (stuckAttempts == 1)
+                        {
+                            Vector3 recoveryOffset = new Vector3(
+                                Random.Range(-1f, 1f), 
+                                0, 
+                                Random.Range(-1f, 1f)
+                            ).normalized * (minNPCDistance * 0.5f);
+                            
+                            targetPosition = lastValidPosition + recoveryOffset;
+                        }
+                        // Second attempt: More aggressive random repositioning
+                        else if (stuckAttempts == 2)
+                        {
+                            Vector3 randomDirection = new Vector3(
+                                Random.Range(-1f, 1f), 
+                                0, 
+                                Random.Range(-1f, 1f)
+                            ).normalized;
+                            
+                            targetPosition = controller.transform.position + randomDirection * (minNPCDistance * 2f);
+                        }
+                        // Third attempt: Teleport closer to target
+                        else if (stuckAttempts == 3)
+                        {
+                            Vector3 directionToTarget = (target.position - controller.transform.position).normalized;
+                            targetPosition = target.position - directionToTarget * minDistanceBehindTarget;
+                        }
+                        
+                        // Reset timers for new attempt
+                        stuckTimer = 0f;
+                        stuckRecoveryTimer = 0f;
+                    }
+                    else
+                    {
+                        // If all recovery attempts fail, reset to a safe default
+                        targetPosition = target.position - target.forward * minDistanceBehindTarget;
+                        stuckAttempts = 0;
+                    }
+                }
             }
         }
         else
         {
+            // Not stuck, reset all stuck-related timers and flags
             stuckTimer = 0f;
+            stuckRecoveryTimer = 0f;
+            stuckAttempts = 0;
             isStuck = false;
         }
     }
+
+    // void CheckIfStuck()
+    // {
+    //     float movementMagnitude = currentVelocity.magnitude;
+        
+    //     // If velocity is very low but we're not at the target position
+    //     if (movementMagnitude < 0.1f && Vector3.Distance(controller.transform.position, targetPosition) > 1.0f)
+    //     {
+    //         stuckTimer += Time.deltaTime;
+            
+    //         if (stuckTimer > stuckTimeThreshold)
+    //         {
+    //             isStuck = true;
+                
+    //             // Try to find an alternate path
+    //             Vector3 randomDirection = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized;
+    //             targetPosition = controller.transform.position + randomDirection * 2f;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         stuckTimer = 0f;
+    //         isStuck = false;
+    //     }
+    // }
 
     void ApplyMovement()
     {

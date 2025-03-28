@@ -98,7 +98,8 @@ public class CrowdPlayerManager : NetworkBehaviour
     {
         playerController.Start();
         og_camRot = cam.transform.rotation;
-        
+        playerFormationController.SetFormationLocation(playerController.npcsFormationLocation.position);
+
         // if(npcsFormationLocation == null) 
         // {
         //     npcsFormationLocation = transform.Find("CrowdPlayer").Find("npc formationPoint");
@@ -228,8 +229,7 @@ public class CrowdPlayerManager : NetworkBehaviour
             Quaternion desRot = Quaternion.LookRotation(direction); // Get rotation facing player
             desRot = Quaternion.Euler(-90, 0, desRot.eulerAngles.y); // Force X to -90, Y to 0, keep Z rotation
 
-            arrow.transform.rotation = desRot;
-            arrow.transform.position = playerController.controller.transform.position + new Vector3(0, 1.5f, 0);
+            arrow.transform.SetPositionAndRotation(playerController.controller.transform.position + new Vector3(0, 1.5f, 0), desRot);
         }
 
         inUIMode = LocationCardsUIVisibility();  

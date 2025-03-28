@@ -23,7 +23,7 @@ public class NPCFormationManager : MonoBehaviour
     public float formationScale = 1.0f; 
     
     [Header("Location Boundaries")]
-    public Vector3 locationSize = new Vector3(10f, 0f, 10f); // Size of the target location (x,z dimensions)
+    public Vector3 locationSize = new(10f, 0f, 10f); // Size of the target location (x,z dimensions)
     
     [Header("References")]
     public Transform playerTransform; 

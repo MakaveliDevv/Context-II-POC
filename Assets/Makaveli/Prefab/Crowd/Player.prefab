@@ -8981,7 +8981,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1024
   npcSpawnOffset: {x: 0, y: 0, z: 0}
-  npcCount: 5
+  npcCount: 15
   spawnPoint: {fileID: 6731837674566760598}
   npcContainer: {fileID: 123801637706076897}
   cam: {fileID: 5450046677199091307}

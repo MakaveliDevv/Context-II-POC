@@ -53,30 +53,30 @@ public class PlayerFormationController : MonoBehaviour
     private void Update()
     {
         
-        // if (Input.GetKeyDown(formationHotkeys[0]))
-        // {
-        //     ChangeFormation(FormationType.Follow);
-        // }
-        // else if (Input.GetKeyDown(formationHotkeys[1]))
-        // {
-        //     ChangeFormation(FormationType.Triangle);
-        // }
-        // else if (Input.GetKeyDown(formationHotkeys[2]))
-        // {
-        //     ChangeFormation(FormationType.Rectangle);
-        // }
-        // else if (Input.GetKeyDown(formationHotkeys[3]))
-        // {
-        //     ChangeFormation(FormationType.Circle);
-        // }
-        // else if (Input.GetKeyDown(formationHotkeys[4]))
-        // {
-        //     ChangeFormation(FormationType.Line);
-        // }
-        // else if (Input.GetKeyDown(formationHotkeys[5]))
-        // {
-        //     ChangeFormation(FormationType.Arrow);
-        // }
+        if (Input.GetKeyDown(formationHotkeys[0]))
+        {
+            ChangeFormation(FormationType.Follow);
+        }
+        else if (Input.GetKeyDown(formationHotkeys[1]))
+        {
+            ChangeFormation(FormationType.Triangle);
+        }
+        else if (Input.GetKeyDown(formationHotkeys[2]))
+        {
+            ChangeFormation(FormationType.Square);
+        }
+        else if (Input.GetKeyDown(formationHotkeys[3]))
+        {
+            ChangeFormation(FormationType.Circle);
+        }
+        else if (Input.GetKeyDown(formationHotkeys[4]))
+        {
+            ChangeFormation(FormationType.Line);
+        }
+        else if (Input.GetKeyDown(formationHotkeys[5]))
+        {
+            ChangeFormation(FormationType.Arrow);
+        }
 
         // Toggle static formation mode
         if (Input.GetKeyDown(toggleStaticFormationKey))

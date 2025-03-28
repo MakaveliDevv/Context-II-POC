@@ -53,6 +53,8 @@ public class NPCFollower
     private readonly float movementSpeed;
     private readonly float repositionInterval = 2f;
 
+    private float movementSpeedMultiplier;
+
     public NPCFollower
     (
         Transform transform,
@@ -78,6 +80,8 @@ public class NPCFollower
         this.fixedYPosition = fixedYPosition;
         this.lastValidPosition = transform.position;
         this.movementSpeed = movementSpeed;
+
+        movementSpeedMultiplier = Random.Range(0.8f, 1.2f);
     }
 
     public void Start() 
@@ -87,6 +91,8 @@ public class NPCFollower
         // Initialize with a random offset to prevent bunching at startup
         Random.InitState(System.DateTime.Now.Millisecond + npcIndex * 100);
         currentVelocity = Vector3.zero;
+
+        movementSpeedMultiplier = Random.Range(0.8f, 1.2f);
     }
 
     public IEnumerator FindPlayer(NPCManager npc) 
@@ -361,37 +367,31 @@ public class NPCFollower
 
     public void UpdateMovingTargetPosition(NPCManager npc)
     {
+        // Calculate base position behind target with more natural spacing
         Vector3 targetForward = target.forward;
         Vector3 targetRight = Vector3.Cross(Vector3.up, targetForward).normalized;
 
-        // Seed random with consistent value for this NPC
-        Random.InitState(npcIndex * 1000);
+        // Randomize base distance with less geometric precision
+        float baseDistanceVariation = Random.Range(-1f, 1f);
+        float distanceBehind = Mathf.Lerp(
+            minDistanceBehindTarget, 
+            maxDistanceBehindTarget, 
+            0.5f + baseDistanceVariation * 0.3f
+        );
+        
+        // Base position slightly behind and offset from target
+        Vector3 basePosition = target.position 
+            - targetForward * distanceBehind 
+            + targetRight * Random.Range(-minNPCDistance, minNPCDistance);
+        
+        // Set target position with more organic positioning
+        targetPosition = basePosition;
 
-        // Calculate a unique angle for this NPC based on index
-        float totalNPCs = Mathf.Max(1, MGameManager.instance.allNPCs.Count);
-        float angleStep = 360f / totalNPCs;
-        float angle = npcIndex * angleStep + (Time.time * 0.2f) % 360f; // Slight rotation over time
-        
-        // Convert angle to radians
-        float angleRad = angle * Mathf.Deg2Rad;
-        
-        // Calculate distance based on NPC index with some variance
-        float distanceMultiplier = 0.8f + (npcIndex % 3) * 0.2f; // Creates layers of followers
-        float distanceBehind = Mathf.Lerp(minDistanceBehindTarget, maxDistanceBehindTarget, 
-            distanceMultiplier);
-        
-        // Base position behind target
-        Vector3 basePosition = target.position - targetForward * distanceBehind;
-        
-        // Add circular distribution with radius based on NPC count
-        float radius = minNPCDistance * spreadFactor * (1f + (totalNPCs / 10f));
-        float xOffset = Mathf.Sin(angleRad) * radius;
-        float zOffset = Mathf.Cos(angleRad) * radius;
-        
-        // Apply offset using target's coordinate system
-        targetPosition = basePosition 
-            + targetRight * xOffset 
-            + targetForward * zOffset;
+        // Add some small vertical and horizontal jitter
+        float jitterX = Mathf.PerlinNoise(npcIndex * 0.1f, Time.time * 0.2f) - 0.5f;
+        float jitterZ = Mathf.PerlinNoise(npcIndex * 0.1f + 100, Time.time * 0.2f) - 0.5f;
+        targetPosition += targetRight * (jitterX * minNPCDistance * 0.5f) 
+                        + targetForward * (jitterZ * minNPCDistance * 0.5f);
 
         // Ensure minimum distance from other NPCs
         targetPosition += CalculateAvoidanceVector(npc) * 1.2f;

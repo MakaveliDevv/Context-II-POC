@@ -19,16 +19,16 @@ public class NPCManager : NetworkBehaviour
 
     [Header("Movement Parameters")]
     public float smoothSpeed = 5f;
-    public float stoppingThreshold = 0.1f;
+    public float stoppingThreshold = 0.5f;
     public float movementSpeed;
     
     [Header("Positioning Parameters")]
-    public float minDistanceBehindTarget = 2f;
-    public float maxDistanceBehindTarget = 6f;
-    public float minNPCDistance = 1.2f;
-    public float maxNPCDistance = 3f;
-    public float spreadFactor = 1.5f;
-    public float fixedYPosition = 1f;
+    public float minDistanceBehindTarget = 1f;
+    public float maxDistanceBehindTarget = 4f;
+    public float minNPCDistance = 1f;
+    public float maxNPCDistance = 2f;
+    public float spreadFactor = 1f;
+    public float fixedYPosition;
     public bool moveable;
 
     // Anim

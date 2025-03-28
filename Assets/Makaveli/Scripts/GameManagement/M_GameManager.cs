@@ -211,7 +211,11 @@ public class MGameManager : NetworkBehaviour
 
             //if(player.playerController.UImanagement.shapeManagerUI.shapeSelected && player.playerController.isAtLocation) 
             //{
-                if(lion != null) lion.makaveli = true;
+                if(lion != null) 
+                {
+                    lion.makaveli = true;
+                    if(lion.taskLocationRef != null) currentInteractableLocation = lion.taskLocationRef;
+                }
                 if (taskStarted || penaltyApplied) return; // Prevents multiple execution
                 //stateChange = false;
                         
@@ -226,7 +230,7 @@ public class MGameManager : NetworkBehaviour
                         Transform taskLocation = lion.taskLocation;
                         if(taskLocation == null) return;
                         currentInteractableLocation = lion.taskLocationRef;
-
+                        Task taskToRemove = null;
                         foreach (var task in currentInteractableLocation.tasks)
                         {
                             if(lion.lastObjectTask.taskName == task.taskName) 
@@ -244,7 +248,9 @@ public class MGameManager : NetworkBehaviour
                                         break;
                                     }
                                 }
-                                
+                                taskToRemove = task;
+                                int indexOfTaskToRemove = currentInteractableLocation.tasks.IndexOf(task);
+                                gameManagerRpcBehaviour.UpdateLocationsTask(indexOfTaskToRemove);
                                 taskComplete = true;
                                 UpdatePoints(1);
                                 Debug.Log($"Adding +1 point to {currentPoint}");
@@ -257,6 +263,11 @@ public class MGameManager : NetworkBehaviour
                             }
                             
                         }
+                        // if(currentInteractableLocation.tasks.Contains(taskToRemove)) 
+                        // {
+                        //     currentInteractableLocation.tasks.Remove(taskToRemove);
+                        //     Debug.Log($"Removing task {taskToRemove.name} from {currentInteractableLocation.name}");
+                        // }
                         lionPlacedObject = false;
                         lion.lastObjectTask = null;
                         if(taskComplete) StartCoroutine(DisplayEndRound());

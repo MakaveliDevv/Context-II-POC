@@ -15,7 +15,7 @@ public class NPCManager : NetworkBehaviour
 
     // NPC Follow
     public NPCFollower nPCFollower;
-    CustomNetworkBehaviour customNetworkBehaviour;
+    [SerializeField] CustomNetworkBehaviour customNetworkBehaviour;
 
     [Header("Movement Parameters")]
     public float smoothSpeed = 5f;
@@ -77,7 +77,7 @@ public class NPCManager : NetworkBehaviour
     {
         // nPCFollower.Start(this);
         nPCFollower.Start();
-        customNetworkBehaviour = GetComponent<CustomNetworkBehaviour>();
+        if(customNetworkBehaviour == null) customNetworkBehaviour = gameObject.GetComponent<CustomNetworkBehaviour>();
         StartCoroutine(nPCFollower.FindPlayer(this));
 
         animator = transform.GetChild(0).GetComponent<Animator>();
@@ -86,6 +86,7 @@ public class NPCManager : NetworkBehaviour
     void Update()
     {
         // nPCPatrol.MoveNPC();
+        if(customNetworkBehaviour == null) gameObject.GetComponent<CustomNetworkBehaviour>();
         if(customNetworkBehaviour.CustomIsOwner())
         {
             if(moveable) 
@@ -101,7 +102,7 @@ public class NPCManager : NetworkBehaviour
     private void CalculateSpeed()
     {
         // Calculate speed based on position change
-        speed = Vector3.Distance(transform.position, lastPosition) / Time.deltaTime;
+        if(lastPosition != null) speed = Vector3.Distance(transform.position, lastPosition) / Time.deltaTime;
         lastPosition = transform.position;
     }
 
@@ -173,7 +174,7 @@ public class NPCManager : NetworkBehaviour
     
     public void MovementAnim() 
     {
-        animator.SetFloat(speedParameter, speed);
+        if(animator != null) animator.SetFloat(speedParameter, speed);
     }
 
     // public void HappyEmote() 

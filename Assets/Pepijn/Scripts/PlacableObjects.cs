@@ -86,9 +86,10 @@ public class PlacableObjects : NetworkBehaviour
 
     public void PlaceObject(Lion _lion)
     {
-        meshRenderer = GetComponent<MeshRenderer>();
-        Debug.Log($"Changing {meshRenderer.gameObject.name}'s material to {originalMaterial.name}");
-        meshRenderer.material = originalMaterial;
+        // meshRenderer = GetComponent<MeshRenderer>();
+        // Debug.Log($"Changing {meshRenderer.gameObject.name}'s material to {originalMaterial.name}");
+        // meshRenderer.material = originalMaterial;
+
         placed = true;
         GetComponent<Collider>().isTrigger = false;
 
@@ -113,6 +114,7 @@ public class PlacableObjects : NetworkBehaviour
                         closestDistance = distanceToTaskableLocation;
                         _lion.taskLocation = _task;
                         _lion.taskLocationRef = taskLoc;
+                        UpdateTaskLocationServerRpc();
                     }
                 }
             //}
@@ -134,6 +136,66 @@ public class PlacableObjects : NetworkBehaviour
         {
             MGameManager.instance.lionPlacedObject = true;
             Debug.Log("Object placed in a valid location");
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    void UpdateTaskLocationServerRpc()
+    {
+        placed = true;
+        GetComponent<Collider>().isTrigger = false;
+        float closestDistance = 1000f;
+        Lion _lion = FindFirstObjectByType<Lion>();
+
+        TaskLocation[] _taskLocations = FindObjectsOfType<TaskLocation>();
+        foreach(TaskLocation taskLoc in _taskLocations)
+        {
+            //if(taskLoc.isActive)
+            //{
+                Transform _task = taskLoc.transform;
+                float distanceToTaskableLocation = Vector3.Distance(_task.position, transform.position);
+                Debug.Log($"Object distance: {distanceToTaskableLocation} to {_task.gameObject.name}");
+                
+                if(distanceToTaskableLocation < 10f)
+                {
+                    if(distanceToTaskableLocation < closestDistance)
+                    {
+                        closestDistance = distanceToTaskableLocation;
+                        _lion.taskLocation = _task;
+                        _lion.taskLocationRef = taskLoc;
+                    }
+                }
+            //}
+        }
+        UpdateTaskLocationClientRpc();
+    }
+    [ClientRpc]
+    void UpdateTaskLocationClientRpc()
+    {
+        placed = true;
+        GetComponent<Collider>().isTrigger = false;
+        float closestDistance = 1000f;
+                Lion _lion = FindFirstObjectByType<Lion>();
+
+        TaskLocation[] _taskLocations = FindObjectsOfType<TaskLocation>();
+        foreach(TaskLocation taskLoc in _taskLocations)
+        {
+            //if(taskLoc.isActive)
+            //{
+                Transform _task = taskLoc.transform;
+                float distanceToTaskableLocation = Vector3.Distance(_task.position, transform.position);
+                Debug.Log($"Object distance: {distanceToTaskableLocation} to {_task.gameObject.name}");
+                
+                if(distanceToTaskableLocation < 10f)
+                {
+                    if(distanceToTaskableLocation < closestDistance)
+                    {
+                        closestDistance = distanceToTaskableLocation;
+                        _lion.taskLocation = _task;
+                        _lion.taskLocationRef = taskLoc;
+                    }
+                }
+            //}
         }
     }
 

@@ -53,6 +53,7 @@ public class CrowdPlayerManager : NetworkBehaviour
 
     [Header("Tasks")]
     public List<Task> tasks = new();
+    public int lastTasksCount;
     public bool spawnedSuccesfully;
     public TaskLocation chosenTaskLocation;
     
@@ -208,6 +209,7 @@ public class CrowdPlayerManager : NetworkBehaviour
             chosenTaskLocation = playerController.chosenLocation.GetComponent<TaskLocation>();
             chosenTaskLocation.indicator.SetActive(true);
             chosenTaskLocation.playerCam = cam.transform;
+            playerController.UImanagement.taskManagerUI.CreateTaskCard(playerController.UImanagement);
         }
         playerController.SecondHalfOfChooseLocation(chosenCards[i]);
     }
@@ -229,6 +231,17 @@ public class CrowdPlayerManager : NetworkBehaviour
 
             arrow.transform.rotation = desRot;
             arrow.transform.position = playerController.controller.transform.position + new Vector3(0, 1.5f, 0);
+        }
+
+
+        if(chosenTaskLocation != null)
+        {
+            if(lastTasksCount != chosenTaskLocation.tasks.Count)
+            {
+                playerController.UImanagement.taskManagerUI.CreateTaskCard(playerController.UImanagement);
+                Debug.Log("Update task card ui");
+            }
+            lastTasksCount = chosenTaskLocation.tasks.Count;
         }
 
         inUIMode = LocationCardsUIVisibility();  

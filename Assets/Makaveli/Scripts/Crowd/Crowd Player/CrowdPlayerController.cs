@@ -331,6 +331,7 @@ public class CrowdPlayerController
                                 playerManager.ChooseLocationServerRpc(cards.IndexOf(card), ClientServerRefs.instance.localClient.OwnerClientId);
                                 MGameManager.instance.showLocationCards = false;
                                 playerManager.arrow.SetActive(true);
+                                playerManager.playerController.HideCards();
                                 playerManager.playerState = CrowdPlayerManager.PlayerState.DEFAULT;
                             }
                         });

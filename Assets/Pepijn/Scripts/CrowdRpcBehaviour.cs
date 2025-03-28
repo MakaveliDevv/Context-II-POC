@@ -58,8 +58,9 @@ public class CrowdRpcBehaviour : NetworkBehaviour
 
         for(int i = 0; i < npcCount; i++)
         {
-            GameObject newNPC = MGameManager.instance.InstantiatePrefab(npc, spawnPoint.position + npcSpawnOffset, npc.transform.rotation, npcContainer);
+            GameObject newNPC = Instantiate(npc, spawnPoint.position + npcSpawnOffset + new Vector3(0, 10, 0), npc.transform.rotation);
             NetworkObject newNPCInstance = newNPC.GetComponent<NetworkObject>();
+            newNPCInstance.gameObject.transform.SetParent(npcContainer.transform);
 
             newNPCInstance.Spawn();
             Debug.Log($"Updating client ID: {newNPCInstance.name} to {_clientID}");

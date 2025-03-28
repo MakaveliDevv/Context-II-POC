@@ -27,8 +27,8 @@ public class CustomNetworkBehaviour : NetworkBehaviour
     {
         if(!CustomIsOwner())
         {
-            // Set the position on the server
             transform.position = netPosition.Value;
+            // Set the position on the server
             transform.rotation = _rotation;
             transform.localScale =_localScale;
         }

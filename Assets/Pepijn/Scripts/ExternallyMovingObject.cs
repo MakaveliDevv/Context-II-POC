@@ -5,6 +5,7 @@ using UnityEngine;
 public class ExternallyMovingObject : NetworkBehaviour
 {
     CustomNetworkBehaviour customNetworkBehaviour;
+    public bool dontRequest = false;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -28,6 +29,6 @@ public class ExternallyMovingObject : NetworkBehaviour
     private IEnumerator Delay() 
     {
         yield return new WaitForSeconds(0.1f);
-        if(customNetworkBehaviour.CustomIsOwner()) customNetworkBehaviour.RequestMoveServerRpc(transform.position, transform.rotation, transform.localScale);
+        if(customNetworkBehaviour.CustomIsOwner() && !dontRequest) customNetworkBehaviour.RequestMoveServerRpc(transform.position, transform.rotation, transform.localScale);
     }
 }

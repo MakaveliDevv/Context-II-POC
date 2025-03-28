@@ -61,7 +61,7 @@ public class CrowdRpcBehaviour : NetworkBehaviour
             //newNPCInstance.transform.SetParent(npcContainer);
             crowdPlayerController.npcs.Add(newNPCInstance.gameObject);
             
-            NotifyClientOfSpawnClientRpc(newNPCInstance.NetworkObjectId, spawnedObjectId);
+            NotifyClientOfSpawnClientRpc(newNPCInstance.NetworkObjectId, spawnedObjectId, spawnPoint.position + npcSpawnOffset + new Vector3(0, 10, 0));
         }
 
         if(npcContainer.childCount <= 0) 
@@ -75,7 +75,7 @@ public class CrowdRpcBehaviour : NetworkBehaviour
     }
 
     [ClientRpc]
-    void NotifyClientOfSpawnClientRpc(ulong spawnedObjectId, ulong spawnerID)
+    void NotifyClientOfSpawnClientRpc(ulong spawnedObjectId, ulong spawnerID, Vector3 _spawnPosition)
     {
         Debug.Log("add object to list client rpc");
         // Find the spawned object by ID
@@ -88,6 +88,6 @@ public class CrowdRpcBehaviour : NetworkBehaviour
             crowdPlayerController.npcs?.Add(spawnedObject.gameObject);
         }
 
-        spawnedObject.GetComponent<NPCManager>().SetFollowersTarget(NetworkManager.Singleton.SpawnManager.SpawnedObjects[spawnerID].transform.GetChild(0));
+        spawnedObject.GetComponent<NPCManager>().SetFollowersTarget(NetworkManager.Singleton.SpawnManager.SpawnedObjects[spawnerID].transform.GetChild(0), _spawnPosition);
     }
 }

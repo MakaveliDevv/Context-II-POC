@@ -33,6 +33,8 @@ public class Lion : NetworkBehaviour
     [SerializeField] Transform holdingTransform;
     [SerializeField] public TextMeshProUGUI wrongObjectText;
 
+    public bool makaveli;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public override void OnNetworkSpawn()
     {
@@ -180,6 +182,7 @@ public class Lion : NetworkBehaviour
             if(MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.SOLVING_TASK) 
             {
                 taskLocation = collider.transform;
+                encounter = true;
             }
         }
     }

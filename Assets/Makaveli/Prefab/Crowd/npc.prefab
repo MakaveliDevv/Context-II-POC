@@ -1030,7 +1030,6 @@ GameObject:
   - component: {fileID: -3090947011599598060}
   - component: {fileID: -50134780644982760}
   - component: {fileID: 4976794907489852135}
-  - component: {fileID: 3815492849551560781}
   m_Layer: 0
   m_Name: npc
   m_TagString: NPC
@@ -1138,19 +1137,6 @@ MonoBehaviour:
   spreadFactor: 1.5
   fixedYPosition: 0.1
   moveable: 0
---- !u!114 &3815492849551560781
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4962835041852531409}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 442e469dc0ed8d84d9bbe534abc9813e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 807545700134568747}
   speedParameter: Speed
   speed: 0
 --- !u!1 &5239333967948332566

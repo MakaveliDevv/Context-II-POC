@@ -10,6 +10,12 @@ public class CrowdRpcBehaviour : NetworkBehaviour
     public CrowdPlayerController crowdPlayerController;
     public Transform spawnPoint;
     public Transform npcContainer;
+    private CrowdPlayerManager player;
+
+    private void Awake()
+    {
+        player = GetComponent<CrowdPlayerManager>();
+    }
 
     public void SetCorrectReferences(CharacterController _controller, int _npcCount, GameObject _npc, Vector3 _npcSpawnOffset, CrowdPlayerController _crowdPlayerController/*, Transform spawnPoint, Transform npcContainer*/)
     {
@@ -25,7 +31,10 @@ public class CrowdRpcBehaviour : NetworkBehaviour
     {
         if(!ClientServerRefs.instance.isServer) return;
         Transform npcContainer = transform;
-        Transform spawnPoint = transform.GetChild(0).GetChild(5);
+        // Transform spawnPoint = transform.GetChild(0).GetChild(5);
+        Transform spawnPoint = player.playerSpawnPoint.GetChild(0);
+
+        // Fetch the spawn point
 
         if(npcContainer == null) 
         {

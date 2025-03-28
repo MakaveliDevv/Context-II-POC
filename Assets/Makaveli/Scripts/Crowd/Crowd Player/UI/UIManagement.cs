@@ -71,6 +71,7 @@ public class UIManagement
             {
                 // Resume npc movement
                 followButtonPressed = true;
+                shapeManagerUI.shapeSelected = false;
                 // mono.StartCoroutine(NPCsManagement.ResumeNPCMovement(playerManager.playerController.npcs, playerManager.transform));
                 playerManager.playerState = CrowdPlayerManager.PlayerState.DEFAULT;
                 
@@ -98,6 +99,7 @@ public class UIManagement
     public void Update(CrowdPlayerManager playerManager) 
     {
         shapeManagerUI.Update();
+        taskManagerUI.DisplayTaskBtn(playerManager);
         
         if(playerManager.playerState == CrowdPlayerManager.PlayerState.TRAVELING) 
         {

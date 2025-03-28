@@ -117,8 +117,6 @@ public class Client : NetworkBehaviour
         crowdNetworkInstance.transform.GetChild(0).gameObject.GetComponent<CustomNetworkBehaviour>().UpdateClientID(_clientID);
 
         // Force child position after spawn
-        //StartCoroutine(FixChildPosition(crowdNetworkInstance.transform));
-
         FixChildPositionClientRpc(_clientID, crowdNetworkInstance.NetworkObjectId);
     }
 

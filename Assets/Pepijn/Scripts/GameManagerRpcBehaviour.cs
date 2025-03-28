@@ -47,9 +47,9 @@ public class GameManagerRpcBehaviour : NetworkBehaviour
                 mGameManager.CrowdTurnState();
                 break;
 
-            case "SOLVING_TASK":
-                mGameManager.SolvingTaskState();
-                break;
+            // case "SOLVING_TASK":
+            //     mGameManager.SolvingTaskState();
+            //     break;
 
             case "END":
                 mGameManager.EndState();

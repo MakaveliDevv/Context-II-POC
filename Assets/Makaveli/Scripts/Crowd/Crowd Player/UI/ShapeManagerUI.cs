@@ -26,7 +26,6 @@ public class ShapeManagerUI
     public bool shapeSelected;
     private bool goToCustomize;
 
-
     public ShapeManagerUI(Transform canvas, CrowdPlayerManager player) { this.canvas = canvas; this.player = player; }
 
     public IEnumerator Start()
@@ -221,6 +220,7 @@ public class ShapeManagerUI
     {
         player.choosingShape = true;
         shapePanel.gameObject.SetActive(true);
+        openShapePanelBtn.gameObject.SetActive(false);
         player.UIMode(true);
         player.playerState = CrowdPlayerManager.PlayerState.CHOOSE_SHAPE;
     }
@@ -229,6 +229,7 @@ public class ShapeManagerUI
     {
         player.choosingShape = false;
         shapePanel.gameObject.SetActive(false);
+        openShapePanelBtn.gameObject.SetActive(true);
         player.UIMode(false);
 
         // if(!goToCustomize) 

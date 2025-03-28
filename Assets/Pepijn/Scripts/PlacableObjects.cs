@@ -92,13 +92,13 @@ public class PlacableObjects : NetworkBehaviour
         placed = true;
         GetComponent<Collider>().isTrigger = false;
 
-        if(MGameManager.instance.gamePlayManagement != MGameManager.GamePlayManagement.SOLVING_TASK) 
+        if(!_lion.encounter) 
         {
             MGameManager.instance.UpdatePoints(-1);
             Debug.Log("object placed in not solving state so -1 point is applied");
             StartCoroutine(DestroyObject(_lion.wrongObjectText, "Wrong time! Removing object..."));           
         }
-        else if(MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.SOLVING_TASK) 
+        else if(_lion.makaveli)
         {
             Collider collider = GetComponent<Collider>();
             Vector3 colliderCenter = collider.bounds.center;

@@ -83,7 +83,6 @@ public class CrowdPlayerManager : NetworkBehaviour
             cardsUI,                             // Reference to the main panel for the UI location cards
             spawnPoint,
             npcContainer,
-            tasks,
             this
         );        
 
@@ -383,6 +382,25 @@ public class CrowdPlayerManager : NetworkBehaviour
         }
 
         return inUIMode;
+    }
+
+    public Transform playerSpawnPoint = null;
+    private void OnTriggerEnter(Collider other) 
+    {
+        Debug.Log($"other: {other.gameObject.name}");;
+        if(other.CompareTag("playerSpawnPoint")) 
+        {
+            Debug.Log("Made contact with the spawn position collider");
+            playerSpawnPoint = other.transform;
+        }
+    }
+
+    private void OnTriggerExit(Collider other) 
+    {
+        if(other.CompareTag("TaskLocation")) 
+        {
+            playerController.isAtLocation = false;
+        }
     }
 
     public override void OnDestroy()

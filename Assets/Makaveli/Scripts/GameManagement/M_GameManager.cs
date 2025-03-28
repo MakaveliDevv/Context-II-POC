@@ -210,8 +210,10 @@ public class MGameManager : NetworkBehaviour
     {
         foreach (var player in allCrowdPlayers)
         {
-            if(player.choosingShape && player.playerController.isAtLocation && lion.encounter) 
+            if(player.playerController.UImanagement.shapeManagerUI.shapeSelected && player.playerController.isAtLocation && lion.encounter) 
             {
+                lion.makaveli = true;
+                
                 if (taskStarted || penaltyApplied) return; // Prevents multiple executions
 
                 stateChange = false;

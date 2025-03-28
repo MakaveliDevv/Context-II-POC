@@ -181,16 +181,17 @@ public class CrowdPlayerManager : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void ChooseLocationServerRpc(int i)
+    public void ChooseLocationServerRpc(int i, ulong _clientID)
     {
-        ChooseLocationClientRpc(i);
+        ChooseLocationClientRpc(i, _clientID);
     }
     
     [ClientRpc]
-    void ChooseLocationClientRpc(int i)
+    void ChooseLocationClientRpc(int i, ulong _clientID)
     {
         // Debug.Log("123 i is: " + i);
-        if(chosenTaskLocation != null) 
+        bool isCallingPlayer = _clientID == ClientServerRefs.instance.localClient.OwnerClientId;
+        if(chosenTaskLocation != null && isCallingPlayer) 
         {
             chosenTaskLocation.indicator.SetActive(false); 
             chosenTaskLocation.playerCam = null;
@@ -198,9 +199,14 @@ public class CrowdPlayerManager : NetworkBehaviour
         }
 
         playerController.chosenLocation = chosenCards[i].location;
-        chosenTaskLocation = playerController.chosenLocation.GetComponent<TaskLocation>();
-        chosenTaskLocation.indicator.SetActive(true);
-        chosenTaskLocation.playerCam = cam.transform;
+
+        if(isCallingPlayer)
+        {
+            chosenTaskLocation = playerController.chosenLocation.GetComponent<TaskLocation>();
+            chosenTaskLocation.indicator.SetActive(true);
+            chosenTaskLocation.playerCam = cam.transform;
+        }
+        
         playerController.SecondHalfOfChooseLocation(chosenCards[i]);
     }
 
@@ -211,6 +217,18 @@ public class CrowdPlayerManager : NetworkBehaviour
 
     private void Update()
     {
+        if(arrow.activeSelf && playerController.chosenLocation != null)
+        {
+            Vector3 direction = playerController.chosenLocation.transform.position - arrow.transform.position;
+            direction.y = 0; // Ignore vertical difference to keep rotation constrained
+
+            Quaternion desRot = Quaternion.LookRotation(direction); // Get rotation facing player
+            desRot = Quaternion.Euler(-90, 0, desRot.eulerAngles.y); // Force X to -90, Y to 0, keep Z rotation
+
+            arrow.transform.rotation = desRot;
+            arrow.transform.position = playerController.controller.transform.position + new Vector3(0, 1.5f, 0);
+        }
+
         inUIMode = LocationCardsUIVisibility();  
         UIMode(inUIMode);
      

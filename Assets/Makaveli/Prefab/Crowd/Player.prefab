@@ -2892,7 +2892,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2505016722876272874
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9822,6 +9822,10 @@ MonoBehaviour:
   - {fileID: 7299559155175878446}
   - {fileID: 6860018076007539823}
   tasks: []
+  spawnedSuccesfully: 0
+  chosenTaskLocation: {fileID: 0}
+  choosingShape: 0
+  customizingShape: 0
 --- !u!114 &4602007785653865280
 MonoBehaviour:
   m_ObjectHideFlags: 0

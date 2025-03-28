@@ -321,7 +321,7 @@ public class CrowdPlayerController
                             if (!isProcessingClick)
                             {
                                 isProcessingClick = true;
-                                playerManager.ChooseLocationServerRpc(cards.IndexOf(card));
+                                playerManager.ChooseLocationServerRpc(cards.IndexOf(card), ClientServerRefs.instance.localClient.OwnerClientId);
                                 MGameManager.instance.showLocationCards = false;
                                 playerManager.arrow.SetActive(true);
                                 playerManager.playerState = CrowdPlayerManager.PlayerState.DEFAULT;

@@ -184,4 +184,31 @@ public class GameManagerRpcBehaviour : NetworkBehaviour
         clientManager.scenceLoadedClients.Clear();
         clientManager.ReadyUp();
     }
+    public void UpdateLocationsTask(int index)
+    {
+        UpdateLocationsTaskServerRpc(index);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    void UpdateLocationsTaskServerRpc(int index)
+    {
+        UpdateLocationsTaskClientRpc(index);
+        mGameManager.currentInteractableLocation.tasks.RemoveAt(index);
+    }
+    [ClientRpc]
+    void UpdateLocationsTaskClientRpc(int index)
+    {
+        Task taskToRemove = mGameManager.currentInteractableLocation.tasks[index];
+        foreach(var player in mGameManager.allCrowdPlayers)
+        {
+            if(player.chosenTaskLocation != null)
+            {
+                if(player.chosenTaskLocation.tasks.Contains(taskToRemove))
+                {
+                    player.playerController.UImanagement.DisplayCards(this);
+                }
+            }
+        }
+        mGameManager.currentInteractableLocation.tasks.RemoveAt(index);
+    }
 }

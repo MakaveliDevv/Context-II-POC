@@ -53,6 +53,7 @@ public class CrowdPlayerManager : NetworkBehaviour
 
     [Header("Tasks")]
     public List<Task> tasks = new();
+    public int lastTasksCount;
     public bool spawnedSuccesfully;
     public TaskLocation chosenTaskLocation;
     
@@ -160,6 +161,12 @@ public class CrowdPlayerManager : NetworkBehaviour
             GameObject canvas = GameObject.Find("LoadingCanvas");
             if (canvas != null) canvas.SetActive(false);
         }
+        else
+        {
+
+        }
+        
+        StartCoroutine(playerController.SpawnCrowdWithDelay());
     }
 
     private void OnEnable()
@@ -209,8 +216,8 @@ public class CrowdPlayerManager : NetworkBehaviour
             chosenTaskLocation = playerController.chosenLocation.GetComponent<TaskLocation>();
             chosenTaskLocation.indicator.SetActive(true);
             chosenTaskLocation.playerCam = cam.transform;
+            playerController.UImanagement.taskManagerUI.CreateTaskCard(playerController.UImanagement);
         }
-        
         playerController.SecondHalfOfChooseLocation(chosenCards[i]);
     }
 
@@ -230,6 +237,17 @@ public class CrowdPlayerManager : NetworkBehaviour
             desRot = Quaternion.Euler(-90, 0, desRot.eulerAngles.y); // Force X to -90, Y to 0, keep Z rotation
 
             arrow.transform.SetPositionAndRotation(playerController.controller.transform.position + new Vector3(0, 1.5f, 0), desRot);
+        }
+
+
+        if(chosenTaskLocation != null)
+        {
+            if(lastTasksCount != chosenTaskLocation.tasks.Count)
+            {
+                playerController.UImanagement.taskManagerUI.CreateTaskCard(playerController.UImanagement);
+                Debug.Log("Update task card ui");
+            }
+            lastTasksCount = chosenTaskLocation.tasks.Count;
         }
 
         inUIMode = LocationCardsUIVisibility();  

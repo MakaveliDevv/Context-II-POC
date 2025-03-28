@@ -86,65 +86,116 @@ public class PlacableObjects : NetworkBehaviour
 
     public void PlaceObject(Lion _lion)
     {
-        meshRenderer = GetComponent<MeshRenderer>();
-        Debug.Log($"Changing {meshRenderer.gameObject.name}'s material to {originalMaterial.name}");
-        meshRenderer.material = originalMaterial;
+        // meshRenderer = GetComponent<MeshRenderer>();
+        // Debug.Log($"Changing {meshRenderer.gameObject.name}'s material to {originalMaterial.name}");
+        // meshRenderer.material = originalMaterial;
+
         placed = true;
         GetComponent<Collider>().isTrigger = false;
 
-        if(!_lion.encounter) 
-        {
-            MGameManager.instance.UpdatePoints(-1);
-            Debug.Log("object placed in not solving state so -1 point is applied");
-            StartCoroutine(DestroyObject(_lion.wrongObjectText, "Wrong time! Removing object..."));           
-        }
-        else if(_lion.makaveli)
-        {
-            Collider collider = GetComponent<Collider>();
-            Vector3 colliderCenter = collider.bounds.center;
-            Vector3 colliderExtents = collider.bounds.extents;
-            Vector3 undersidePosition = new Vector3(colliderCenter.x, colliderCenter.y - colliderExtents.y, colliderCenter.z);
+        bool foundValidLocation = false;
+        float closestDistance = 1000f;
 
-            // Collider[] nearbyColliders = Physics.OverlapSphere(undersidePosition, 1.5f); 
-            bool foundValidLocation = false;
-            // if(nearbyColliders.Length == 0) Debug.Log($"Object Found: no objects found");
-            // foreach (var nearbyCollider in nearbyColliders)
-            // {
-            //     Debug.Log($"Object Found: {nearbyCollider.gameObject.name}");
-            //     if (nearbyCollider.CompareTag("TaskableLocation"))
-            //     {
-            //         foundValidLocation = true;
-            //         MGameManager.instance.lionPlacedObject = true;
-            //         Debug.Log("Object placed in a valid location");
-            //         break; 
-            //     }
-            // }
-
-            TaskLocation[] _taskLocations = FindObjectsOfType<TaskLocation>();
-            foreach(TaskLocation taskLoc in _taskLocations)
-            {
+        TaskLocation[] _taskLocations = FindObjectsOfType<TaskLocation>();
+        foreach(TaskLocation taskLoc in _taskLocations)
+        {
+            //if(taskLoc.isActive)
+            //{
                 Transform _task = taskLoc.transform;
                 float distanceToTaskableLocation = Vector3.Distance(_task.position, transform.position);
                 Debug.Log($"Object distance: {distanceToTaskableLocation} to {_task.gameObject.name}");
+                
                 if(distanceToTaskableLocation < 10f)
                 {
-                    _lion.taskLocation = _task;
-                    _lion.taskLocationRef = taskLoc;
                     foundValidLocation = true;
-                    MGameManager.instance.lionPlacedObject = true;
-                    Debug.Log("Object placed in a valid location");
-                    break; 
-                }
-            }
 
-            if (!foundValidLocation)
-            {
-                MGameManager.instance.UpdatePoints(-1);
-                //for now, to advance the game anyways
-                MGameManager.instance.lionPlacedObject = true;
-                Debug.Log("Object placed in a non-taskable location, and no valid location nearby. -1 point applied");
-                StartCoroutine(DestroyObject(_lion.wrongObjectText, "Wrong location! Removing object..."));
-            }
+                    if(distanceToTaskableLocation < closestDistance)
+                    {
+                        closestDistance = distanceToTaskableLocation;
+                        _lion.taskLocation = _task;
+                        _lion.taskLocationRef = taskLoc;
+                        UpdateTaskLocationServerRpc();
+                    }
+                }
+            //}
+        }
+
+        if (!foundValidLocation)
+        {
+            MGameManager.instance.UpdatePoints(-1);
+            Debug.Log("Object placed in a non-taskable location, and no valid location nearby. -1 point applied");
+            StartCoroutine(DestroyObject(_lion.wrongObjectText, "Wrong location! Removing object..."));
+        }
+        else if (!_lion.taskLocationRef.tasks.Contains(task))
+        {
+            MGameManager.instance.UpdatePoints(-1);
+            Debug.Log("Wrong placed in location, and no valid location nearby. -1 point applied");
+            StartCoroutine(DestroyObject(_lion.wrongObjectText, "Wrong object! Removing object..."));
+        }
+        else
+        {
+            MGameManager.instance.lionPlacedObject = true;
+            Debug.Log("Object placed in a valid location");
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    void UpdateTaskLocationServerRpc()
+    {
+        placed = true;
+        GetComponent<Collider>().isTrigger = false;
+        float closestDistance = 1000f;
+        Lion _lion = FindFirstObjectByType<Lion>();
+
+        TaskLocation[] _taskLocations = FindObjectsOfType<TaskLocation>();
+        foreach(TaskLocation taskLoc in _taskLocations)
+        {
+            //if(taskLoc.isActive)
+            //{
+                Transform _task = taskLoc.transform;
+                float distanceToTaskableLocation = Vector3.Distance(_task.position, transform.position);
+                Debug.Log($"Object distance: {distanceToTaskableLocation} to {_task.gameObject.name}");
+                
+                if(distanceToTaskableLocation < 10f)
+                {
+                    if(distanceToTaskableLocation < closestDistance)
+                    {
+                        closestDistance = distanceToTaskableLocation;
+                        _lion.taskLocation = _task;
+                        _lion.taskLocationRef = taskLoc;
+                    }
+                }
+            //}
+        }
+        UpdateTaskLocationClientRpc();
+    }
+    [ClientRpc]
+    void UpdateTaskLocationClientRpc()
+    {
+        placed = true;
+        GetComponent<Collider>().isTrigger = false;
+        float closestDistance = 1000f;
+                Lion _lion = FindFirstObjectByType<Lion>();
+
+        TaskLocation[] _taskLocations = FindObjectsOfType<TaskLocation>();
+        foreach(TaskLocation taskLoc in _taskLocations)
+        {
+            //if(taskLoc.isActive)
+            //{
+                Transform _task = taskLoc.transform;
+                float distanceToTaskableLocation = Vector3.Distance(_task.position, transform.position);
+                Debug.Log($"Object distance: {distanceToTaskableLocation} to {_task.gameObject.name}");
+                
+                if(distanceToTaskableLocation < 10f)
+                {
+                    if(distanceToTaskableLocation < closestDistance)
+                    {
+                        closestDistance = distanceToTaskableLocation;
+                        _lion.taskLocation = _task;
+                        _lion.taskLocationRef = taskLoc;
+                    }
+                }
+            //}
         }
     }
 
@@ -152,6 +203,7 @@ public class PlacableObjects : NetworkBehaviour
     void DestroyThisServerRpc()
     {
         NetworkObject _netObj = GetComponent<NetworkObject>();
+        Debug.Log("Object being deleted: " + _netObj.name);
         _netObj.Despawn();
         Destroy(_netObj);
     }

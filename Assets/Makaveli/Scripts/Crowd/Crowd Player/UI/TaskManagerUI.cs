@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 public class TaskManagerUI 
@@ -29,10 +30,17 @@ public class TaskManagerUI
 
     public void CreateTaskCard(UIManagement uIManagement) 
     {
-        if(player.playerController.tasks.Count > 0) 
+        if(player.chosenTaskLocation != null) 
         {
+            List<RectTransform> currentTaskCards = new();
+            currentTaskCards.AddRange(taskPanel.GetChild(0).GetComponentsInChildren<RectTransform>());
+            Debug.Log($"321 currentTaskCards = {currentTaskCards.Count}");
+            foreach(RectTransform obj in currentTaskCards)
+            {
+                if(obj.gameObject.name != "Grid") {Debug.Log($"321 Destroying = {obj.gameObject.name}"); Object.Destroy(obj.gameObject);} 
+            }
             // Fetch the tasks the player has
-            foreach (var task in player.playerController.tasks)
+            foreach (var task in player.chosenTaskLocation.tasks)
             {
                 // Create for each tasks a task card
                 GameObject taskCard = Object.Instantiate(MGameManager.instance.taskCard);

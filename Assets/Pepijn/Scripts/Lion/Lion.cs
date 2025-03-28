@@ -17,7 +17,7 @@ public class Lion : NetworkBehaviour
     public GameObject lionCanvas;
     [SerializeField] List<GameObject> objectsToPickup = new();
     public PlacableObjects carryingObject;
-    Vector3 cameraOffset = new(0,11.7600002f,-4.61000013f);
+    Vector3 cameraOffset = new(0, 20.7600002f,-4.61000013f);
     Dictionary<string, GameObject> objectPrefabsDict;
     [SerializeField] List<GameObject> objectsPrefabs;
     [SerializeField] List<string> objectNames;
@@ -302,18 +302,6 @@ public class Lion : NetworkBehaviour
         placedObject.PlaceObject(this);
         _newObjInstance.Spawn();
         NotifyClientOfSpawnClientRpc(_newObjInstance.NetworkObjectId, solvingTask);
-
-        if(!solvingTask)
-        {
-            StartCoroutine(DestroyObject(_newObjInstance));
-        }
-    }
-
-    IEnumerator DestroyObject(NetworkObject _obj)
-    {
-        yield return new WaitForSeconds(5);
-        _obj.Despawn();
-        Destroy(_obj);
     }
 
     [ClientRpc]

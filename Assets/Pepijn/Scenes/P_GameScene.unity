@@ -5479,7 +5479,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &2013645619
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10077,8 +10077,8 @@ MonoBehaviour:
   pointsText: {fileID: 443741907}
   timeText: {fileID: 1565205045}
   roundTime: 300
-  mediumTreePointThreshold: 1
-  bigTreePointThreshold: 2
+  mediumTreePointThreshold: 5
+  bigTreePointThreshold: 10
   elapsedTime: 0
   bigTree: {fileID: 1462122874}
   mediumTree: {fileID: 1093563263}
@@ -17440,6 +17440,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2253f264fe866304397bd282946a9f8e, type: 2}
   fixable: 0
   locationFixed: 0
+  isActive: 0
 --- !u!114 &8827349835838421869
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17460,6 +17461,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6f1005c2bacb18b4b8f3c67531da2548, type: 2}
   fixable: 0
   locationFixed: 0
+  isActive: 0
 --- !u!114 &8827349835987361019
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17480,6 +17482,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6f1005c2bacb18b4b8f3c67531da2548, type: 2}
   fixable: 0
   locationFixed: 0
+  isActive: 0
 --- !u!114 &8827349836299133697
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17498,6 +17501,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3cf1940b3fd6fd641b7db9e50ccd1dd8, type: 2}
   fixable: 0
   locationFixed: 0
+  isActive: 0
 --- !u!114 &8827349836320918558
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17517,6 +17521,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3cf1940b3fd6fd641b7db9e50ccd1dd8, type: 2}
   fixable: 0
   locationFixed: 0
+  isActive: 0
 --- !u!114 &8827349836565471005
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17537,6 +17542,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e8c09deeb70e0a24b94f67b315ef8b76, type: 2}
   fixable: 0
   locationFixed: 0
+  isActive: 0
 --- !u!114 &8827349836588070389
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17556,6 +17562,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: dd2250aa93f6a174c8976b740ca4027e, type: 2}
   fixable: 0
   locationFixed: 0
+  isActive: 0
 --- !u!114 &8827349837273501327
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17572,11 +17579,11 @@ MonoBehaviour:
   indicator: {fileID: 1040588130}
   tasks:
   - {fileID: 11400000, guid: e8c09deeb70e0a24b94f67b315ef8b76, type: 2}
-  - {fileID: 11400000, guid: 3cf1940b3fd6fd641b7db9e50ccd1dd8, type: 2}
   - {fileID: 11400000, guid: dd2250aa93f6a174c8976b740ca4027e, type: 2}
   - {fileID: 11400000, guid: 6f1005c2bacb18b4b8f3c67531da2548, type: 2}
   fixable: 0
   locationFixed: 0
+  isActive: 0
 --- !u!114 &8827349837542239591
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17597,6 +17604,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7a405b262e4764b4f8ace7365c82199e, type: 2}
   fixable: 0
   locationFixed: 0
+  isActive: 0
 --- !u!23 &8854891816723519799
 MeshRenderer:
   m_ObjectHideFlags: 0

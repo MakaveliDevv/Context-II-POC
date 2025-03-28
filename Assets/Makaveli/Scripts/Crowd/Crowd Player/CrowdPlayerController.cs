@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -124,7 +125,7 @@ public class CrowdPlayerController
     {
         controller.transform.LookAt(playerManager.playerSpawnPoint);
         
-        mono.StartCoroutine(SpawnCrowdWithDelay());
+        // mono.StartCoroutine(SpawnCrowdWithDelay());
         UImanagement.Start(mono, playerManager);
         cameraManagement.Start();
 
@@ -141,17 +142,20 @@ public class CrowdPlayerController
         // npcsFormationLocation = playerManager.transform.Find("CrowdPlayer").Find("npc formationPoint");
     }
 
-    private IEnumerator SpawnCrowdWithDelay()
+    public IEnumerator SpawnCrowdWithDelay()
     {
-        yield return new WaitForSeconds(0.1f);
+        Debug.Log("Spawn crowd with delay start");
         CrowdRpcBehaviour crowdRpcBehaviour = mono.GetComponent<CrowdRpcBehaviour>();
+        while(controller == null || npcCount == 0 || npc == null) yield return null;
         crowdRpcBehaviour.SetCorrectReferences(controller, npcCount, npc, npcSpawnOffset, this);
+        while(crowdRpcBehaviour.crowdPlayerController == null) yield return null;
+        Debug.Log("Spawn crowd with delay end");
 
-        if(customNetworkBehaviour.CustomIsOwner())
-        {
-            crowdRpcBehaviour.SpawnCrowdServerRpc(customNetworkBehaviour.ownerClientID);
+        if(customNetworkBehaviour.CustomIsOwner()) 
+        {   
+            crowdRpcBehaviour.SpawnCrowdServerRpc(customNetworkBehaviour.ownerClientID, playerManager.gameObject.GetComponent<NetworkObject>().NetworkObjectId);
+            Debug.Log("Spawn crowd with delay");
         }
-
     }
 
     public void Update() 
@@ -279,8 +283,9 @@ public class CrowdPlayerController
 
         playerManager.tasks = tasks;
 
-        Debug.Log($"Location: {chosenLocation.gameObject.name}");
+        //Debug.Log($"Location: {chosenLocation.gameObject.name}");
         locationChosen = true;
+
         
         // // Set the formation location in the formation manager
         // if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))
@@ -330,6 +335,7 @@ public class CrowdPlayerController
                                 playerManager.ChooseLocationServerRpc(cards.IndexOf(card), ClientServerRefs.instance.localClient.OwnerClientId);
                                 MGameManager.instance.showLocationCards = false;
                                 playerManager.arrow.SetActive(true);
+                                playerManager.playerController.HideCards();
                                 playerManager.playerState = CrowdPlayerManager.PlayerState.DEFAULT;
                             }
                         });

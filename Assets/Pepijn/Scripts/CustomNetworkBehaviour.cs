@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class CustomNetworkBehaviour : NetworkBehaviour
 {
+    public NetworkVariable<Vector3> netPosition = new NetworkVariable<Vector3>();
     public ulong ownerClientID;
     void Awake()
     {
@@ -12,6 +13,7 @@ public class CustomNetworkBehaviour : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void RequestMoveServerRpc(Vector3 _position, Quaternion _rotation, Vector3 _localScale)
     {
+        netPosition.Value = _position;
         Debug.Log($"Reqeusting move on server: {gameObject.name} to {_position}");
         // Set the position on the server
         transform.SetPositionAndRotation(_position, _rotation);
@@ -26,7 +28,7 @@ public class CustomNetworkBehaviour : NetworkBehaviour
         if(!CustomIsOwner())
         {
             // Set the position on the server
-            transform.position = _position;
+            transform.position = netPosition.Value;
             transform.rotation = _rotation;
             transform.localScale =_localScale;
         }

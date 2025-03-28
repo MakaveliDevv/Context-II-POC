@@ -8,7 +8,7 @@ public class UIManagement
 {
     public ShapeManagerUI shapeManagerUI;
     private readonly LocationManagerUI locationManagerUI;
-    private readonly TaskManagerUI taskManagerUI;
+    public TaskManagerUI taskManagerUI;
     private readonly EmoteUI emoteManagerUI;
     public bool taskCreated;
     private readonly Transform canvas;

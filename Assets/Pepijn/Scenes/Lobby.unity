@@ -2510,9 +2510,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  serverBuild: 1
+  serverBuild: 0
   webBuild: 0
-  runLocally: 1
+  runLocally: 0
   serverPrefab: {fileID: 8081325417287497554, guid: faf7df9d015b85240a768f527782deaf, type: 3}
   clientPrefab: {fileID: 4588487196277226122, guid: 7cc1854464e81d34ca055b6ed8f2c3b9, type: 3}
   unityTransport: {fileID: 252030897}
@@ -2610,6 +2610,7 @@ MonoBehaviour:
   readySprite: {fileID: 21300000, guid: 14569cdbf44a9e447bc9e0cc4e1ea393, type: 3}
   unreadySprite: {fileID: 21300000, guid: 4106d8c128a037e428473298e0b4e8df, type: 3}
   lobby: {fileID: 2056721913}
+  inLobby: 0
   nameInputField: {fileID: 1373837678}
   clientNames: []
   logo: {fileID: 2015974876}
@@ -2618,6 +2619,8 @@ MonoBehaviour:
   chooseLionImg: {fileID: 190184673}
   selectedSprite: {fileID: 21300000, guid: ffec79e0b12e38044b6592def13f7ce3, type: 3}
   unselectedSprite: {fileID: 21300000, guid: 4106d8c128a037e428473298e0b4e8df, type: 3}
+  lobbyScene:
+    m_Handle: 0
 --- !u!114 &1024166534
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3453,6 +3456,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  netPosition:
+    m_InternalValue: {x: 0, y: 0, z: 0}
   ownerClientID: 0
 --- !u!1 &1729156728
 GameObject:

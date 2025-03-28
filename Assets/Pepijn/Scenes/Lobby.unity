@@ -2510,9 +2510,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  serverBuild: 1
+  serverBuild: 0
   webBuild: 0
-  runLocally: 1
+  runLocally: 0
   serverPrefab: {fileID: 8081325417287497554, guid: faf7df9d015b85240a768f527782deaf, type: 3}
   clientPrefab: {fileID: 4588487196277226122, guid: 7cc1854464e81d34ca055b6ed8f2c3b9, type: 3}
   unityTransport: {fileID: 252030897}

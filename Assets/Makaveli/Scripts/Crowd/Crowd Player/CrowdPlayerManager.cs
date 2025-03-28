@@ -160,6 +160,12 @@ public class CrowdPlayerManager : NetworkBehaviour
             GameObject canvas = GameObject.Find("LoadingCanvas");
             if (canvas != null) canvas.SetActive(false);
         }
+        else
+        {
+
+        }
+        
+        StartCoroutine(playerController.SpawnCrowdWithDelay());
     }
 
     private void OnEnable()

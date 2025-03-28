@@ -171,7 +171,7 @@ public class MGameManager : NetworkBehaviour
 
     public void StartState()
     {
-        StartCoroutine(UI());
+        //StartCoroutine(UI());
         
         if(allCrowdPlayers.Count > 0) 
         {

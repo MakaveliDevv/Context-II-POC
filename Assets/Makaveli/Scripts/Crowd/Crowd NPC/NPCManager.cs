@@ -83,14 +83,21 @@ public class NPCManager : NetworkBehaviour
         animator = transform.GetChild(0).GetComponent<Animator>();
     }
 
+    public void SetFollowersTarget(Transform _target)
+    {
+        nPCFollower.target = _target;
+    }
+
     void Update()
     {
         // nPCPatrol.MoveNPC();
         if(customNetworkBehaviour == null) gameObject.GetComponent<CustomNetworkBehaviour>();
         if(customNetworkBehaviour.CustomIsOwner())
         {
-            if(moveable) 
+            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+            if(moveable && stateInfo.IsName("Blend Tree")) 
             {
+                Debug.Log("UPDATING NPC FOLLOWER");
                 nPCFollower.Update(this);
             }      
         }
@@ -109,26 +116,43 @@ public class NPCManager : NetworkBehaviour
     public void HappyEmote() 
     {
         Debug.Log("Happy Emote");
-        animator.SetTrigger("Happy");
+        //animator.SetTrigger("Happy");
+        SetAnimatorTriggerServerRpc("Happy");
     }
 
     public void SadEmote() 
     {
         Debug.Log("Sad Emote");
-        animator.SetTrigger("Sad");
+        //animator.SetTrigger("Sad");
+        SetAnimatorTriggerServerRpc("Sad");
+        
     }
 
     public void NotItEmote()
     {   
         Debug.Log("Sad Emote");
-        animator.SetTrigger("Not It");
+        //animator.SetTrigger("Not It");
+        SetAnimatorTriggerServerRpc("Not It");
     }
 
     public void ThrowingEmote() 
     {
         Debug.Log("Throwing Emote");
-        animator.SetTrigger("Tomato");
+        //animator.SetTrigger("Tomato");
+        SetAnimatorTriggerServerRpc("Tomato");
         StartCoroutine(InstantiateTomatoAfterDelay(Random.Range(0.05f, 0.3f)));
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    void SetAnimatorTriggerServerRpc(string _state)
+    {
+        animator.SetTrigger(_state);
+        SetAnimatorTriggerClientRpc(_state);
+    }
+    [ClientRpc]
+    void SetAnimatorTriggerClientRpc(string _state)
+    {
+        animator.SetTrigger(_state);
     }
 
     IEnumerator InstantiateTomatoAfterDelay(float _delay)

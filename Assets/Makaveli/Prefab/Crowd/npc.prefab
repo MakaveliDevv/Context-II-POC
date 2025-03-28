@@ -1028,7 +1028,6 @@ GameObject:
   - component: {fileID: 428891826278333714}
   - component: {fileID: 5163767196377407748}
   - component: {fileID: -3090947011599598060}
-  - component: {fileID: -50134780644982760}
   - component: {fileID: 4976794907489852135}
   m_Layer: 0
   m_Name: npc
@@ -1100,20 +1099,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  netPosition:
+    m_InternalValue: {x: 0, y: 0, z: 0}
   ownerClientID: 0
---- !u!114 &-50134780644982760
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4962835041852531409}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 28d1de62718612147ac60f4470510c6e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &4976794907489852135
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1441,6 +1429,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  netPosition:
+    m_InternalValue: {x: 0, y: 0, z: 0}
   ownerClientID: 0
 --- !u!1 &6268502603980935509
 GameObject:

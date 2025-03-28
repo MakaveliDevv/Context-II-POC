@@ -3456,6 +3456,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  netPosition:
+    m_InternalValue: {x: 0, y: 0, z: 0}
   ownerClientID: 0
 --- !u!1 &1729156728
 GameObject:

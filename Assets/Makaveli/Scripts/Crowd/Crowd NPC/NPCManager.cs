@@ -33,6 +33,9 @@ public class NPCManager : NetworkBehaviour
 
     // Anim
     private Animator animator;
+    [SerializeField] private string speedParameter = "Speed"; 
+    [SerializeField] private float speed; 
+    private Vector3 lastPosition;
 
 
     void Awake()
@@ -87,6 +90,16 @@ public class NPCManager : NetworkBehaviour
                 nPCFollower.Update(this);
             }      
         }
+
+        CalculateSpeed();
+        MovementAnim();
+    }
+
+    private void CalculateSpeed()
+    {
+        // Calculate speed based on position change
+        speed = Vector3.Distance(transform.position, lastPosition) / Time.deltaTime;
+        lastPosition = transform.position;
     }
 
     public void HappyEmote() 
@@ -107,6 +120,11 @@ public class NPCManager : NetworkBehaviour
         animator.SetTrigger("Tomato");
     }
     
+    public void MovementAnim() 
+    {
+        animator.SetFloat(speedParameter, speed);
+    }
+
     // public void HappyEmote() 
     // {
     //     Debug.Log("Happy Emote");

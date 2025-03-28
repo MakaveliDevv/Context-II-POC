@@ -98,6 +98,7 @@ public class UIManagement
     public void Update(CrowdPlayerManager playerManager) 
     {
         shapeManagerUI.Update();
+        taskManagerUI.DisplayTaskBtn(playerManager);
         
         if(playerManager.playerState == CrowdPlayerManager.PlayerState.TRAVELING) 
         {

@@ -39,7 +39,7 @@ public class CrowdPlayerController
     private Coroutine repositionCam;
 
     // Tasks
-    public List<Task> tasks;
+    public List<Task> tasks = new();
 
     // Temp stuff
     private Transform spawnPoint;
@@ -64,7 +64,6 @@ public class CrowdPlayerController
         GameObject cardsUI,                      // Reference to the main panel for the UI location cards
         Transform spawnPoint,
         Transform npcContainer,
-        List<Task> tasks,
         CrowdPlayerManager playerManager
     ) 
     {
@@ -74,7 +73,6 @@ public class CrowdPlayerController
         this.npcSpawnOffset = npcSpawnOffset;
         this.spawnPoint = spawnPoint;
         this.npcContainer = npcContainer;
-        this.tasks = tasks;
         this.playerManager = playerManager;
 
         controller = mono.transform.GetChild(0).GetComponent<CharacterController>();
@@ -124,6 +122,8 @@ public class CrowdPlayerController
 
     public void Start() 
     {
+        controller.transform.LookAt(playerManager.playerSpawnPoint);
+        
         mono.StartCoroutine(SpawnCrowdWithDelay());
         UImanagement.Start(mono, playerManager);
         cameraManagement.Start();
@@ -212,6 +212,10 @@ public class CrowdPlayerController
 
             isAtLocation = true;
         }
+        else 
+        {
+            isAtLocation = false;
+        }
     }
 
     // Camera stuff
@@ -272,6 +276,8 @@ public class CrowdPlayerController
     {
         // Assign the tasks form the card
         tasks = card.tasks;
+
+        playerManager.tasks = tasks;
 
         Debug.Log($"Location: {chosenLocation.gameObject.name}");
         locationChosen = true;

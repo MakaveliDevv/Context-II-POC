@@ -64,6 +64,9 @@ public class MGameManager : NetworkBehaviour
     public GameObject bigTree, mediumTree, smallTree, pointsObj, timeObj;
     public GameObject finishCamera;
 
+    // UI stuff
+    public GameObject chooseLocationUI;
+
     void Awake()
     {
         if (instance == null)
@@ -97,6 +100,8 @@ public class MGameManager : NetworkBehaviour
     private bool spawnLocation;
     void Update()
     {
+        SolvingTaskState();
+
         switch (gamePlayManagement)
         {
             case GamePlayManagement.START:
@@ -117,9 +122,9 @@ public class MGameManager : NetworkBehaviour
                 gameManagerRpcBehaviour.GameStateManagement("CROWD_TURN");
             break;
 
-            case GamePlayManagement.SOLVING_TASK:
-                gameManagerRpcBehaviour.GameStateManagement("SOLVING_TASK");
-            break;
+            // case GamePlayManagement.SOLVING_TASK:
+            //     gameManagerRpcBehaviour.GameStateManagement("SOLVING_TASK");
+            // break;
 
             case GamePlayManagement.END:
                 gameManagerRpcBehaviour.GameStateManagement("END");
@@ -151,8 +156,23 @@ public class MGameManager : NetworkBehaviour
         }
     }
 
+    private IEnumerator UI() 
+    {
+        yield return new WaitForSeconds(2f);
+
+        chooseLocationUI.SetActive(true);    
+
+        yield return new WaitForSeconds(4f);
+
+        chooseLocationUI.SetActive(false);
+
+        yield break;
+    }
+
     public void StartState()
     {
+        StartCoroutine(UI());
+        
         if(allCrowdPlayers.Count > 0) 
         {
             gamePlayManagement = GamePlayManagement.SPAWN_LOCATIONS;
@@ -188,61 +208,125 @@ public class MGameManager : NetworkBehaviour
     // THE POSSIBLE TASKS AND COMPLETE TASKS LIST IS NOT GETTING UPDATED
     public void SolvingTaskState()
     {
-        if (taskStarted || penaltyApplied) return; // Prevents multiple executions
-
-        stateChange = false;
-                
-        if(lionPlacedObject && !taskStarted) 
+        foreach (var player in allCrowdPlayers)
         {
-            taskStarted = true;
-            
-            // Fetch the location
-            Transform taskLocation = lion.taskLocation;
-            if(taskLocation == null) return;
-            currentInteractableLocation = lion.taskLocationRef;
-
-            Debug.Log($"From SolvingTaskState method: {taskLocation.gameObject.name}");
-            Debug.Log($"current interactable location: {currentInteractableLocation.gameObject.name}");
-
-            // Check if the object placed is the same task as one of the tasks on the location
-            if(lion.lastObjectTask != null) 
+            if(player.choosingShape && player.playerController.isAtLocation && lion.encounter) 
             {
-                foreach (var task in currentInteractableLocation.tasks)
+                if (taskStarted || penaltyApplied) return; // Prevents multiple executions
+
+                stateChange = false;
+                        
+                if(lionPlacedObject && !taskStarted) 
                 {
-                    Debug.Log("last object task:" + lion.lastObjectTask.name);
-                    Debug.Log("Task:" + task.name);
-                    if(lion.lastObjectTask.taskName == task.taskName) 
-                    {
-                        currentInteractableLocation.locationFixed = true;
-                        currentInteractableLocation.fixable = false;
+                    taskStarted = true;
+                    
+                    // Fetch the location
+                    Transform taskLocation = lion.taskLocation;
+                    if(taskLocation == null) return;
+                    currentInteractableLocation = lion.taskLocationRef;
 
-                        // Add the task to complete task
-                        for (int i = 0; i < possibleTasks.Count; i++)
+                    Debug.Log($"From SolvingTaskState method: {taskLocation.gameObject.name}");
+                    Debug.Log($"current interactable location: {currentInteractableLocation.gameObject.name}");
+
+                    // Check if the object placed is the same task as one of the tasks on the location
+                    if(lion.lastObjectTask != null) 
+                    {
+                        foreach (var task in currentInteractableLocation.tasks)
                         {
-                            if (possibleTasks[i].taskName == task.taskName) 
+                            Debug.Log("last object task:" + lion.lastObjectTask.name);
+                            Debug.Log("Task:" + task.name);
+                            if(lion.lastObjectTask.taskName == task.taskName) 
                             {
-                                completeTasks.Add(possibleTasks[i]);
-                                possibleTasks.RemoveAt(i); 
-                                break;
-                            }
-                        }
+                                currentInteractableLocation.locationFixed = true;
+                                currentInteractableLocation.fixable = false;
 
-                        taskComplete = true;
-                        UpdatePoints(1);
-                        Debug.Log($"Adding +1 point to {currentPoint}");
-                    }    
-                    else 
-                    {
-                        //currentPoint += 0;
-                        Debug.Log($"Adding +0 point to {currentPoint}");
+                                // Add the task to complete task
+                                for (int i = 0; i < possibleTasks.Count; i++)
+                                {
+                                    if (possibleTasks[i].taskName == task.taskName) 
+                                    {
+                                        completeTasks.Add(possibleTasks[i]);
+                                        possibleTasks.RemoveAt(i); 
+                                        break;
+                                    }
+                                }
+
+                                taskComplete = true;
+                                UpdatePoints(1);
+                                Debug.Log($"Adding +1 point to {currentPoint}");
+                            }    
+                            else 
+                            {
+                                //currentPoint += 0;
+                                Debug.Log($"Adding +0 point to {currentPoint}");
+                            }
+                            
+                        }
+                        lion.lastObjectTask = null;
+                        StartCoroutine(DisplayEndRound());
                     }
                     
                 }
-                lion.lastObjectTask = null;
-                StartCoroutine(DisplayEndRound());
             }
-            
+
         }
+      
+
+        // if (taskStarted || penaltyApplied) return; // Prevents multiple executions
+
+        // stateChange = false;
+                
+        // if(lionPlacedObject && !taskStarted) 
+        // {
+        //     taskStarted = true;
+            
+        //     // Fetch the location
+        //     Transform taskLocation = lion.taskLocation;
+        //     if(taskLocation == null) return;
+        //     currentInteractableLocation = lion.taskLocationRef;
+
+        //     Debug.Log($"From SolvingTaskState method: {taskLocation.gameObject.name}");
+        //     Debug.Log($"current interactable location: {currentInteractableLocation.gameObject.name}");
+
+        //     // Check if the object placed is the same task as one of the tasks on the location
+        //     if(lion.lastObjectTask != null) 
+        //     {
+        //         foreach (var task in currentInteractableLocation.tasks)
+        //         {
+        //             Debug.Log("last object task:" + lion.lastObjectTask.name);
+        //             Debug.Log("Task:" + task.name);
+        //             if(lion.lastObjectTask.taskName == task.taskName) 
+        //             {
+        //                 currentInteractableLocation.locationFixed = true;
+        //                 currentInteractableLocation.fixable = false;
+
+        //                 // Add the task to complete task
+        //                 for (int i = 0; i < possibleTasks.Count; i++)
+        //                 {
+        //                     if (possibleTasks[i].taskName == task.taskName) 
+        //                     {
+        //                         completeTasks.Add(possibleTasks[i]);
+        //                         possibleTasks.RemoveAt(i); 
+        //                         break;
+        //                     }
+        //                 }
+
+        //                 taskComplete = true;
+        //                 UpdatePoints(1);
+        //                 Debug.Log($"Adding +1 point to {currentPoint}");
+        //             }    
+        //             else 
+        //             {
+        //                 //currentPoint += 0;
+        //                 Debug.Log($"Adding +0 point to {currentPoint}");
+        //             }
+                    
+        //         }
+        //         lion.lastObjectTask = null;
+        //         StartCoroutine(DisplayEndRound());
+        //     }
+            
+        // }
     }
 
     public void UpdatePoints(int _points)

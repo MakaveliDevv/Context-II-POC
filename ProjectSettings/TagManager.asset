@@ -11,6 +11,8 @@ TagManager:
   - PatrolArea
   - TaskableLocation
   - Lion
+  - npcs_spawnPoint
+  - playerSpawnPoint
   layers:
   - Default
   - TransparentFX

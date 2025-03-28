@@ -140,7 +140,8 @@ public class Client : NetworkBehaviour
 
         _child.transform.parent.GetComponent<CrowdPlayerManager>().spawnedSuccesfully = true;
         yield return new WaitForSeconds(0.2f);
-        GameObject.Find("LoadingCanvas").SetActive(false);
+        GameObject canvas = GameObject.Find("LoadingCanvas");
+        if (canvas != null) canvas.SetActive(false);
     }
 
     private void OnClientDisconnect(ulong clientId)

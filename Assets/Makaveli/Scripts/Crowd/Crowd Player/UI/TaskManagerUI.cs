@@ -27,7 +27,7 @@ public class TaskManagerUI
         } else { Debug.LogError("Couldn't fetch the 'open task panel button'");  return; }
     }
 
-    public void CreateTaskCard() 
+    public void CreateTaskCard(UIManagement uIManagement) 
     {
         if(player.playerController.tasks.Count > 0) 
         {
@@ -46,6 +46,7 @@ public class TaskManagerUI
                 }
                 else { Debug.LogError("Couldn't fetch the 'TaskCardUI' component"); return; }
             }
+            uIManagement.taskCreated = true;
         }
     }
 

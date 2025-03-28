@@ -154,7 +154,11 @@ public class CrowdPlayerManager : NetworkBehaviour
             }
         }
         yield return new WaitForSeconds(0.2f);
-        if(!customNetworkBehaviour.CustomIsOwner()) GameObject.Find("LoadingCanvas").SetActive(false);
+        if(!customNetworkBehaviour.CustomIsOwner()) 
+        {
+            GameObject canvas = GameObject.Find("LoadingCanvas");
+            if (canvas != null) canvas.SetActive(false);
+        }
     }
 
     private void OnEnable()

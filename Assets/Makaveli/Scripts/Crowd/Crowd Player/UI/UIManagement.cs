@@ -101,15 +101,11 @@ public class UIManagement
         shapeManagerUI.Update();
         taskManagerUI.DisplayTaskBtn(playerManager);
         
-        if(playerManager.playerState == CrowdPlayerManager.PlayerState.TRAVELING) 
+        if(!taskCreated) 
         {
-            if(!taskCreated) 
-            {
-                taskManagerUI.CreateTaskCard();
-                taskCreated = true;
-            }
+            taskManagerUI.CreateTaskCard(this);
         }
-
+        
         if(MGameManager.instance.gamePlayManagement == MGameManager.GamePlayManagement.END) 
         {
             taskCreated = false;

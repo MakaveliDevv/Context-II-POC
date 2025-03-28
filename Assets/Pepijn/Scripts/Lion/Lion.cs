@@ -302,18 +302,6 @@ public class Lion : NetworkBehaviour
         placedObject.PlaceObject(this);
         _newObjInstance.Spawn();
         NotifyClientOfSpawnClientRpc(_newObjInstance.NetworkObjectId, solvingTask);
-
-        if(!solvingTask)
-        {
-            StartCoroutine(DestroyObject(_newObjInstance));
-        }
-    }
-
-    IEnumerator DestroyObject(NetworkObject _obj)
-    {
-        yield return new WaitForSeconds(5);
-        _obj.Despawn();
-        Destroy(_obj);
     }
 
     [ClientRpc]

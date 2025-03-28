@@ -208,35 +208,27 @@ public class MGameManager : NetworkBehaviour
     // THE POSSIBLE TASKS AND COMPLETE TASKS LIST IS NOT GETTING UPDATED
     public void SolvingTaskState()
     {
-        foreach (var player in allCrowdPlayers)
-        {
-            if(player.playerController.UImanagement.shapeManagerUI.shapeSelected && player.playerController.isAtLocation && lion.encounter) 
-            {
-                lion.makaveli = true;
-                
-                if (taskStarted || penaltyApplied) return; // Prevents multiple executions
 
-                stateChange = false;
+            //if(player.playerController.UImanagement.shapeManagerUI.shapeSelected && player.playerController.isAtLocation) 
+            //{
+                if(lion != null) lion.makaveli = true;
+                if (taskStarted || penaltyApplied) return; // Prevents multiple execution
+                //stateChange = false;
                         
                 if(lionPlacedObject && !taskStarted) 
                 {
-                    taskStarted = true;
-                    
-                    // Fetch the location
-                    Transform taskLocation = lion.taskLocation;
-                    if(taskLocation == null) return;
-                    currentInteractableLocation = lion.taskLocationRef;
-
-                    Debug.Log($"From SolvingTaskState method: {taskLocation.gameObject.name}");
-                    Debug.Log($"current interactable location: {currentInteractableLocation.gameObject.name}");
-
                     // Check if the object placed is the same task as one of the tasks on the location
-                    if(lion.lastObjectTask != null) 
+                    if(lion.lastObjectTask != null && lion.taskLocationRef != null) 
                     {
+                        taskStarted = true;
+                    
+                        // Fetch the location
+                        Transform taskLocation = lion.taskLocation;
+                        if(taskLocation == null) return;
+                        currentInteractableLocation = lion.taskLocationRef;
+
                         foreach (var task in currentInteractableLocation.tasks)
                         {
-                            Debug.Log("last object task:" + lion.lastObjectTask.name);
-                            Debug.Log("Task:" + task.name);
                             if(lion.lastObjectTask.taskName == task.taskName) 
                             {
                                 currentInteractableLocation.locationFixed = true;
@@ -252,7 +244,7 @@ public class MGameManager : NetworkBehaviour
                                         break;
                                     }
                                 }
-
+                                
                                 taskComplete = true;
                                 UpdatePoints(1);
                                 Debug.Log($"Adding +1 point to {currentPoint}");
@@ -260,20 +252,19 @@ public class MGameManager : NetworkBehaviour
                             else 
                             {
                                 //currentPoint += 0;
+                                taskStarted = false;
                                 Debug.Log($"Adding +0 point to {currentPoint}");
                             }
                             
                         }
+                        lionPlacedObject = false;
                         lion.lastObjectTask = null;
-                        StartCoroutine(DisplayEndRound());
+                        if(taskComplete) StartCoroutine(DisplayEndRound());
                     }
                     
                 }
-            }
-
-        }
-      
-
+            //}
+    
         // if (taskStarted || penaltyApplied) return; // Prevents multiple executions
 
         // stateChange = false;
@@ -395,7 +386,7 @@ public class MGameManager : NetworkBehaviour
         yield return null;
 
         // If not continue
-        if(!containsName)
+        if(!containsName && currentInteractableLocation != null)
         {
             taskLocationsDone.Add(currentInteractableLocation.transform);
             taskLocations.Remove(currentInteractableLocation.transform);

@@ -279,8 +279,9 @@ public class CrowdPlayerController
 
         playerManager.tasks = tasks;
 
-        Debug.Log($"Location: {chosenLocation.gameObject.name}");
+        //Debug.Log($"Location: {chosenLocation.gameObject.name}");
         locationChosen = true;
+
         
         // // Set the formation location in the formation manager
         // if (mono.transform.TryGetComponent<PlayerFormationController>(out var formationController))

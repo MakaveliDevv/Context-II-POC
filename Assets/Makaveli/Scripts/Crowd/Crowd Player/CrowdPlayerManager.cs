@@ -209,7 +209,6 @@ public class CrowdPlayerManager : NetworkBehaviour
             chosenTaskLocation.indicator.SetActive(true);
             chosenTaskLocation.playerCam = cam.transform;
         }
-        
         playerController.SecondHalfOfChooseLocation(chosenCards[i]);
     }
 

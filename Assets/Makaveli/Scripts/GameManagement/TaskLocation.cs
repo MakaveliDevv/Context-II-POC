@@ -9,6 +9,7 @@ public class TaskLocation : MonoBehaviour
     public List<Task> tasks = new();
     public bool fixable = true;
     public bool locationFixed;
+    public bool isActive;
 
     void Start()
     {

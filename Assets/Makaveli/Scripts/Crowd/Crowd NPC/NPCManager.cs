@@ -30,6 +30,7 @@ public class NPCManager : NetworkBehaviour
     public float spreadFactor = 1.5f;
     public float fixedYPosition = 1f;
     public bool moveable;
+    bool posBeingFixed;
 
     // Anim
     private Animator animator;
@@ -83,9 +84,10 @@ public class NPCManager : NetworkBehaviour
         animator = transform.GetChild(0).GetComponent<Animator>();
     }
 
-    public void SetFollowersTarget(Transform _target)
+    public void SetFollowersTarget(Transform _target, Vector3 _spawnPosition)
     {
         nPCFollower.target = _target;
+        nPCFollower.spawnPosition = _spawnPosition;
     }
 
     void Update()
@@ -99,11 +101,38 @@ public class NPCManager : NetworkBehaviour
             {
                 Debug.Log("UPDATING NPC FOLLOWER");
                 nPCFollower.Update(this);
+            }
+
+            if((nPCFollower.controller.transform.position.y < 5) && !posBeingFixed && nPCFollower.spawnPosition != null)
+            {
+                StartCoroutine(FixNpcPosition());
             }      
+            if(nPCFollower.controller.transform.position.y >= 5)
+            {
+                Debug.Log($"FixNpxPos not needed: {nPCFollower.controller.transform.position}");
+            }
         }
 
         CalculateSpeed();
         MovementAnim();
+    }
+
+    IEnumerator FixNpcPosition()
+    {
+        Debug.Log("FixNpcPos start");
+        ExternallyMovingObject emo = nPCFollower.controller.GetComponent<ExternallyMovingObject>();
+        while(emo == null) yield return null;
+        emo.dontRequest = true;
+
+        posBeingFixed = true;
+        moveable = false;
+        nPCFollower.controller.transform.position = nPCFollower.spawnPosition;
+        yield return new WaitForSeconds(1);
+        posBeingFixed = false;
+        moveable = true;
+        emo.dontRequest = false;
+        Debug.Log($"FixNpcPos end: {nPCFollower.controller.transform.position} reached");
+        
     }
 
     private void CalculateSpeed()

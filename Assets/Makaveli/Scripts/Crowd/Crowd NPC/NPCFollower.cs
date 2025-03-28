@@ -43,6 +43,7 @@ public class NPCFollower
 
     // Flocking parameters
     private Vector3 centerOfMass;
+    public Vector3 spawnPosition;
     public int npcIndex;
 
     // Formation parameters

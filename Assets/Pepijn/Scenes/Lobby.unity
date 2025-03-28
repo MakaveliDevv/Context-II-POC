@@ -2510,7 +2510,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  serverBuild: 0
+  serverBuild: 1
   webBuild: 0
   runLocally: 0
   serverPrefab: {fileID: 8081325417287497554, guid: faf7df9d015b85240a768f527782deaf, type: 3}
